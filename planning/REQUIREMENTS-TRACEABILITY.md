@@ -35,7 +35,7 @@ Example:
 |---|---|---|---|
 | Reproducible install (REQ-OPS-001) | pnpm monorepo, `packageManager` pin, lockfile (ADR-0009) | P01-01 | `pnpm install --frozen-lockfile` + `pnpm check` on Node 24 |
 | Quality gates | lint (ESLint), format-check, typecheck (tsc), Vitest tests | P01-02 | `pnpm check` exit 0; 8 unit/negative tests |
-| Cross-platform CI | `.github/workflows/ci.yml` (Linux/macOS/Windows × Node 24) | P01-03 | Workflow added; PR CI run |
+| Cross-platform CI | `.github/workflows/ci.yaml` (Linux/macOS/Windows × Node 24) | P01-03 | Workflow added; GitHub Actions BLOCKED by BuildFailed ghost registration (workflow_id 362348206, R-021) — re-run after GitHub-side purge or Settings toggle |
 | Release scaffolding | Changesets config + README; private packages | P01-04 | `pnpm changeset status`; no publishing |
 | Package boundaries | `docs/10-engineering/package-boundaries.md` + `scripts/check-boundaries.mjs` in CI | P01-05 | `pnpm boundary-check` exit 0; negative cases in script |
 | CLI smoke | `@planmo/cli` bin `planmo` (ADR-0010) | P01-01/02 | `node packages/cli/dist/bin.js --version` → `planmo 0.0.0`; CLI unit tests |

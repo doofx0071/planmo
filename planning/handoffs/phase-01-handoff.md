@@ -40,8 +40,9 @@ COMPLETE
 | `pnpm format:check` | PASS | Prettier 3.9.8; docs excluded |
 | `pnpm boundary-check` | PASS | `package boundaries: OK` |
 | `pnpm smoke` / `node packages/cli/dist/bin.js --version` | PASS | `planmo 0.0.0` |
-| `pnpm check` (full gate, documented order) | PASS | exit 0, end-to-end |
+| `pnpm check` (full gate, documented order) | PASS | exit 0, end-to-end (re-run 2026-09-20 after changeset newline fix) |
 | `pnpm changeset status` | PASS | no publishable changes (private packages) |
+| GitHub Actions CI (Linux/macOS/Windows × Node 24) | BLOCKED | GitHub-side orphaned `BuildFailed` workflow registration (workflow_id 362348206, `state=deleted`) intercepts every event: all runs `startup_failure` with zero jobs before YAML parsing. Proven with minimal dispatch-only probe workflows (same failure). Exhausted repo-side remedies: file rename, re-add, PR close/reopen, direct main commits, workflow disable/enable, empty-registry re-add. Unblock: GitHub Support purge of workflow_id 362348206, or manual Settings → Actions → General toggle; then re-run CI. Workflow file itself is valid (kept at `.github/workflows/ci.yaml` with `workflow_dispatch` for manual runs). |
 
 ## Security / reliability findings
 - No secrets; `.env` patterns ignored; repo private.
@@ -55,9 +56,9 @@ COMPLETE
 - ADR-0010 — CLI routing (zero-dep internal registry) + build tool (plain tsc emit). Resolves OPEN-QUESTIONS #3/#4.
 
 ## Git
-- Branch: `feat/phase-01-eng-foundation` (GitHub Flow; PR to `main`, CI-gated).
-- Commits: focused Conventional Commits on the branch (see `git log`); PR number recorded after creation.
-- PR: created after this handoff; CI runs Linux/macOS/Windows × Node 24.
+- Branch: `feat/phase-01-eng-foundation` (GitHub Flow; PR to `main`).
+- Commits: focused Conventional Commits on the branch, merged via PR #1.
+- PR: #1 created and merged 2026-09-20 (merge commit 735d908). CI could not run (see BLOCKED row above); workflow retained at `.github/workflows/ci.yaml` on `main` with a `workflow_dispatch` trigger for manual runs. Probe/test commits from the ghost investigation were squashed into a single reconciliation commit on `main` (d1904e1).
 
 ## Known debt
 - typescript-eslint TS-file linting unavailable until TS7-capable release (R-019).

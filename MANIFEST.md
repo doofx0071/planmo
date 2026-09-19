@@ -8,7 +8,7 @@ Total files: **153**
 - `.github/ISSUE_TEMPLATE/bug.yml`
 - `.github/ISSUE_TEMPLATE/feature.yml`
 - `.github/PULL_REQUEST_TEMPLATE.md`
-- `.github/workflows/ci.yml`
+- `.github/workflows/ci.yaml`
 - `.gitignore`
 - `.npmrc`
 - `.planmo/project.yml`
