@@ -1,13 +1,20 @@
 # PlanMo Planning Repository Manifest
 
-Total files: **115**
+Total files: **153**
 
+- `.changeset/config.json`
+- `.changeset/README.md`
+- `.changeset/smoky-pianos-cli.md`
 - `.github/ISSUE_TEMPLATE/bug.yml`
 - `.github/ISSUE_TEMPLATE/feature.yml`
 - `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/workflows/ci.yml`
 - `.gitignore`
+- `.npmrc`
 - `.planmo/project.yml`
 - `.planmo/state.yml`
+- `.prettierignore`
+- `.prettierrc.json`
 - `AGENTS.md`
 - `CHANGELOG.md`
 - `CONTRIBUTING.md`
@@ -58,6 +65,7 @@ Total files: **115**
 - `docs/10-engineering/ci.md`
 - `docs/10-engineering/dependency-policy.md`
 - `docs/10-engineering/git-and-pr-workflow.md`
+- `docs/10-engineering/package-boundaries.md`
 - `docs/10-engineering/versioning-and-releases.md`
 - `docs/11-research/2026-source-notes.md`
 - `docs/11-research/licensing.md`
@@ -72,10 +80,35 @@ Total files: **115**
 - `docs/12-adrs/ADR-0006-semver-and-changesets.md`
 - `docs/12-adrs/ADR-0007-naming-and-distribution-targets.md`
 - `docs/12-adrs/ADR-0008-initial-supported-agents-platforms-styles.md`
+- `docs/12-adrs/ADR-0009-monorepo-and-engineering-toolchain.md`
+- `docs/12-adrs/ADR-0010-cli-routing-and-build-tool.md`
+- `eslint.config.js`
 - `MANIFEST.md`
+- `package.json`
+- `packages/cli/package.json`
+- `packages/cli/src/bin.ts`
+- `packages/cli/src/env.d.ts`
+- `packages/cli/src/index.test.ts`
+- `packages/cli/src/index.ts`
+- `packages/cli/tsconfig.build.json`
+- `packages/cli/tsconfig.json`
+- `packages/core/package.json`
+- `packages/core/src/index.ts`
+- `packages/core/tsconfig.build.json`
+- `packages/core/tsconfig.json`
+- `packages/schema/package.json`
+- `packages/schema/src/index.ts`
+- `packages/schema/tsconfig.build.json`
+- `packages/schema/tsconfig.json`
+- `packages/shared/package.json`
+- `packages/shared/src/index.test.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/tsconfig.build.json`
+- `packages/shared/tsconfig.json`
 - `planning/DECISIONS.md`
 - `planning/DEPENDENCIES.md`
 - `planning/handoffs/phase-00-handoff.md`
+- `planning/handoffs/phase-01-handoff.md`
 - `planning/handoffs/README.md`
 - `planning/handoffs/TEMPLATE.md`
 - `planning/MASTER-PLAN.md`
@@ -99,6 +132,8 @@ Total files: **115**
 - `planning/ROADMAP.md`
 - `planning/tasks.csv`
 - `planning/TRACKER.md`
+- `pnpm-lock.yaml`
+- `pnpm-workspace.yaml`
 - `prompts/01-phase-00-product-and-research-foundation.md`
 - `prompts/02-phase-01-repository-and-engineering-foundation.md`
 - `prompts/03-phase-02-canonical-project-model-and-schemas.md`
@@ -116,4 +151,7 @@ Total files: **115**
 - `prompts/README.md`
 - `README.md`
 - `ROADMAP.md`
+- `scripts/check-boundaries.mjs`
 - `SECURITY.md`
+- `tsconfig.base.json`
+- `vitest.config.ts`

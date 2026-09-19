@@ -4,11 +4,11 @@ P00-02,00,Verify naming/package/repository availability and fallback naming,DONE
 P00-03,00,Lock initial agent/platform/style support matrix,DONE,high
 P00-04,00,Finalize official-source research baseline,DONE,medium
 P00-05,00,Record licensing decision criteria,DONE,medium
-P01-01,01,Create pnpm TypeScript monorepo,TODO,high
-P01-02,01,Add lint format typecheck and Vitest,TODO,high
-P01-03,01,Add GitHub Actions cross-platform CI,TODO,high
-P01-04,01,Add Changesets release foundation,TODO,medium
-P01-05,01,Create package boundary rules,TODO,high
+P01-01,01,Create pnpm TypeScript monorepo,DONE,high
+P01-02,01,Add lint format typecheck and Vitest,DONE,high
+P01-03,01,Add GitHub Actions cross-platform CI,DONE,high
+P01-04,01,Add Changesets release foundation,DONE,medium
+P01-05,01,Create package boundary rules,DONE,high
 P02-01,02,Implement project config schema,TODO,high
 P02-02,02,Implement state lock manifest schemas,TODO,high
 P02-03,02,Implement pack and design schemas,TODO,high
