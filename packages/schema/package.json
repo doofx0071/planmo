@@ -21,6 +21,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@planmo/shared": "workspace:*"
+    "@planmo/shared": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "yaml": "2.9.1"
   }
 }
