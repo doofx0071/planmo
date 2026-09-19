@@ -15,7 +15,7 @@
 | R-011 | Cross-platform drift | High | Windows/macOS/Linux E2E |
 | R-012 | Brittle snapshots | Medium | Semantic normalization + targeted snapshots |
 | R-013 | Remote supply-chain attack | Critical | Trust metadata, checksums, pinning |
-| R-014 | Schema evolution breaks projects | High | schemaVersion + migrations + fixtures |
+| R-014 | Schema evolution breaks projects | High | schemaVersion + migrations + fixtures — framework implemented in Phase 02: strict versioned Zod schemas, per-document-kind migration chains (v0->v1), fixture coverage, future-major rejection, extension preservation (ADR-0011, `packages/schema/src/schema-versioning.ts`) |
 | R-015 | Agent upstream changes | High | Capability adapters + contract fixtures |
 | R-016 | Requires AI API costs | Medium | AI optional; agent-native default |
 | R-017 | CLI overwhelms beginners | Medium | Progressive disclosure/recommended defaults |

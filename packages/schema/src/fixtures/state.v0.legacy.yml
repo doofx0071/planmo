@@ -1,0 +1,6 @@
+# Legacy (v0) state document — authored before schemaVersion existed.
+# Migration target: v1 (see packages/schema/src/fixtures/README.md).
+currentPhase: '01'
+status: complete
+completedPhases: ['00']
+blockedTasks: []

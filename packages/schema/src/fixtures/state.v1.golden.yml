@@ -1,0 +1,9 @@
+schemaVersion: 1
+currentPhase: '02'
+status: active
+completedPhases: ['00', '01']
+blockedTasks: []
+nextPrompt: prompts/03-phase-02-canonical-project-model-and-schemas.md
+tasks:
+  P02-01: IN_PROGRESS
+  P02-05: TODO
