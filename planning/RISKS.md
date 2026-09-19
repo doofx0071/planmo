@@ -20,3 +20,5 @@
 | R-016 | Requires AI API costs | Medium | AI optional; agent-native default |
 | R-017 | CLI overwhelms beginners | Medium | Progressive disclosure/recommended defaults |
 | R-018 | Name/package conflict | Medium | Availability verified 2026-09-19 (`planmo`, `planmo-cli`, `@planmo/*` free on npm); private repo `doofx0071/planmo` secured; fallback `planmo-cli` + scoped `@planmo/*` defined (ADR-0007) |
+| R-019 | Toolchain churn in the TS 7 native-compiler era | Medium | TypeScript 7.0.2 has no JS parsing API; @typescript-eslint cannot run against it (peer cap `<6.1.0`); TS gate = strict `tsc` typecheck. Mitigation: pinned versions + lockfile, cross-OS CI matrix, ADR-0009 records the decision. Unblock: enable typescript-eslint when a TS7-capable release lands; re-add to stack then |
+| R-020 | Version-manager/corepack availability on dev boxes | Low | corepack is broken on the dev machine; pnpm pinned via `packageManager` + GitHub Actions setup; upgrade path to pnpm 12 recorded in ADR-0009 |

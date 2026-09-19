@@ -55,10 +55,12 @@ DTCG-format specification is stable (2025.10). PlanMo uses DTCG-compatible desig
 
 ## Toolchain
 
-Phase 01 must verify exact current versions from official docs before pinning. Planning baseline confirmed current on 2026-09-19:
-- Node.js 24 LTS (v24.11.0);
-- TypeScript 7.0.2 (native-compiler major — confirm tooling compatibility);
-- pnpm 12.4.2;
-- Vitest 5.0.1;
-- Zod 4.6.5;
-- @clack/prompts 1.8.1.
+Phase 01 pinned the planning baseline on 2026-09-19 (see ADR-0009):
+- pnpm **10.33.0** (registry latest is 12.4.2; 10.33.0 is the verified-working install on the dev box — corepack broken there; upgrade debt recorded);
+- TypeScript **7.0.2** (native compiler; `baseUrl` removed; no JS API → typescript-eslint deferred, risk R-019);
+- Vitest **5.0.1** (engines `^22.12 || ^24 || >=26` — Node 25 excluded; dev box now uses Node 24.11.0 LTS for repo commands);
+- ESLint **10.11.0** + `@eslint/js` 10.0.1 + `globals` 17.12.0 (JS/MJS only until TS7 lint support);
+- Prettier **3.9.8**; Changesets **3.0.3**; `@types/node` 24.13.6;
+- Node **24 LTS** baseline (v24.11.0) — engines `>=24.0.0`.
+
+Verified versions (2026-09-19):
