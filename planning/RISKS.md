@@ -19,4 +19,4 @@
 | R-015 | Agent upstream changes | High | Capability adapters + contract fixtures |
 | R-016 | Requires AI API costs | Medium | AI optional; agent-native default |
 | R-017 | CLI overwhelms beginners | Medium | Progressive disclosure/recommended defaults |
-| R-018 | Name/package conflict | Medium | Early availability gate + scoped fallback |
+| R-018 | Name/package conflict | Medium | Availability verified 2026-09-19 (`planmo`, `planmo-cli`, `@planmo/*` free on npm); private repo `doofx0071/planmo` secured; fallback `planmo-cli` + scoped `@planmo/*` defined (ADR-0007) |
