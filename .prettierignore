@@ -1,0 +1,20 @@
+node_modules/
+dist/
+coverage/
+pnpm-lock.yaml
+
+# Product/governance documents are authored with their own formatting
+AGENTS.md
+README.md
+ROADMAP.md
+SECURITY.md
+CONTRIBUTING.md
+docs/
+planning/
+prompts/
+CHANGELOG.md
+MANIFEST.md
+
+# Generated or template artifacts
+.github/**
+.planmo/**
