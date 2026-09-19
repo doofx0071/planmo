@@ -1,0 +1,6 @@
+# Normalize line endings to LF across all platforms.
+# Prettier requires LF; autocrlf=true on dev Windows boxes must not convert.
+* text=auto eol=lf
+
+# Lockfile is generated; keep as-is.
+pnpm-lock.yaml text eol=lf
