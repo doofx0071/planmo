@@ -29,3 +29,11 @@ Phase 01 confirmations (2026-09-19):
 - CLI routing: zero-dependency internal command registry in v1 core; build tool: plain `tsc` emit, no bundler yet (ADR-0010 — resolves OPEN-QUESTIONS #3 and #4).
 - Package boundary rules documented in `docs/10-engineering/package-boundaries.md` and enforced by `scripts/check-boundaries.mjs` in CI (P01-05).
 - GitHub Actions CI: Linux/macOS/Windows × Node 24.x with frozen install, lint, format-check, typecheck, build, tests, boundaries, CLI smoke (P01-03).
+
+Phase 02 confirmations (2026-09-20):
+- All persisted PlanMo documents are strict, explicitly versioned Zod schemas in `@planmo/schema`; `schemaVersion` literal required, future major versions rejected (ADR-0011).
+- Deliberate unknown-field policy: strict objects reject unknown keys; the ONLY free-form escape hatch is the optional `extensions` map, preserved verbatim by migrations (ADR-0011).
+- Migration framework: deterministic per-document-kind chains (v0->v1, ...), fixture-covered under `packages/schema/src/fixtures/`, idempotent re-migration (ADR-0011; P02-05).
+- Schema runtime: Zod 4.6.5 (npm registry, verified 2026-09-20); `yaml` 2.9.1 used in tests for YAML round-trip/golden fixtures (P02-01..05).
+- Project model v1 axis sets locked: project types/lifecycles/risks, the 8 design styles, densities, WCAG-2.2 levels, planning depths, phase modes, agent ids (ADR-0002/0008 shapes).
+- DTCG design tokens are versioned by their `$schema` URI (emitted format), not by PlanMo `schemaVersion` (ADR-0011).

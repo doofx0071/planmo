@@ -1,6 +1,6 @@
 schemaVersion: 1
-currentPhase: "02"
+currentPhase: "03"
 status: planned
-completedPhases: ["00", "01"]
+completedPhases: ["00", "01", "02"]
 blockedTasks: []
-nextPrompt: prompts/03-phase-02-canonical-project-model-and-schemas.md
+nextPrompt: prompts/04-phase-03-cli-foundation.md

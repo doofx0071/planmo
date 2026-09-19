@@ -1,4 +1,4 @@
-id,phase,title,status,priority
+﻿id,phase,title,status,priority
 P00-01,00,Confirm product positioning and non-goals,DONE,high
 P00-02,00,Verify naming/package/repository availability and fallback naming,DONE,high
 P00-03,00,Lock initial agent/platform/style support matrix,DONE,high
@@ -9,11 +9,11 @@ P01-02,01,Add lint format typecheck and Vitest,DONE,high
 P01-03,01,Add GitHub Actions cross-platform CI,DONE,high
 P01-04,01,Add Changesets release foundation,DONE,medium
 P01-05,01,Create package boundary rules,DONE,high
-P02-01,02,Implement project config schema,TODO,high
-P02-02,02,Implement state lock manifest schemas,TODO,high
-P02-03,02,Implement pack and design schemas,TODO,high
-P02-04,02,Implement trace handoff work-packet schemas,TODO,high
-P02-05,02,Create schema versioning/migration tests,TODO,high
+P02-01,02,Implement project config schema,DONE,high
+P02-02,02,Implement state lock manifest schemas,DONE,high
+P02-03,02,Implement pack and design schemas,DONE,high
+P02-04,02,Implement trace handoff work-packet schemas,DONE,high
+P02-05,02,Create schema versioning/migration tests,DONE,high
 P03-01,03,Implement safe project-root and path utilities,TODO,critical
 P03-02,03,Implement managed-file writer dry-run and diff,TODO,critical
 P03-03,03,Implement planmo init wizard,TODO,high

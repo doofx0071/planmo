@@ -29,6 +29,17 @@ Example:
 | Research baseline | `docs/11-research/2026-source-notes.md` | P00-04 | registry/nodejs.org/designtokens.org lookups 2026-09-19 |
 | Licensing criteria | `docs/11-research/licensing.md` | P00-05 | Criteria review; final license deferred to Phase 12 |
 
+## Phase 02 trace
+
+| Requirement family | Decision/artifact | Task | Test/evidence |
+|---|---|---|---|
+| Project config schema (REQ-MODEL-*, ADR-0002) | `ProjectConfigSchema` (`packages/schema/src/project.ts`); axis enums for type/lifecycle/risk/style/density/a11y/depth/mode/agents | P02-01 | 11 unit + negative tests incl. strict unknown-key rejection, round-trip JSON+YAML |
+| State, lock, manifest schemas (state-and-manifest.md) | `StateSchema`, `LockfileSchema`, `ManifestSchema` (`state-lock-manifest.ts`) with integrity/checksum/ownership fields | P02-02 | 14 unit + negative tests; repo `.planmo/state.yml` shape parses |
+| Pack + design schemas (ADR-0004 declarative packs, DTCG) | `PackSchema`, `DesignProfileSchema`, `DesignTokensSchema` (`pack-design.ts`) | P02-03 | 11 unit + negative tests; 6 categories, DTCG `$schema` |
+| Trace/handoff/work-packet schemas (handoffs TEMPLATE) | `TraceGraphSchema`, `HandoffSchema`, `WorkPacketSchema` (`trace-handoff-workpacket.ts`) | P02-04 | 12 unit + negative tests mirroring `planning/handoffs/TEMPLATE.md` |
+| Schema versioning + migrations (schema-versioning.md) | `SchemaMigrations` framework + v0->v1 registries (`schema-versioning.ts`, `migrations.ts`), fixtures, ADR-0011 | P02-05 | 13 tests (version reading 4 + framework 3 + fixture migrations 6) + 4 golden round-trip: future-major rejection, chain gaps, idempotent re-migrate, extension preservation |
+| Strict/extension policy (RA: R-014, R-003) | ADR-0011 | P02-01/05 | `z.strictObject` + `extensions` map tests; migration preserves extensions verbatim |
+
 ## Phase 01 trace
 
 | Requirement family | Decision/artifact | Task | Test/evidence |

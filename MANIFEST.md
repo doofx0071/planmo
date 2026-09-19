@@ -1,10 +1,11 @@
 # PlanMo Planning Repository Manifest
 
-Total files: **153**
+Total files: **177**
 
 - `.changeset/config.json`
 - `.changeset/README.md`
 - `.changeset/smoky-pianos-cli.md`
+- `.gitattributes`
 - `.github/ISSUE_TEMPLATE/bug.yml`
 - `.github/ISSUE_TEMPLATE/feature.yml`
 - `.github/PULL_REQUEST_TEMPLATE.md`
@@ -82,6 +83,7 @@ Total files: **153**
 - `docs/12-adrs/ADR-0008-initial-supported-agents-platforms-styles.md`
 - `docs/12-adrs/ADR-0009-monorepo-and-engineering-toolchain.md`
 - `docs/12-adrs/ADR-0010-cli-routing-and-build-tool.md`
+- `docs/12-adrs/ADR-0011-strict-versioned-schemas.md`
 - `eslint.config.js`
 - `MANIFEST.md`
 - `package.json`
@@ -97,7 +99,28 @@ Total files: **153**
 - `packages/core/tsconfig.build.json`
 - `packages/core/tsconfig.json`
 - `packages/schema/package.json`
+- `packages/schema/src/common.ts`
+- `packages/schema/src/fixtures/lock.v1.golden.yml`
+- `packages/schema/src/fixtures/manifest.v1.golden.json`
+- `packages/schema/src/fixtures/project.v0.legacy.yml`
+- `packages/schema/src/fixtures/project.v1.golden.yml`
+- `packages/schema/src/fixtures/README.md`
+- `packages/schema/src/fixtures/state.v0.legacy.yml`
+- `packages/schema/src/fixtures/state.v1.golden.yml`
+- `packages/schema/src/golden.test.ts`
 - `packages/schema/src/index.ts`
+- `packages/schema/src/migrations.test.ts`
+- `packages/schema/src/migrations.ts`
+- `packages/schema/src/pack-design.test.ts`
+- `packages/schema/src/pack-design.ts`
+- `packages/schema/src/project.test.ts`
+- `packages/schema/src/project.ts`
+- `packages/schema/src/schema-versioning.ts`
+- `packages/schema/src/state-lock-manifest.test.ts`
+- `packages/schema/src/state-lock-manifest.ts`
+- `packages/schema/src/test-utils.ts`
+- `packages/schema/src/trace-handoff-workpacket.test.ts`
+- `packages/schema/src/trace-handoff-workpacket.ts`
 - `packages/schema/tsconfig.build.json`
 - `packages/schema/tsconfig.json`
 - `packages/shared/package.json`
@@ -109,6 +132,7 @@ Total files: **153**
 - `planning/DEPENDENCIES.md`
 - `planning/handoffs/phase-00-handoff.md`
 - `planning/handoffs/phase-01-handoff.md`
+- `planning/handoffs/phase-02-handoff.md`
 - `planning/handoffs/README.md`
 - `planning/handoffs/TEMPLATE.md`
 - `planning/MASTER-PLAN.md`
