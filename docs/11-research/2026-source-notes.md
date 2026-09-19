@@ -63,4 +63,8 @@ Phase 01 pinned the planning baseline on 2026-09-19 (see ADR-0009):
 - Prettier **3.9.8**; Changesets **3.0.3**; `@types/node` 24.13.6;
 - Node **24 LTS** baseline (v24.11.0) — engines `>=24.0.0`.
 
+Phase 02 re-verified the schema-runtime pins on 2026-09-20 (npm registry, before adding to `@planmo/schema`):
+- Zod **4.6.5** (`npm view zod dist-tags.latest` → 4.6.5) — runtime schema validation;
+- yaml **2.9.1** (`npm view yaml dist-tags.latest` → 2.9.1) — devDependency, used only in schema tests for YAML round-trip/golden fixtures (not a runtime dep in v1).
+
 Verified versions (2026-09-19):
