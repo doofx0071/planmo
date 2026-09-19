@@ -1,0 +1,6 @@
+schemaVersion: 1
+currentPhase: "00"
+status: planned
+completedPhases: []
+blockedTasks: []
+nextPrompt: prompts/01-phase-00-product-and-research-foundation.md

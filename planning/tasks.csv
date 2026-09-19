@@ -1,0 +1,70 @@
+id,phase,title,status,priority
+P00-01,00,Confirm product positioning and non-goals,TODO,high
+P00-02,00,Verify naming/package/repository availability and fallback naming,TODO,high
+P00-03,00,Lock initial agent/platform/style support matrix,TODO,high
+P00-04,00,Finalize official-source research baseline,TODO,medium
+P00-05,00,Record licensing decision criteria,TODO,medium
+P01-01,01,Create pnpm TypeScript monorepo,TODO,high
+P01-02,01,Add lint format typecheck and Vitest,TODO,high
+P01-03,01,Add GitHub Actions cross-platform CI,TODO,high
+P01-04,01,Add Changesets release foundation,TODO,medium
+P01-05,01,Create package boundary rules,TODO,high
+P02-01,02,Implement project config schema,TODO,high
+P02-02,02,Implement state lock manifest schemas,TODO,high
+P02-03,02,Implement pack and design schemas,TODO,high
+P02-04,02,Implement trace handoff work-packet schemas,TODO,high
+P02-05,02,Create schema versioning/migration tests,TODO,high
+P03-01,03,Implement safe project-root and path utilities,TODO,critical
+P03-02,03,Implement managed-file writer dry-run and diff,TODO,critical
+P03-03,03,Implement planmo init wizard,TODO,high
+P03-04,03,Implement planmo status,TODO,medium
+P03-05,03,Add collision/symlink/path traversal tests,TODO,critical
+P04-01,04,Implement declarative pack loader,TODO,high
+P04-02,04,Implement deterministic resolution and conflicts,TODO,high
+P04-03,04,Implement lockfile generation,TODO,high
+P04-04,04,Create planning-depth profiles,TODO,medium
+P04-05,04,Add malicious/conflicting pack fixtures,TODO,high
+P05-01,05,Implement planning compiler IR,TODO,critical
+P05-02,05,Implement artifact renderers,TODO,high
+P05-03,05,Implement generation manifest/checksums,TODO,high
+P05-04,05,Create golden generated-repository fixtures,TODO,critical
+P05-05,05,Test idempotent regeneration,TODO,critical
+P06-01,06,Define agent capability contract,TODO,high
+P06-02,06,Implement generic adapter,TODO,high
+P06-03,06,Implement OpenCode adapter,TODO,medium
+P06-04,06,Implement Codex adapter,TODO,medium
+P06-05,06,Implement Claude Code adapter,TODO,medium
+P06-06,06,Validate structured AI proposal schema,TODO,critical
+P07-01,07,Implement design profile schema/model,TODO,high
+P07-02,07,Implement DTCG token generation,TODO,high
+P07-03,07,Create 8 initial design packs,TODO,medium
+P07-04,07,Implement shadcn source/registry adapter,TODO,medium
+P07-05,07,Implement frontend design docs generator,TODO,medium
+P07-06,07,Add accessibility/motion design validation,TODO,high
+P08-01,08,Implement phase/state transition engine,TODO,critical
+P08-02,08,Implement handoff contract and generator,TODO,high
+P08-03,08,Implement planmo next,TODO,high
+P08-04,08,Implement parallel work packet compiler,TODO,medium
+P08-05,08,Implement human/blocking gates,TODO,high
+P09-01,09,Implement trace graph,TODO,high
+P09-02,09,Implement planmo validate,TODO,high
+P09-03,09,Implement planmo doctor,TODO,high
+P09-04,09,Implement planmo trace,TODO,medium
+P09-05,09,Create drift/orphan diagnostics fixtures,TODO,high
+P10-01,10,Implement safe repository scanner,TODO,critical
+P10-02,10,Implement stack/test/CI detection,TODO,high
+P10-03,10,Implement prompt-injection isolation policy,TODO,critical
+P10-04,10,Implement planmo adopt,TODO,high
+P10-05,10,Add malicious brownfield fixtures,TODO,critical
+P11-01,11,Define remote pack trust model,TODO,critical
+P11-02,11,Implement catalog/source abstraction,TODO,high
+P11-03,11,Implement checksums/pinning/reversibility,TODO,high
+P11-04,11,Document pack authoring,TODO,medium
+P11-05,11,Prototype GitHub export integration,TODO,low
+P12-01,12,Run security review and threat-model validation,TODO,critical
+P12-02,12,Run property/fuzz tests on high-risk parsers,TODO,critical
+P12-03,12,Run cross-platform E2E matrix,TODO,critical
+P12-04,12,Validate upgrades/migrations,TODO,high
+P12-05,12,Pilot PlanMo on representative projects,TODO,critical
+P12-06,12,Publish docs/examples/package release candidate,TODO,high
+P12-07,12,Conduct 1.0 go/no-go review,TODO,critical

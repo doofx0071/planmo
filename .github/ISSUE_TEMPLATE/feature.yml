@@ -1,0 +1,25 @@
+name: Feature proposal
+description: Propose a PlanMo capability
+title: "[proposal] "
+labels: ["proposal"]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: User need
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives / tradeoffs
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility or migration impact
