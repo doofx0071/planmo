@@ -1,0 +1,24 @@
+# Legacy (v0) project config — authored before schemaVersion existed.
+# Migration target: v1 (see packages/schema/src/fixtures/README.md).
+project:
+  name: Example
+  lifecycle: greenfield
+  type: web-application
+  risk: medium
+stack:
+  frontend: nextjs
+design:
+  style: minimal
+  density: balanced
+  accessibility: WCAG-2.2-AA
+planning:
+  depth: production
+  phaseMode: gated
+  freshSessionPerPhase: true
+agents:
+  primary: opencode
+packs:
+  - stack/nextjs
+extensions:
+  team: platform
+  tags: [a, b]
