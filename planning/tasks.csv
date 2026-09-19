@@ -1,9 +1,9 @@
 id,phase,title,status,priority
-P00-01,00,Confirm product positioning and non-goals,TODO,high
-P00-02,00,Verify naming/package/repository availability and fallback naming,TODO,high
-P00-03,00,Lock initial agent/platform/style support matrix,TODO,high
-P00-04,00,Finalize official-source research baseline,TODO,medium
-P00-05,00,Record licensing decision criteria,TODO,medium
+P00-01,00,Confirm product positioning and non-goals,DONE,high
+P00-02,00,Verify naming/package/repository availability and fallback naming,DONE,high
+P00-03,00,Lock initial agent/platform/style support matrix,DONE,high
+P00-04,00,Finalize official-source research baseline,DONE,medium
+P00-05,00,Record licensing decision criteria,DONE,medium
 P01-01,01,Create pnpm TypeScript monorepo,TODO,high
 P01-02,01,Add lint format typecheck and Vitest,TODO,high
 P01-03,01,Add GitHub Actions cross-platform CI,TODO,high

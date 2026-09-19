@@ -1,19 +1,16 @@
 # PlanMo Planning Repository Manifest
 
-Total files: **109**
+Total files: **115**
 
 - `.github/ISSUE_TEMPLATE/bug.yml`
 - `.github/ISSUE_TEMPLATE/feature.yml`
 - `.github/PULL_REQUEST_TEMPLATE.md`
+- `.gitignore`
 - `.planmo/project.yml`
 - `.planmo/state.yml`
 - `AGENTS.md`
 - `CHANGELOG.md`
 - `CONTRIBUTING.md`
-- `MANIFEST.md`
-- `README.md`
-- `ROADMAP.md`
-- `SECURITY.md`
 - `docs/01-product/competitive-positioning.md`
 - `docs/01-product/non-goals.md`
 - `docs/01-product/personas.md`
@@ -63,24 +60,27 @@ Total files: **109**
 - `docs/10-engineering/git-and-pr-workflow.md`
 - `docs/10-engineering/versioning-and-releases.md`
 - `docs/11-research/2026-source-notes.md`
+- `docs/11-research/licensing.md`
+- `docs/11-research/naming-and-availability.md`
 - `docs/11-research/research-decisions.md`
+- `docs/11-research/support-matrix.md`
 - `docs/12-adrs/ADR-0001-cli-first-agent-native.md`
 - `docs/12-adrs/ADR-0002-canonical-project-model.md`
 - `docs/12-adrs/ADR-0003-dtcg-design-tokens.md`
 - `docs/12-adrs/ADR-0004-declarative-packs-v1.md`
 - `docs/12-adrs/ADR-0005-fresh-session-phase-gates.md`
 - `docs/12-adrs/ADR-0006-semver-and-changesets.md`
+- `docs/12-adrs/ADR-0007-naming-and-distribution-targets.md`
+- `docs/12-adrs/ADR-0008-initial-supported-agents-platforms-styles.md`
+- `MANIFEST.md`
 - `planning/DECISIONS.md`
 - `planning/DEPENDENCIES.md`
+- `planning/handoffs/phase-00-handoff.md`
+- `planning/handoffs/README.md`
+- `planning/handoffs/TEMPLATE.md`
 - `planning/MASTER-PLAN.md`
 - `planning/MILESTONES.md`
 - `planning/OPEN-QUESTIONS.md`
-- `planning/REQUIREMENTS-TRACEABILITY.md`
-- `planning/RISKS.md`
-- `planning/ROADMAP.md`
-- `planning/TRACKER.md`
-- `planning/handoffs/README.md`
-- `planning/handoffs/TEMPLATE.md`
 - `planning/phases/phase-00.md`
 - `planning/phases/phase-01.md`
 - `planning/phases/phase-02.md`
@@ -94,7 +94,11 @@ Total files: **109**
 - `planning/phases/phase-10.md`
 - `planning/phases/phase-11.md`
 - `planning/phases/phase-12.md`
+- `planning/REQUIREMENTS-TRACEABILITY.md`
+- `planning/RISKS.md`
+- `planning/ROADMAP.md`
 - `planning/tasks.csv`
+- `planning/TRACKER.md`
 - `prompts/01-phase-00-product-and-research-foundation.md`
 - `prompts/02-phase-01-repository-and-engineering-foundation.md`
 - `prompts/03-phase-02-canonical-project-model-and-schemas.md`
@@ -110,3 +114,6 @@ Total files: **109**
 - `prompts/13-phase-12-hardening-pilot-and-v1.md`
 - `prompts/MASTER-GUARDRAILS.md`
 - `prompts/README.md`
+- `README.md`
+- `ROADMAP.md`
+- `SECURITY.md`
