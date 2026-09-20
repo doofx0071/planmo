@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@planmo/schema": "workspace:*",
-    "@planmo/shared": "workspace:*"
+    "@planmo/shared": "workspace:*",
+    "yaml": "2.9.1"
   }
 }

@@ -1,9 +1,14 @@
 /**
  * @planmo/core — PlanMo deterministic core engine.
  *
- * The engine (init, generation, validation, state) is implemented by the
- * CLI foundation (Phase 03) and later phases. This package exists now to
- * establish the dependency spine (core -> schema -> shared) and the
- * package boundary graph.
+ * Phase 03 (CLI foundation): safe path utilities, the managed file writer
+ * (dry-run / diff / atomic / collision-safe), the `init` workspace wizard
+ * and read-only `status` introspection. Later phases add generation,
+ * validation, and state transitions.
  */
-export {};
+export * from './errors.js';
+export * from './paths.js';
+export * from './diff.js';
+export * from './writer.js';
+export * from './init.js';
+export * from './status.js';
