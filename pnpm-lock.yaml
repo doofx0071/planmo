@@ -57,6 +57,18 @@ importers:
         specifier: 2.9.1
         version: 2.9.1
 
+  packages/packs:
+    dependencies:
+      '@planmo/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@planmo/shared':
+        specifier: workspace:*
+        version: link:../shared
+      yaml:
+        specifier: 2.9.1
+        version: 2.9.1
+
   packages/schema:
     dependencies:
       '@planmo/shared':
