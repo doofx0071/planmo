@@ -1,0 +1,7 @@
+# security standards
+
+Standards of class `security` selected for project `fixture-app`.
+
+- **sec-basic** — No secrets in the repository.
+  - Rationale: rationale for sec-basic
+  - References: docs/ref-sec-basic.md
