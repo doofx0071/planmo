@@ -55,6 +55,12 @@ Phase 04 confirmations (2026-09-20):
 - Context/memory policy declarations (token budget, progressive disclosure, scopes, requireProvenance, redactSecrets) are schema-validated declarations only — NO memory storage engine in v1 (REQ-CTX-003/005, REQ-MEM-003/005/008; P04-09).
 - Planning-depth profiles compile predictably: lean/standard/production/high-assurance map deterministically to documents/gates/phase-mode; custom → null (P04-04).
 
+Phase 05 confirmations (2026-09-20):
+- IR is the only contract between inputs and artifacts; canonical-JSON sha256 over sorted inputs makes identical inputs hash identically regardless of input order (ADR-0019; P05-01).
+- Ownership classes: schema `OWNERSHIP_MODES` extended additively with canonical `generated`/`merged`/`seeded`/`user`; legacy `managed`/`merge` remain accepted so v1 manifests keep parsing (P05-06).
+- Synth preview is a pure report (never writes); apply always passes through the Phase 03 ManagedWriter — containment, symlink safety, collision refusal, atomic rename (P05-08).
+- Long-lived generated files are byte-stable; the golden snapshot tree (`packages/generator/src/golden/`) is the regression fence; reformatting goldens is forbidden (`.prettierignore`) (P05-04/05).
+
 ## CHG-001 rebaseline confirmations (2026-09-20)
 
 ACCEPTED (see `planning/changes/CHG-001-quality-context-governance/decision.md`):

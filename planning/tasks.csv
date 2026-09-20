@@ -24,11 +24,11 @@ P04-02,04,Implement deterministic resolution and conflicts,DONE,high
 P04-03,04,Implement lockfile generation,DONE,high
 P04-04,04,Create planning-depth profiles,DONE,medium
 P04-05,04,Add malicious/conflicting pack fixtures,DONE,high
-P05-01,05,Implement planning compiler IR,TODO,critical
-P05-02,05,Implement artifact renderers,TODO,high
-P05-03,05,Implement generation manifest/checksums,TODO,high
-P05-04,05,Create golden generated-repository fixtures,TODO,critical
-P05-05,05,Test idempotent regeneration,TODO,critical
+P05-01,05,Implement planning compiler IR,DONE,critical
+P05-02,05,Implement artifact renderers,DONE,high
+P05-03,05,Implement generation manifest/checksums,DONE,high
+P05-04,05,Create golden generated-repository fixtures,DONE,critical
+P05-05,05,Test idempotent regeneration,DONE,critical
 P06-01,06,Define agent capability contract,TODO,high
 P06-02,06,Implement generic adapter,TODO,high
 P06-03,06,Implement OpenCode adapter,TODO,medium
@@ -72,10 +72,10 @@ P04-06,04,Standards pack schema/resolution (CHG-001),DONE,high
 P04-07,04,Engineering policy precedence (CHG-001),DONE,high
 P04-08,04,Pack provenance metadata (CHG-001),DONE,high
 P04-09,04,Context/memory policy declarations (CHG-001),DONE,medium
-P05-06,05,Ownership classes generated/merged/seeded/user (CHG-001),TODO,high
-P05-07,05,Artifact lineage metadata (CHG-001),TODO,high
-P05-08,05,Upgrade/synth preview semantics (CHG-001),TODO,high
-P05-09,05,Standards/context artifact generation (CHG-001),TODO,medium
+P05-06,05,Ownership classes generated/merged/seeded/user (CHG-001),DONE,high
+P05-07,05,Artifact lineage metadata (CHG-001),DONE,high
+P05-08,05,Upgrade/synth preview semantics (CHG-001),DONE,high
+P05-09,05,Standards/context artifact generation (CHG-001),DONE,medium
 P06-07,06,Context Bundle schema/compiler (CHG-001),TODO,high
 P06-08,06,Standards Injector (CHG-001),TODO,high
 P06-09,06,ContextProvider interface (CHG-001),TODO,high
