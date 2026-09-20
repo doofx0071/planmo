@@ -1,0 +1,14 @@
+schemaVersion: 1
+ref: stack/nextjs
+name: Next.js Stack Pack
+version: 1.2.0
+category: stack
+description: Next.js conventions and scaffolding rules.
+provides:
+  - stack.nextjs
+  - framework.react
+requires: []
+content:
+  conventions:
+    - app-router-first
+    - server-components-by-default

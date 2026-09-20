@@ -1,0 +1,10 @@
+schemaVersion: 1
+ref: conflicting/missing-dep
+name: Missing Dependency Pack
+version: 1.0.0
+category: stack
+description: Requires a pack that does not exist in the catalog.
+provides:
+  - stack.missingdep
+requires:
+  - stack/not-in-catalog

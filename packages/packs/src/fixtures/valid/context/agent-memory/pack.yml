@@ -1,0 +1,22 @@
+schemaVersion: 1
+ref: context/agent-memory
+name: Context & Memory Policy Pack
+version: 1.0.0
+category: context
+description: Context/memory policy declarations (CHG-001 P04-09, declarations only).
+provides:
+  - context.agent-memory
+requires: []
+content:
+  context:
+    tokenBudget:
+      tokens: 16000
+    progressiveDisclosure: true
+    defaultPacketBudget:
+      tokens: 8000
+  memory:
+    allowedScopes:
+      - project
+      - package
+    requireProvenance: true
+    redactSecrets: true

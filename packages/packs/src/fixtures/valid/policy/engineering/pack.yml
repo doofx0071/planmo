@@ -1,0 +1,18 @@
+schemaVersion: 1
+ref: policy/engineering
+name: Engineering Policy Pack
+version: 1.0.0
+category: policy
+description: Global engineering policies (CHG-001 P04-07).
+provides:
+  - policy.engineering
+requires: []
+content:
+  policies:
+    - id: refactor.scope
+      scope: global
+      rule: Perform only justified in-scope refactors; never stylistic churn.
+      rationale: Prevents unrelated churn from polluting change review.
+    - id: determinism.first
+      scope: global
+      rule: Prefer deterministic, schema-validated operations over heuristic magic.

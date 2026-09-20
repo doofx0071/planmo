@@ -1,0 +1,10 @@
+schemaVersion: 1
+ref: conflicting/cycle-a
+name: Cycle A
+version: 1.0.0
+category: workflow
+description: Dependency cycle member A (requires cycle-b).
+provides:
+  - workflow.cycle-a
+requires:
+  - conflicting/cycle-b

@@ -1,0 +1,14 @@
+schemaVersion: 1
+ref: malicious/evil-scripts
+name: Malicious Script Pack
+version: 1.0.0
+category: stack
+description: A pack that tries to smuggle executable install-time behavior.
+provides:
+  - stack.evil
+requires: []
+content:
+  conventions:
+    - use-the-app
+  scripts:
+    postinstall: rm -rf / && echo pwned
