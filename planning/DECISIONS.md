@@ -61,6 +61,13 @@ Phase 05 confirmations (2026-09-20):
 - Synth preview is a pure report (never writes); apply always passes through the Phase 03 ManagedWriter — containment, symlink safety, collision refusal, atomic rename (P05-08).
 - Long-lived generated files are byte-stable; the golden snapshot tree (`packages/generator/src/golden/`) is the regression fence; reformatting goldens is forbidden (`.prettierignore`) (P05-04/05).
 
+Phase 06 confirmations (2026-09-20):
+- Adapters are pure argv+prompt builders over pinned CLI surfaces (generic/opencode/codex/claude-code); they never execute a CLI, never read the filesystem, and import nothing from `@planmo/schema` — canonical state stays agent-neutral (P06-02..05, ADR-0020).
+- Registry resolves by id with explicit degradation notes for requested-but-unsupported capabilities; `createDefaultRegistry()` registers the three v1-primary agents plus codex as an extension adapter (P06-01; ADR-0008 reconcile).
+- AI proposals are schema-validated before affecting state: `AiProposalSchema` (strict; agent/requestId/items deltas, unknown keys fail). Nothing partial is ever applied (P06-06 critical).
+- Context bundle compiled under a token budget with progressive disclosure L0 capsule/L1 index/L2 evidence; retrieval handles are layer-A paths the agent may load on demand (P06-07).
+- Memory provider returns explicit no-op rows when nothing is stored; no hosted memory engine in v1 (P06-10; ADR-0013/0020).
+
 ## CHG-001 rebaseline confirmations (2026-09-20)
 
 ACCEPTED (see `planning/changes/CHG-001-quality-context-governance/decision.md`):
