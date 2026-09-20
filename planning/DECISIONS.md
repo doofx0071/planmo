@@ -37,3 +37,10 @@ Phase 02 confirmations (2026-09-20):
 - Schema runtime: Zod 4.6.5 (npm registry, verified 2026-09-20); `yaml` 2.9.1 used in tests for YAML round-trip/golden fixtures (P02-01..05).
 - Project model v1 axis sets locked: project types/lifecycles/risks, the 8 design styles, densities, WCAG-2.2 levels, planning depths, phase modes, agent ids (ADR-0002/0008 shapes).
 - DTCG design tokens are versioned by their `$schema` URI (emitted format), not by PlanMo `schemaVersion` (ADR-0011).
+
+Phase 03 confirmations (2026-09-20):
+- All generated writes go through ONE managed writer (`@planmo/core` `ManagedWriter`): root containment (path.relative, never string prefix), symlink-escape rejection (junctions included), collision refusal for unmanaged files, atomic temp+rename, sha256 checksums, dry-run with zero fs side effects, unified diff preview, TOCTOU re-check at apply time (ADR-0010, secure-filesystem.md; P03-01/02/05).
+- `planmo init` creates a schema-valid workspace (project.yml + state.yml + manifest.json) via the writer; CLI wizard prompts only for unprovided values (`--yes` skips all), `--dry-run` previews, `--force` permits overwriting, exit codes 0/1/2/3 (ok/error/collision/no-project) (ADR-0010; P03-03).
+- `planmo status` is strictly read-only (validates all canonical docs, never writes) and is the diagnostic base for later `planmo doctor` (P03-04).
+- Diff preview is a zero-dependency deterministic LCS unified diff in the core — no external diff dependency (ADR-0010).
+- `.gitattributes` (LF) + a pure `plan()` keep dry-run genuinely side-effect-free cross-platform (P03-02).
