@@ -193,6 +193,22 @@ export type {
   WorkPacket,
 } from './trace-handoff-workpacket.js';
 
+// Change Engine (Phase 08, CHG-001)
+export {
+  CHANGE_DELTA_KINDS,
+  RequirementDelta,
+  CHANGE_STATUSES,
+  ChangePackageSchema,
+  ChangeSnapshot,
+} from './change-engine.js';
+export type {
+  ChangeDeltaKind,
+  RequirementDelta as RequirementDeltaType,
+  ChangeStatus,
+  ChangePackage,
+  ChangeSnapshot as ChangeSnapshotType,
+} from './change-engine.js';
+
 // Agent bridge (Phase 06)
 export {
   PROPOSAL_ITEM_STATUSES,

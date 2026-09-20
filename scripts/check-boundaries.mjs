@@ -26,7 +26,7 @@ const ALLOWED = {
   packs: ['core', 'shared', 'schema'],
   generator: ['core', 'shared', 'schema', 'packs'],
   scanner: ['core', 'shared', 'schema'],
-  workflow: ['core', 'shared'],
+  workflow: ['core', 'shared', 'schema', 'agent-bridge'],
   trace: ['core', 'shared'],
   'design-engine': ['core', 'shared', 'schema'],
   'agent-bridge': ['core', 'shared', 'schema', 'adapters'],

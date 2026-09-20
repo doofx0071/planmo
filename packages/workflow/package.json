@@ -1,0 +1,19 @@
+{
+  "name": "@planmo/workflow",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PlanMo workflow/session engine: phase transitions, handoffs, planmo next, parallel work packets, human gates, task DAG, leases, session memory, change engine",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@planmo/schema": "workspace:*",
+    "@planmo/agent-bridge": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vitest": "^5.0.1"
+  }
+}
