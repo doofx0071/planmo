@@ -35,12 +35,12 @@ P06-03,06,Implement OpenCode adapter,DONE,medium
 P06-04,06,Implement Codex adapter,DONE,medium
 P06-05,06,Implement Claude Code adapter,DONE,medium
 P06-06,06,Validate structured AI proposal schema,DONE,critical
-P07-01,07,Implement design profile schema/model,IN_PROGRESS,high
-P07-02,07,Implement DTCG token generation,IN_PROGRESS,high
-P07-03,07,Create 8 initial design packs,IN_PROGRESS,medium
-P07-04,07,Implement shadcn source/registry adapter,IN_PROGRESS,medium
-P07-05,07,Implement frontend design docs generator,IN_PROGRESS,medium
-P07-06,07,Add accessibility/motion design validation,IN_PROGRESS,high
+P07-01,07,Implement design profile schema/model,DONE,high
+P07-02,07,Implement DTCG token generation,DONE,high
+P07-03,07,Create 8 initial design packs,DONE,medium
+P07-04,07,Implement shadcn source/registry adapter,DONE,medium
+P07-05,07,Implement frontend design docs generator,DONE,medium
+P07-06,07,Add accessibility/motion design validation,DONE,high
 P08-01,08,Implement phase/state transition engine,TODO,critical
 P08-02,08,Implement handoff contract and generator,TODO,high
 P08-03,08,Implement planmo next,TODO,high
@@ -81,7 +81,7 @@ P06-08,06,Standards Injector (CHG-001),DONE,high
 P06-09,06,ContextProvider interface (CHG-001),DONE,high
 P06-10,06,MemoryProvider interface (CHG-001),DONE,high
 P06-11,06,Execution Packet context rendering (CHG-001),DONE,medium
-P07-07,07,Design standards as structured standards + anti-pattern policies (CHG-001),IN_PROGRESS,medium
+P07-07,07,Design standards as structured standards + anti-pattern policies (CHG-001),DONE,medium
 P08-06,08,Task DAG / ready computation (CHG-001),TODO,high
 P08-07,08,Claims and leases (CHG-001),TODO,high
 P08-08,08,Session memory lifecycle (CHG-001),TODO,high

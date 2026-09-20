@@ -67,6 +67,7 @@ Phase 06 confirmations (2026-09-20):
 - AI proposals are schema-validated before affecting state: `AiProposalSchema` (strict; agent/requestId/items deltas, unknown keys fail). Nothing partial is ever applied (P06-06 critical).
 - Context bundle compiled under a token budget with progressive disclosure L0 capsule/L1 index/L2 evidence; retrieval handles are layer-A paths the agent may load on demand (P06-07).
 - Memory provider returns explicit no-op rows when nothing is stored; no hosted memory engine in v1 (P06-10; ADR-0013/0020).
+- **Phase 07 (2026-09-21)**: design engine ships as `@planmo/design-engine` (core/shared/schema only) — DTCG canonical tokens with alias/cycle/missing-ref/invalid-unit enforcement (ADR-0003/0021); 8 declarative design packs validated by the same token engine that emits canonical output; registry adapter records source/item/version/integrity with mandatory trust metadata — community/untrusted items are FORCED `requiresReview: true`, schema-enforced, never overridable by caller or style; accessibility outranks style at the engine level (WCAG 2.2 AA default, exact relative-luminance math, reduced motion WCAG 2.3.3 mandatory, touch-target heuristic WCAG 2.5.8, `a11y.*` skip tokens rejected); generated design guidance is deterministic markdown incl. anti-patterns + validation warnings; design standards are structured `StandardRule`s (class `language` pending a `design` class — flagged for Phase 09 standards-injection work when `appliesTo` refinement lands).
 
 ## CHG-001 rebaseline confirmations (2026-09-20)
 

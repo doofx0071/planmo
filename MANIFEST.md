@@ -1,12 +1,11 @@
-# PlanMo Repository Manifest
-
-Total tracked files: 373
+# PlanMo source manifest
 
 - .changeset/README.md
 - .changeset/config.json
 - .changeset/phase-03-cli-foundation.md
 - .changeset/phase-04-pack-and-profile-system.md
 - .changeset/phase-05-planning-compiler-and-artifact-generator.md
+- .changeset/phase-06-agent-bridge.md
 - .changeset/smoky-pianos-cli.md
 - .gitattributes
 - .github/ISSUE_TEMPLATE/bug.yml
@@ -57,6 +56,7 @@ Total tracked files: 373
 - docs/06-agent-engine/parallel-agents.md
 - docs/06-agent-engine/prompt-injection-model.md
 - docs/06-agent-engine/session-model.md
+- docs/07-worker-brief-phase-07.md
 - docs/07-workflows/change-management.md
 - docs/07-workflows/execution-graph.md
 - docs/07-workflows/handoffs.md
@@ -101,6 +101,7 @@ Total tracked files: 373
 - docs/12-adrs/ADR-0017-task-graph-and-execution-packets.md
 - docs/12-adrs/ADR-0018-deterministic-pack-resolution-and-locking.md
 - docs/12-adrs/ADR-0019-deterministic-planning-compiler-and-generation-manifest.md
+- docs/12-adrs/ADR-0020-agent-bridge-capabilities-validation-and-context-bundles.md
 - docs/13-standards-quality/architecture-fitness.md
 - docs/13-standards-quality/quality-engine.md
 - docs/13-standards-quality/refactoring-technical-debt.md
@@ -168,6 +169,24 @@ Total tracked files: 373
 - packages/core/src/writer.ts
 - packages/core/tsconfig.build.json
 - packages/core/tsconfig.json
+- packages/design-engine/package.json
+- packages/design-engine/src/accessibility.test.ts
+- packages/design-engine/src/accessibility.ts
+- packages/design-engine/src/anti-patterns.ts
+- packages/design-engine/src/contracts.ts
+- packages/design-engine/src/design-standards.test.ts
+- packages/design-engine/src/design-standards.ts
+- packages/design-engine/src/docs.test.ts
+- packages/design-engine/src/docs.ts
+- packages/design-engine/src/index.ts
+- packages/design-engine/src/packs.test.ts
+- packages/design-engine/src/packs.ts
+- packages/design-engine/src/shadcn.test.ts
+- packages/design-engine/src/shadcn.ts
+- packages/design-engine/src/tokens.test.ts
+- packages/design-engine/src/tokens.ts
+- packages/design-engine/tsconfig.build.json
+- packages/design-engine/tsconfig.json
 - packages/generator/package.json
 - packages/generator/scripts/update-goldens.mjs
 - packages/generator/src/compile.ts
@@ -268,6 +287,8 @@ Total tracked files: 373
 - packages/schema/src/agent-bridge.test.ts
 - packages/schema/src/agent-bridge.ts
 - packages/schema/src/common.ts
+- packages/schema/src/design-profile.test.ts
+- packages/schema/src/design-profile.ts
 - packages/schema/src/fixtures/README.md
 - packages/schema/src/fixtures/lock.v1.golden.yml
 - packages/schema/src/fixtures/manifest.v1.golden.json
@@ -326,6 +347,7 @@ Total tracked files: 373
 - planning/handoffs/phase-03-handoff.md
 - planning/handoffs/phase-04-handoff.md
 - planning/handoffs/phase-05-handoff.md
+- planning/handoffs/phase-06-handoff.md
 - planning/phase-addenda/phase-04-addendum.md
 - planning/phase-addenda/phase-05-addendum.md
 - planning/phase-addenda/phase-06-addendum.md
@@ -369,6 +391,7 @@ Total tracked files: 373
 - scripts/check-boundaries.mjs
 - scripts/e2e-phase05.mjs
 - scripts/e2e-phase06.mjs
+- scripts/e2e-phase07.mjs
 - specs/context-bundle.example.md
 - specs/context-request.example.yaml
 - specs/engineering-policy.example.yaml
