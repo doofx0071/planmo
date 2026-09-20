@@ -68,3 +68,38 @@ P12-04,12,Validate upgrades/migrations,TODO,high
 P12-05,12,Pilot PlanMo on representative projects,TODO,critical
 P12-06,12,Publish docs/examples/package release candidate,TODO,high
 P12-07,12,Conduct 1.0 go/no-go review,TODO,critical
+P04-06,04,Standards pack schema/resolution (CHG-001),TODO,high
+P04-07,04,Engineering policy precedence (CHG-001),TODO,high
+P04-08,04,Pack provenance metadata (CHG-001),TODO,high
+P04-09,04,Context/memory policy declarations (CHG-001),TODO,medium
+P05-06,05,Ownership classes generated/merged/seeded/user (CHG-001),TODO,high
+P05-07,05,Artifact lineage metadata (CHG-001),TODO,high
+P05-08,05,Upgrade/synth preview semantics (CHG-001),TODO,high
+P05-09,05,Standards/context artifact generation (CHG-001),TODO,medium
+P06-07,06,Context Bundle schema/compiler (CHG-001),TODO,high
+P06-08,06,Standards Injector (CHG-001),TODO,high
+P06-09,06,ContextProvider interface (CHG-001),TODO,high
+P06-10,06,MemoryProvider interface (CHG-001),TODO,high
+P06-11,06,Execution Packet context rendering (CHG-001),TODO,medium
+P07-07,07,Design standards as structured standards + anti-pattern policies (CHG-001),TODO,medium
+P08-06,08,Task DAG / ready computation (CHG-001),TODO,high
+P08-07,08,Claims and leases (CHG-001),TODO,high
+P08-08,08,Session memory lifecycle (CHG-001),TODO,high
+P08-09,08,Handoff-to-memory consolidation (CHG-001),TODO,medium
+P08-10,08,planmo next token-budgeted context bundle (CHG-001),TODO,high
+P08-11,08,Change Engine workflow (CHG-001),TODO,medium
+P09-06,09,planmo quality (CHG-001),TODO,high
+P09-07,09,Architecture fitness validation (CHG-001),TODO,high
+P09-08,09,Standards drift (CHG-001),TODO,medium
+P09-09,09,Technical debt diagnostics (CHG-001),TODO,high
+P09-10,09,Memory/context health diagnostics (CHG-001),TODO,medium
+P10-06,10,Repository map (CHG-001),TODO,high
+P10-07,10,Symbol/reference index (CHG-001),TODO,medium
+P10-08,10,Standards discovery (CHG-001),TODO,high
+P10-09,10,Local lexical context index (CHG-001),TODO,medium
+P10-10,10,Brownfield memory bootstrap (CHG-001),TODO,medium
+P11-06,11,Standards/context pack authoring + MemoryProvider adapters + portable context export (CHG-001),TODO,medium
+P12-08,12,Context retrieval evaluation (CHG-001),TODO,high
+P12-09,12,Token budget benchmark (CHG-001),TODO,high
+P12-10,12,Memory poisoning/staleness/security tests (CHG-001),TODO,critical
+P12-11,12,Index corruption/rebuild tests (CHG-001),TODO,high
