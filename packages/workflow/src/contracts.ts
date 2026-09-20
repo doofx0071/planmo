@@ -43,9 +43,7 @@ export interface ExitGateResult {
   detail?: string;
 }
 
-export type TransitionResult =
-  | { ok: true; next: StateDocument }
-  | { ok: false; reason: string };
+export type TransitionResult = { ok: true; next: StateDocument } | { ok: false; reason: string };
 
 /**
  * Phase/state transition engine (P08-01). Validates transitions against

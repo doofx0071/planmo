@@ -19,12 +19,7 @@ import type {
  */
 
 /** Canonical exit gates every phase must clear (from MASTER-GUARDRAILS). */
-export const STANDARD_EXIT_GATES = [
-  'tests',
-  'lint',
-  'traceability',
-  'handoff',
-] as const;
+export const STANDARD_EXIT_GATES = ['tests', 'lint', 'traceability', 'handoff'] as const;
 
 export const PROMPT_BY_PHASE: Readonly<Record<string, string>> = {
   '00': 'prompts/01-phase-00-product-and-research-foundation.md',
@@ -110,8 +105,7 @@ export function transitionEngine(): TransitionEngine {
         instructions.push(`Meet exit gate "${gate}" for phase "${state.currentPhase}".`);
       }
     }
-    const hasUnfinished =
-      state.status === 'active' || state.blockedTasks.length > 0;
+    const hasUnfinished = state.status === 'active' || state.blockedTasks.length > 0;
     if (hasUnfinished) {
       instructions.push(
         ...state.blockedTasks.map(
@@ -124,7 +118,13 @@ export function transitionEngine(): TransitionEngine {
         `Phase "${state.currentPhase}" COMPLETE; next is "${PROMPT_BY_PHASE[String(Number(state.currentPhase) + 1).padStart(2, '0')] ?? 'unknown'}".`,
       );
     }
-    return { currentPhase: state.currentPhase, requiredGates: gates, nextPrompt, isFresh, instructions };
+    return {
+      currentPhase: state.currentPhase,
+      requiredGates: gates,
+      nextPrompt,
+      isFresh,
+      instructions,
+    };
   }
 
   function phaseOrder(state: StateDocument): readonly string[] {

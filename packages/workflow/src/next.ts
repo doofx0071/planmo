@@ -24,9 +24,7 @@ export function nextComposer(): NextComposer {
     // Blockers: canonical signals that work cannot proceed safely.
     const blockers: string[] = [];
     if (input.handoff && input.handoff.blocked.length > 0) {
-      blockers.push(
-        ...input.handoff.blocked.map((b) => `BLOCKED ${b.task}: ${b.reason}`),
-      );
+      blockers.push(...input.handoff.blocked.map((b) => `BLOCKED ${b.task}: ${b.reason}`));
     }
     for (const task of state.blockedTasks) {
       blockers.push(`BLOCKED ${task} (state.blockedTasks)`);
@@ -54,17 +52,16 @@ export function nextComposer(): NextComposer {
       }
     }
 
-    const directive = blockers.length > 0
-      ? `Phase ${phase}: clear ${blockers.length} blocker(s) before progressing.`
-      : `Work phase ${phase}; meet all exit gates and record the handoff.`;
+    const directive =
+      blockers.length > 0
+        ? `Phase ${phase}: clear ${blockers.length} blocker(s) before progressing.`
+        : `Work phase ${phase}; meet all exit gates and record the handoff.`;
 
     // Token-budgeted context bundle (progressive disclosure; L2 capped by budget).
     const indexEntries = [
       `phase: ${phase}`,
       ...steps,
-      ...(input.handoff
-        ? input.handoff.materialChanges.map((c) => `changed: ${c}`)
-        : []),
+      ...(input.handoff ? input.handoff.materialChanges.map((c) => `changed: ${c}`) : []),
     ];
     const evidenceEntries = input.handoff ? [input.handoff.completedTasks.join(', ')] : [];
     const bundle = compileContextBundle(

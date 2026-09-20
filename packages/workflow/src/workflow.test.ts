@@ -9,7 +9,15 @@ const state07 = {
   schemaVersion: 1 as const,
   currentPhase: '07' as const,
   status: 'planned' as const,
-  completedPhases: ['00' as const, '01' as const, '02' as const, '03' as const, '04' as const, '05' as const, '06' as const],
+  completedPhases: [
+    '00' as const,
+    '01' as const,
+    '02' as const,
+    '03' as const,
+    '04' as const,
+    '05' as const,
+    '06' as const,
+  ],
   blockedTasks: [],
   nextPrompt: PROMPT_BY_PHASE['07'],
 };
@@ -95,15 +103,23 @@ describe('handoffBuilder (P08-02)', () => {
   });
 
   it('missingForResume flags absent essentials', () => {
-    const doc = builder.build({ phase: '07', status: 'PARTIAL', completedTasks: [], nextPhase: '08' });
+    const doc = builder.build({
+      phase: '07',
+      status: 'PARTIAL',
+      completedTasks: [],
+      nextPhase: '08',
+    });
     const missing = builder.missingForResume(doc);
     expect(missing).toContain('completedTasks');
   });
 
   it('a fully specified handoff is resume-sufficient', () => {
     const doc = builder.build({
-      phase: '07', status: 'COMPLETE',
-      completedTasks: ['P07-01'], nextPhase: '08', instructions: ['go'],
+      phase: '07',
+      status: 'COMPLETE',
+      completedTasks: ['P07-01'],
+      nextPhase: '08',
+      instructions: ['go'],
     });
     expect(builder.missingForResume(doc)).toEqual([]);
   });
@@ -161,14 +177,19 @@ describe('changeEngine (P08-11)', () => {
 
   it('rejects a change with zero deltas', () => {
     const result = engine.newChange({
-      id: 'CHG-002', slug: 'x', proposal: 'p', requirementDeltas: [],
+      id: 'CHG-002',
+      slug: 'x',
+      proposal: 'p',
+      requirementDeltas: [],
     });
     expect(result.ok).toBe(false);
   });
 
   it('apply stamps decision + moves to applied; archive moves to archived', () => {
     const made = engine.newChange({
-      id: 'CHG-002', slug: 'x', proposal: 'p',
+      id: 'CHG-002',
+      slug: 'x',
+      proposal: 'p',
       requirementDeltas: [{ kind: 'MODIFIED', requirementId: 'REQ-X', detail: 'd' }],
     });
     if (!made.ok || !made.change) throw new Error('setup');
@@ -185,7 +206,9 @@ describe('changeEngine (P08-11)', () => {
 
   it('cannot apply twice or archive unapplied changes', () => {
     const made = engine.newChange({
-      id: 'CHG-002', slug: 'x', proposal: 'p',
+      id: 'CHG-002',
+      slug: 'x',
+      proposal: 'p',
       requirementDeltas: [{ kind: 'REMOVED', requirementId: 'REQ-X', detail: 'd' }],
     });
     if (!made.ok || !made.change) throw new Error('setup');
@@ -193,7 +216,9 @@ describe('changeEngine (P08-11)', () => {
     if (!applied.ok || !applied.change) throw new Error('apply');
     expect(engine.apply(applied.change, 'again').ok).toBe(false);
     const made2 = engine.newChange({
-      id: 'CHG-003', slug: 'y', proposal: 'p',
+      id: 'CHG-003',
+      slug: 'y',
+      proposal: 'p',
       requirementDeltas: [{ kind: 'ADDED', requirementId: 'REQ-Y', detail: 'd' }],
     });
     if (!made2.ok || !made2.change) throw new Error('setup2');

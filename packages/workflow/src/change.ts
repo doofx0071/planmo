@@ -41,7 +41,10 @@ export function changeEngine(): ChangeEngine {
 
   function apply(change: ChangePackage, decision: string): ChangeEngineResult {
     if (change.status !== 'proposed' && change.status !== 'accepted') {
-      return { ok: false, reason: `cannot apply ${change.id}: status is "${change.status}" (expected proposed/accepted)` };
+      return {
+        ok: false,
+        reason: `cannot apply ${change.id}: status is "${change.status}" (expected proposed/accepted)`,
+      };
     }
     const next = ChangePackageSchema.safeParse({
       ...change,
@@ -49,18 +52,27 @@ export function changeEngine(): ChangeEngine {
       decision,
     });
     if (!next.success) {
-      return { ok: false, reason: `apply failed schema validation: ${next.error.issues.map((i) => i.message).join('; ')}` };
+      return {
+        ok: false,
+        reason: `apply failed schema validation: ${next.error.issues.map((i) => i.message).join('; ')}`,
+      };
     }
     return { ok: true, change: next.data };
   }
 
   function archive(change: ChangePackage): ChangeEngineResult {
     if (change.status !== 'applied') {
-      return { ok: false, reason: `cannot archive ${change.id}: status is "${change.status}" (expected applied)` };
+      return {
+        ok: false,
+        reason: `cannot archive ${change.id}: status is "${change.status}" (expected applied)`,
+      };
     }
     const next = ChangePackageSchema.safeParse({ ...change, status: 'archived' });
     if (!next.success) {
-      return { ok: false, reason: `archive failed schema validation: ${next.error.issues.map((i) => i.message).join('; ')}` };
+      return {
+        ok: false,
+        reason: `archive failed schema validation: ${next.error.issues.map((i) => i.message).join('; ')}`,
+      };
     }
     return { ok: true, change: next.data };
   }
