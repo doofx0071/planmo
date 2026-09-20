@@ -37,4 +37,8 @@ Implement passive scanner, stack/test/CI detection, prompt-injection isolation, 
 Implement pack catalogs/source abstraction, trust metadata, checksums/pinning, authoring docs, GitHub export prototype.
 
 ## Phase 12 — Hardening, pilot & v1
-Security review, property/fuzz, cross-platform E2E, migration/upgrade tests, real pilots, docs/examples/npm packaging, 1.0 go/no-go.
+Security review, property/fuzz, cross-platform E2E, migration/upgrade tests, real pilots, docs/examples/npm packaging, 1.0 go/no-go. CHG-001: context/memory eval suite, token budget benchmark, poisoning/staleness/security tests, index corruption/rebuild tests (P12-08..11).
+
+# Change governance
+
+- **CHG-001 — Quality, Context, Memory & Governance** — **ACCEPTED 2026-09-20** (rebaseline). Adds standards & quality engines, local-first context/memory (canonical state authoritative), change packages, managed-file ownership classes, task graph/claims/execution packets, architecture fitness, AI planning evals, and future pack trust metadata across Phase 04–12. Package: `planning/changes/CHG-001-quality-context-governance/`; ADRs 0012–0017; 35 tasks appended to `planning/tasks.csv`; phase addenda in `planning/phase-addenda/`. Completed Phase 00–03 history and task IDs are untouched.

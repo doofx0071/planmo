@@ -44,3 +44,14 @@ Phase 03 confirmations (2026-09-20):
 - `planmo status` is strictly read-only (validates all canonical docs, never writes) and is the diagnostic base for later `planmo doctor` (P03-04).
 - Diff preview is a zero-dependency deterministic LCS unified diff in the core — no external diff dependency (ADR-0010).
 - `.gitattributes` (LF) + a pure `plan()` keep dry-run genuinely side-effect-free cross-platform (P03-02).
+
+## CHG-001 rebaseline confirmations (2026-09-20)
+
+ACCEPTED (see `planning/changes/CHG-001-quality-context-governance/decision.md`):
+- **Standards & Quality Engines are first-class** — structured, stack-aware standards selected per task (ADR-0012); quality findings are concrete/evidence-backed, never vanity scores; refactoring must be justified, unrelated stylistic churn forbidden (AGENTS.md additions).
+- **Canonical state outranks memory** — memory is derived, provenance-bearing, temporally valid, scope-filtered, secret-safe, token-budgeted, and rebuildable (ADR-0013/0014); raw chat transcripts are NOT durable memory by default; embeddings are optional adapters; no hosted vector/graph dependency in v1.
+- **Change packages are first-class** — substantial post-plan changes enter via explicit ADDED/MODIFIED/REMOVED requirement deltas, impacts, risks, tasks, tests, then apply/archive (ADR-0015).
+- **Managed-file ownership classes** — generated/merged/seeded/user; lineage + upgrade preview before destructive changes (ADR-0016).
+- **Task graph, claims, execution packets** — explicit dependencies, ready/blocked, lease-based claims, bounded worker packets (ADR-0017).
+- **Pack/ADR numbering**: pack-proposed ADR-0007..0012 adopted as **ADR-0012..0017** (existing ADR-0007..0011 are different topics); mapping in the CHG-001 decision record.
+- CHG-001 future tasks appended to `planning/tasks.csv` (35 tasks across P04–P12) without renumbering any completed Phase 00–03 ID.

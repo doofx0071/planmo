@@ -138,6 +138,15 @@ Every critical feature requires:
 - deterministic regeneration tests;
 - cross-platform tests where relevant.
 
+## Standards, quality, context & memory (CHG-001, accepted 2026-09-20)
+- Engineering standards are structured, stack-aware concepts selected per task (ADR-0012) — never a giant prompt with every rule.
+- Quality findings are concrete and evidence-backed (ADR-0012); unrelated stylistic refactoring is forbidden; tracked debt carries reason/risk/target (see AGENTS.md engineering-quality rules).
+- Canonical repository state is the single source of truth; memory is derived, provenance-bearing, temporally valid, scope-filtered, secret-safe, token-budgeted and rebuildable (ADR-0013/0014). Raw chat transcripts are not durable memory by default.
+- Context/memory is local-first; a deterministic lexical baseline is the v1 retrieval engine; embeddings and hosted/graph services are optional adapters only.
+- Substantial post-plan changes enter through change packages with ADDED/MODIFIED/REMOVED requirement deltas (ADR-0015).
+- Generated files carry ownership classes (generated/merged/seeded/user) and lineage, with upgrade preview before destructive changes (ADR-0016).
+- Tasks form an explicit dependency graph with ready/blocked computation, lease-based claims, and bounded execution packets (ADR-0017).
+
 ## Release
 SemVer. `1.0.0` requires stable schema migration policy, safe manifest ownership, tested upgrade path, cross-platform validation, security review, and pilot evidence.
 

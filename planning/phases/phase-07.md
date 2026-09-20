@@ -69,3 +69,12 @@ Create `planning/handoffs/phase-07-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 07. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-07-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add:
+- design standards as structured standards;
+- anti-pattern policies;
+- accessibility/motion requirements to applicable-standards injection;
+- design-quality validation fixtures.
