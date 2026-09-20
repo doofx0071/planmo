@@ -1,4 +1,4 @@
-id,phase,title,status,priority
+﻿id,phase,title,status,priority
 P00-01,00,Confirm product positioning and non-goals,DONE,high
 P00-02,00,Verify naming/package/repository availability and fallback naming,DONE,high
 P00-03,00,Lock initial agent/platform/style support matrix,DONE,high
@@ -41,11 +41,11 @@ P07-03,07,Create 8 initial design packs,DONE,medium
 P07-04,07,Implement shadcn source/registry adapter,DONE,medium
 P07-05,07,Implement frontend design docs generator,DONE,medium
 P07-06,07,Add accessibility/motion design validation,DONE,high
-P08-01,08,Implement phase/state transition engine,IN_PROGRESS,critical
-P08-02,08,Implement handoff contract and generator,IN_PROGRESS,high
-P08-03,08,Implement planmo next,IN_PROGRESS,high
-P08-04,08,Implement parallel work packet compiler,IN_PROGRESS,medium
-P08-05,08,Implement human/blocking gates,IN_PROGRESS,high
+P08-01,08,Implement phase/state transition engine,DONE,critical
+P08-02,08,Implement handoff contract and generator,DONE,high
+P08-03,08,Implement planmo next,DONE,high
+P08-04,08,Implement parallel work packet compiler,DONE,medium
+P08-05,08,Implement human/blocking gates,DONE,high
 P09-01,09,Implement trace graph,TODO,high
 P09-02,09,Implement planmo validate,TODO,high
 P09-03,09,Implement planmo doctor,TODO,high
@@ -82,12 +82,12 @@ P06-09,06,ContextProvider interface (CHG-001),DONE,high
 P06-10,06,MemoryProvider interface (CHG-001),DONE,high
 P06-11,06,Execution Packet context rendering (CHG-001),DONE,medium
 P07-07,07,Design standards as structured standards + anti-pattern policies (CHG-001),DONE,medium
-P08-06,08,Task DAG / ready computation (CHG-001),IN_PROGRESS,high
-P08-07,08,Claims and leases (CHG-001),IN_PROGRESS,high
-P08-08,08,Session memory lifecycle (CHG-001),IN_PROGRESS,high
-P08-09,08,Handoff-to-memory consolidation (CHG-001),IN_PROGRESS,medium
-P08-10,08,planmo next token-budgeted context bundle (CHG-001),IN_PROGRESS,high
-P08-11,08,Change Engine workflow (CHG-001),IN_PROGRESS,medium
+P08-06,08,Task DAG / ready computation (CHG-001),DONE,high
+P08-07,08,Claims and leases (CHG-001),DONE,high
+P08-08,08,Session memory lifecycle (CHG-001),DONE,high
+P08-09,08,Handoff-to-memory consolidation (CHG-001),DONE,medium
+P08-10,08,planmo next token-budgeted context bundle (CHG-001),DONE,high
+P08-11,08,Change Engine workflow (CHG-001),DONE,medium
 P09-06,09,planmo quality (CHG-001),TODO,high
 P09-07,09,Architecture fitness validation (CHG-001),TODO,high
 P09-08,09,Standards drift (CHG-001),TODO,medium
