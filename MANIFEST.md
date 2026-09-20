@@ -1,8 +1,9 @@
 # PlanMo Planning Repository Manifest
 
-Total files: **177**
+Total files: **191**
 
 - `.changeset/config.json`
+- `.changeset/phase-03-cli-foundation.md`
 - `.changeset/README.md`
 - `.changeset/smoky-pianos-cli.md`
 - `.gitattributes`
@@ -95,7 +96,19 @@ Total files: **177**
 - `packages/cli/tsconfig.build.json`
 - `packages/cli/tsconfig.json`
 - `packages/core/package.json`
+- `packages/core/src/diff.test.ts`
+- `packages/core/src/diff.ts`
+- `packages/core/src/errors.ts`
 - `packages/core/src/index.ts`
+- `packages/core/src/init.test.ts`
+- `packages/core/src/init.ts`
+- `packages/core/src/paths.test.ts`
+- `packages/core/src/paths.ts`
+- `packages/core/src/status.test.ts`
+- `packages/core/src/status.ts`
+- `packages/core/src/test-utils.ts`
+- `packages/core/src/writer.test.ts`
+- `packages/core/src/writer.ts`
 - `packages/core/tsconfig.build.json`
 - `packages/core/tsconfig.json`
 - `packages/schema/package.json`
@@ -133,6 +146,7 @@ Total files: **177**
 - `planning/handoffs/phase-00-handoff.md`
 - `planning/handoffs/phase-01-handoff.md`
 - `planning/handoffs/phase-02-handoff.md`
+- `planning/handoffs/phase-03-handoff.md`
 - `planning/handoffs/README.md`
 - `planning/handoffs/TEMPLATE.md`
 - `planning/MASTER-PLAN.md`

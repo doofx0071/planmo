@@ -29,6 +29,17 @@ Example:
 | Research baseline | `docs/11-research/2026-source-notes.md` | P00-04 | registry/nodejs.org/designtokens.org lookups 2026-09-19 |
 | Licensing criteria | `docs/11-research/licensing.md` | P00-05 | Criteria review; final license deferred to Phase 12 |
 
+## Phase 03 trace
+
+| Requirement family | Decision/artifact | Task | Test/evidence |
+|---|---|---|---|
+| Safe path utilities (REQ-SEC-*, R-005) | `resolveInsideRoot`, `ensureNoSymlinkEscape`, `realpathWithinRoot`, `findProjectRoot` (`packages/core/src/paths.ts`, `errors.ts`) | P03-01 | 20 unit + negative tests: `..`/absolute/traversal rejection, sibling-root prefix attack, symlink-escape junctions on Windows |
+| Managed writer (secure-filesystem.md, R-007) | `ManagedWriter`/`writeManaged`: root containment, symlink guards, collision refusal, atomic temp+rename, sha256, dry-run, unified diff, TOCTOU re-check (`writer.ts`, `diff.ts`) | P03-02 | 15 tests incl. dry-run purity (zero fs side effects), no temp leftovers, apply-time collision guard |
+| `planmo init` wizard (REQ-INIT-*) | `initWorkspace` produces schema-valid project/state/manifest via writer; CLI wizard with `--yes`/`--dry-run`/`--force` and enums (ADR-0010) | P03-03 | 14 tests (docs default to basename, option honouring, invalid option rejected, dry-run, collision exit 2, force overwrite, prompt flow) |
+| `planmo status` | `readStatus` read-only validation of all canonical docs, never writes (`status.ts`) | P03-04 | 6 tests incl. walk-up root discovery, missing/invalid docs, mtime/content unchanged after status |
+| Collision/symlink/path traversal suite (R-005, R-007) | negative + security fixtures in `paths.test.ts`/`writer.test.ts`, junction-based on Windows | P03-05 | covered above; exit-code contract (0 ok · 1 error · 2 collision · 3 not found) tested via CLI |
+| Deterministic diff | zero-dep LCS `unifiedDiff` (`diff.ts`) | P03-02 | 6 diff tests; deterministic output, empty diff for identical content |
+
 ## Phase 02 trace
 
 | Requirement family | Decision/artifact | Task | Test/evidence |
