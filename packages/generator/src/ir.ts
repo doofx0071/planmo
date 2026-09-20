@@ -34,19 +34,71 @@ export interface PhaseNode {
  * repo's own roadmap. Deterministic and fixed for a given IR version.
  */
 export const CANONICAL_PHASES: readonly PhaseNode[] = [
-  { id: '00', title: 'Product & research foundation', objective: 'Lock product boundaries, naming, licensing criteria, and non-goals.' },
-  { id: '01', title: 'Repository & engineering foundation', objective: 'Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.' },
-  { id: '02', title: 'Canonical project model & schemas', objective: 'Schema-version every persisted PlanMo document and add migration tests.' },
-  { id: '03', title: 'CLI foundation', objective: 'Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.' },
-  { id: '04', title: 'Pack & profile system', objective: 'Implement declarative packs, deterministic resolution, lockfile, profiles.' },
-  { id: '05', title: 'Planning compiler & artifact generator', objective: 'Generate plan documents with an ownership manifest and reproducible regeneration.' },
-  { id: '06', title: 'Agent bridge', objective: 'Implement generic and per-agent adapters with a structured AI proposal contract.' },
-  { id: '07', title: 'Frontend design engine', objective: 'Implement design profiles, design tokens, eight styles, frontend docs.' },
-  { id: '08', title: 'Workflow/session engine', objective: 'Implement phases, handoffs, work packets, gates, planmo next.' },
-  { id: '09', title: 'Trace, validate, doctor & drift', objective: 'Implement trace graph, validation, drift detection, doctor command.' },
-  { id: '10', title: 'Existing repository adoption', objective: 'Support adopting an existing repository incrementally.' },
-  { id: '11', title: 'Ecosystem & integrations', objective: 'Packs registry, templates, agent ecosystem integrations.' },
-  { id: '12', title: 'Hardening, pilot & v1', objective: 'Hardening, security review, pilot, and v1 release.' },
+  {
+    id: '00',
+    title: 'Product & research foundation',
+    objective: 'Lock product boundaries, naming, licensing criteria, and non-goals.',
+  },
+  {
+    id: '01',
+    title: 'Repository & engineering foundation',
+    objective: 'Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.',
+  },
+  {
+    id: '02',
+    title: 'Canonical project model & schemas',
+    objective: 'Schema-version every persisted PlanMo document and add migration tests.',
+  },
+  {
+    id: '03',
+    title: 'CLI foundation',
+    objective: 'Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.',
+  },
+  {
+    id: '04',
+    title: 'Pack & profile system',
+    objective: 'Implement declarative packs, deterministic resolution, lockfile, profiles.',
+  },
+  {
+    id: '05',
+    title: 'Planning compiler & artifact generator',
+    objective: 'Generate plan documents with an ownership manifest and reproducible regeneration.',
+  },
+  {
+    id: '06',
+    title: 'Agent bridge',
+    objective: 'Implement generic and per-agent adapters with a structured AI proposal contract.',
+  },
+  {
+    id: '07',
+    title: 'Frontend design engine',
+    objective: 'Implement design profiles, design tokens, eight styles, frontend docs.',
+  },
+  {
+    id: '08',
+    title: 'Workflow/session engine',
+    objective: 'Implement phases, handoffs, work packets, gates, planmo next.',
+  },
+  {
+    id: '09',
+    title: 'Trace, validate, doctor & drift',
+    objective: 'Implement trace graph, validation, drift detection, doctor command.',
+  },
+  {
+    id: '10',
+    title: 'Existing repository adoption',
+    objective: 'Support adopting an existing repository incrementally.',
+  },
+  {
+    id: '11',
+    title: 'Ecosystem & integrations',
+    objective: 'Packs registry, templates, agent ecosystem integrations.',
+  },
+  {
+    id: '12',
+    title: 'Hardening, pilot & v1',
+    objective: 'Hardening, security review, pilot, and v1 release.',
+  },
 ];
 
 /**
@@ -121,22 +173,34 @@ function sortPacks(packs: readonly PackLockEntryType[]): readonly PackLockEntryT
   return [...packs].sort((a, b) => {
     if (a.ref !== b.ref) return a.ref < b.ref ? -1 : 1;
     if (a.version !== b.version) return a.version < b.version ? -1 : 1;
-    // Total order tiebreak: identical refs/versions ordered by digest so the
-    // sort is stable even for a duplicate-ref anomaly.
-    const da = a.integrity.digest;
-    const db = b.integrity.digest;
+    // Integrity is optional in the schema; tiebreak on its digest when
+    // present ('' when absent) so the sort stays a deterministic total order.
+    const da = a.integrity?.digest ?? '';
+    const db = b.integrity?.digest ?? '';
     return da < db ? -1 : da > db ? 1 : 0;
   });
 }
 
+/** Documented default when a project config omits its planning block. */
+const DEFAULT_PLANNING = {
+  depth: 'standard',
+  phaseMode: 'gated',
+  freshSessionPerPhase: true,
+} as const;
+
 /** Compile a deterministic IR from validated inputs (P05-01). */
 export function buildIr(input: IrInput): PlanningIR {
   const sortedPacks = sortPacks(input.lockfile.packs);
-  const phases = phasesForDepth(input.project.planning.depth);
+  // ProjectConfig.planning is optional in the schema; the IR compiler
+  // normalizes it to the documented default (deterministic, never silent
+  // on a per-build basis).
+  const planning = input.project.planning ?? DEFAULT_PLANNING;
+  const normalizedProject: ProjectConfig = { ...input.project, planning };
+  const phases = phasesForDepth(planning.depth);
 
   const hash = sha256Hex(
     canonicalJson({
-      project: input.project,
+      project: normalizedProject,
       packs: sortedPacks,
       profile: input.profile,
       standards: input.standards,
@@ -147,9 +211,9 @@ export function buildIr(input: IrInput): PlanningIR {
   return {
     schemaVersion: IR_SCHEMA_VERSION,
     inputHash: hash,
-    project: input.project,
-    depth: input.project.planning.depth,
-    phaseMode: input.project.planning.phaseMode,
+    project: normalizedProject,
+    depth: planning.depth,
+    phaseMode: planning.phaseMode,
     lockedPacks: sortedPacks,
     phases,
     standards: input.standards,

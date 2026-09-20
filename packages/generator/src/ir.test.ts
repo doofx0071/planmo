@@ -92,12 +92,20 @@ describe('buildIr', () => {
 
   it('sorts locked packs by ref for determinism', () => {
     const packs = [
-      { ref: 'stack/zeta', version: '1.0.0', source: 'local', integrity: { algorithm: 'sha256' as const, digest: 'a'.repeat(64) } },
-      { ref: 'stack/alpha', version: '1.0.0', source: 'local', integrity: { algorithm: 'sha256' as const, digest: 'b'.repeat(64) } },
+      {
+        ref: 'stack/zeta',
+        version: '1.0.0',
+        source: 'local',
+        integrity: { algorithm: 'sha256' as const, digest: 'a'.repeat(64) },
+      },
+      {
+        ref: 'stack/alpha',
+        version: '1.0.0',
+        source: 'local',
+        integrity: { algorithm: 'sha256' as const, digest: 'b'.repeat(64) },
+      },
     ];
-    const ir = buildIr(
-      irInput({ lockfile: { planmoVersion: '0.0.0', packs: packs as never } }),
-    );
+    const ir = buildIr(irInput({ lockfile: { planmoVersion: '0.0.0', packs: packs as never } }));
     expect(ir.lockedPacks.map((p) => p.ref)).toEqual(['stack/alpha', 'stack/zeta']);
   });
 
@@ -128,8 +136,12 @@ describe('buildIr', () => {
       source: 'local' as const,
       integrity: { algorithm: 'sha256' as const, digest: 'b'.repeat(64) },
     };
-    const aa = buildIr(irInput({ lockfile: { planmoVersion: '0.0.0', packs: [alpha, zeta] as never } }));
-    const bb = buildIr(irInput({ lockfile: { planmoVersion: '0.0.0', packs: [zeta, alpha] as never } }));
+    const aa = buildIr(
+      irInput({ lockfile: { planmoVersion: '0.0.0', packs: [alpha, zeta] as never } }),
+    );
+    const bb = buildIr(
+      irInput({ lockfile: { planmoVersion: '0.0.0', packs: [zeta, alpha] as never } }),
+    );
     expect(aa.inputHash).toBe(bb.inputHash);
     expect(aa.lockedPacks.map((p) => p.ref)).toEqual(['stack/alpha', 'stack/zeta']);
   });

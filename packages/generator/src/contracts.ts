@@ -32,16 +32,13 @@ export interface GeneratedArtifact {
 /** A renderer maps the IR to artifacts. Must be pure and deterministic. */
 export type Renderer = (ir: PlanningIR) => readonly GeneratedArtifact[];
 
-/** P05-02: planning documents (ROADMAP, TRACKER, phases, handoff template…). */
-export declare const renderPlanningDocuments: Renderer;
-/** P05-09 (CHG-001): standards + context/policy documents. */
-export declare const renderStandardsAndContext: Renderer;
-
-/** P05-03: build the generation manifest (entries + checksums + ownership). */
-export declare function buildGenerationManifest(
-  artifacts: readonly GeneratedArtifact[],
-  ir: PlanningIR,
-): { document: GenerationManifestDocument; entries: GenerationManifestEntry[] };
+/**
+ * NOTE on function contracts: the Phase 05 pipeline functions are defined in
+ * their owning modules (render.ts → renderPlanningDocuments /
+ * renderStandardsAndContext, manifest.ts → buildGenerationManifest,
+ * synth.ts → previewSynth). contracts.ts carries only the agreed INPUT/OUTPUT
+ * types so the three parallel workstreams could build without coupling.
+ */
 
 /**
  * Minimal manifest entry shape the pipeline needs. The schema's
@@ -81,13 +78,3 @@ export interface SynthPreview {
   /** Human-readable summary lines (deterministic order). */
   summary: string[];
 }
-
-export declare function previewSynth(
-  artifacts: readonly GeneratedArtifact[],
-  existing: {
-    /** Paths that already exist on disk. */
-    existingPaths: readonly string[];
-    /** Existing manifest entries (from .planmo/manifest.json), if any. */
-    entries?: readonly GenerationManifestEntry[];
-  },
-): SynthPreview;
