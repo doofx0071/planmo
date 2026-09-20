@@ -21,8 +21,18 @@ describe('PackSchema (declarative pack)', () => {
     expect(parsed.provides).toContain('design.minimal');
   });
 
-  it('accepts all six pack categories', () => {
-    for (const category of ['stack', 'domain', 'risk', 'design', 'agent', 'workflow']) {
+  it('accepts all nine pack categories', () => {
+    for (const category of [
+      'stack',
+      'domain',
+      'risk',
+      'design',
+      'agent',
+      'workflow',
+      'standards',
+      'policy',
+      'context',
+    ]) {
       expect(() => PackSchema.parse({ ...valid, category })).not.toThrow();
     }
   });

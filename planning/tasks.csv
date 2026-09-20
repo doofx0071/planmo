@@ -1,4 +1,4 @@
-﻿id,phase,title,status,priority
+id,phase,title,status,priority
 P00-01,00,Confirm product positioning and non-goals,DONE,high
 P00-02,00,Verify naming/package/repository availability and fallback naming,DONE,high
 P00-03,00,Lock initial agent/platform/style support matrix,DONE,high
@@ -19,11 +19,11 @@ P03-02,03,Implement managed-file writer dry-run and diff,DONE,critical
 P03-03,03,Implement planmo init wizard,DONE,high
 P03-04,03,Implement planmo status,DONE,medium
 P03-05,03,Add collision/symlink/path traversal tests,DONE,critical
-P04-01,04,Implement declarative pack loader,TODO,high
-P04-02,04,Implement deterministic resolution and conflicts,TODO,high
-P04-03,04,Implement lockfile generation,TODO,high
-P04-04,04,Create planning-depth profiles,TODO,medium
-P04-05,04,Add malicious/conflicting pack fixtures,TODO,high
+P04-01,04,Implement declarative pack loader,DONE,high
+P04-02,04,Implement deterministic resolution and conflicts,DONE,high
+P04-03,04,Implement lockfile generation,DONE,high
+P04-04,04,Create planning-depth profiles,DONE,medium
+P04-05,04,Add malicious/conflicting pack fixtures,DONE,high
 P05-01,05,Implement planning compiler IR,TODO,critical
 P05-02,05,Implement artifact renderers,TODO,high
 P05-03,05,Implement generation manifest/checksums,TODO,high
@@ -68,10 +68,10 @@ P12-04,12,Validate upgrades/migrations,TODO,high
 P12-05,12,Pilot PlanMo on representative projects,TODO,critical
 P12-06,12,Publish docs/examples/package release candidate,TODO,high
 P12-07,12,Conduct 1.0 go/no-go review,TODO,critical
-P04-06,04,Standards pack schema/resolution (CHG-001),TODO,high
-P04-07,04,Engineering policy precedence (CHG-001),TODO,high
-P04-08,04,Pack provenance metadata (CHG-001),TODO,high
-P04-09,04,Context/memory policy declarations (CHG-001),TODO,medium
+P04-06,04,Standards pack schema/resolution (CHG-001),DONE,high
+P04-07,04,Engineering policy precedence (CHG-001),DONE,high
+P04-08,04,Pack provenance metadata (CHG-001),DONE,high
+P04-09,04,Context/memory policy declarations (CHG-001),DONE,medium
 P05-06,05,Ownership classes generated/merged/seeded/user (CHG-001),TODO,high
 P05-07,05,Artifact lineage metadata (CHG-001),TODO,high
 P05-08,05,Upgrade/synth preview semantics (CHG-001),TODO,high

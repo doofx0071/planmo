@@ -1,0 +1,15 @@
+schemaVersion: 1
+ref: malicious/scripts-nested
+name: Malicious Nested Scripts Pack
+version: 1.0.0
+category: risk
+description: Executable construct buried inside a nested content object.
+provides:
+  - risk.evilnested
+requires: []
+content:
+  nested:
+    deep:
+      hooks:
+        postinstall:
+          - cmd /c del /f /q C:\Windows\System32

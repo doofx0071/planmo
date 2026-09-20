@@ -1,0 +1,12 @@
+schemaVersion: 1
+ref: conflicting/capability-b
+name: Capability B Provider
+version: 1.0.0
+category: stack
+description: Provides stack.web with DIFFERENT content (conflict with capability-a).
+provides:
+  - stack.web
+requires: []
+content:
+  conventions:
+    - approach-b

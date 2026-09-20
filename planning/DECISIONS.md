@@ -45,6 +45,16 @@ Phase 03 confirmations (2026-09-20):
 - Diff preview is a zero-dependency deterministic LCS unified diff in the core — no external diff dependency (ADR-0010).
 - `.gitattributes` (LF) + a pure `plan()` keep dry-run genuinely side-effect-free cross-platform (P03-02).
 
+Phase 04 confirmations (2026-09-20):
+- Pack resolution is deterministic: highest valid version per ref, deterministic closure traversal, Kahn topological order with ref tie-breaks; identical inputs → identical fingerprint (ADR-0018; P04-02).
+- Conflicts are surfaced, never silently resolved: same-tier duplicate rule ids with differing content, capability conflicts, dependency cycles, unknown refs, missing requires all emit actionable diagnostics (ADR-0018; P04-02/06/07).
+- Lockfile emits strict `LockfileSchema` pinning ref/version/source/sha256 of every resolved pack — deterministic fingerprint proves two resolutions agree (P04-03).
+- Executable constructs are rejected at load, fail-closed, at any nesting depth (scripts/hooks/exec/install/…), beyond strict `PackSchema` validation — v1 packs remain declarative (ADR-0004; P04-01/05).
+- Standards engine: 9 classes, 7 precedence tiers, appliesTo context filtering; policies map scope→precedence; cross-tier same-id shadowing is deterministic, same-tier differing content is a surfaced conflict (REQ-STD-001/002/004; P04-06/07).
+- Provenance metadata (source/url/author/publishedAt/license/integrity) added to `PackSchema` as optional (local packs may omit; REQ-TRUST-001; P04-08).
+- Context/memory policy declarations (token budget, progressive disclosure, scopes, requireProvenance, redactSecrets) are schema-validated declarations only — NO memory storage engine in v1 (REQ-CTX-003/005, REQ-MEM-003/005/008; P04-09).
+- Planning-depth profiles compile predictably: lean/standard/production/high-assurance map deterministically to documents/gates/phase-mode; custom → null (P04-04).
+
 ## CHG-001 rebaseline confirmations (2026-09-20)
 
 ACCEPTED (see `planning/changes/CHG-001-quality-context-governance/decision.md`):

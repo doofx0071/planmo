@@ -94,11 +94,44 @@ export type {
 export {
   PACK_CATEGORIES,
   CapabilityRef,
+  PackProvenanceSchema,
   PackSchema,
   DesignProfileSchema,
   DesignTokensSchema,
 } from './pack-design.js';
-export type { PackCategory, PackDocument, DesignProfile, DesignTokens } from './pack-design.js';
+export type {
+  PackCategory,
+  PackProvenance,
+  PackDocument,
+  DesignProfile,
+  DesignTokens,
+} from './pack-design.js';
+
+// Pack content (CHG-001: standards, policy, context/memory declarations)
+export {
+  STANDARD_CLASSES,
+  STANDARD_PRECEDENCE,
+  StandardRuleSchema,
+  StandardsPackContentSchema,
+  EngineeringPolicyEntrySchema,
+  EngineeringPolicyContentSchema,
+  TokenBudgetSchema,
+  MEMORY_SCOPES,
+  ContextMemoryPolicySchema,
+  PackContentShapeSchema,
+} from './pack-content.js';
+export type {
+  StandardClass,
+  StandardPrecedence,
+  StandardRule,
+  StandardsPackContent,
+  EngineeringPolicyEntry,
+  EngineeringPolicyContent,
+  TokenBudget,
+  MemoryScope,
+  ContextMemoryPolicy,
+  PackContentShape,
+} from './pack-content.js';
 
 // Trace graph, handoffs, work packets
 export {

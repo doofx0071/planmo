@@ -1,0 +1,29 @@
+schemaVersion: 1
+ref: standards/web-security
+name: Web Security Standards
+version: 1.0.0
+category: standards
+description: Security standards for web applications.
+provides:
+  - standards.web-security
+requires:
+  - stack/nextjs
+content:
+  standards:
+    - id: security.secrets
+      class: security
+      precedence: security
+      rule: Never log secrets or tokens.
+      appliesTo:
+        stack:
+          - nextjs
+        risk:
+          - high
+      rationale: Prevents credential leakage in logs.
+    - id: security.input
+      class: security
+      precedence: security
+      rule: Validate all external input at the boundary.
+      appliesTo:
+        stack:
+          - nextjs

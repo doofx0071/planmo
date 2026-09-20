@@ -1,9 +1,10 @@
 # PlanMo Planning Repository Manifest
 
-Total files: **241**
+Total files: **274**
 
 - `.changeset/config.json`
 - `.changeset/phase-03-cli-foundation.md`
+- `.changeset/phase-04-pack-and-profile-system.md`
 - `.changeset/README.md`
 - `.changeset/smoky-pianos-cli.md`
 - `.gitattributes`
@@ -93,6 +94,7 @@ Total files: **241**
 - `docs/12-adrs/ADR-0015-change-engine-delta-model.md`
 - `docs/12-adrs/ADR-0016-managed-file-ownership-classes.md`
 - `docs/12-adrs/ADR-0017-task-graph-and-execution-packets.md`
+- `docs/12-adrs/ADR-0018-deterministic-pack-resolution-and-locking.md`
 - `docs/13-standards-quality/architecture-fitness.md`
 - `docs/13-standards-quality/quality-engine.md`
 - `docs/13-standards-quality/refactoring-technical-debt.md`
@@ -137,6 +139,34 @@ Total files: **241**
 - `packages/core/src/writer.ts`
 - `packages/core/tsconfig.build.json`
 - `packages/core/tsconfig.json`
+- `packages/packs/package.json`
+- `packages/packs/src/fixtures/conflicting/capability-a/pack.yml`
+- `packages/packs/src/fixtures/conflicting/capability-b/pack.yml`
+- `packages/packs/src/fixtures/conflicting/cycle-a/pack.yml`
+- `packages/packs/src/fixtures/conflicting/cycle-b/pack.yml`
+- `packages/packs/src/fixtures/conflicting/missing-dep/pack.yml`
+- `packages/packs/src/fixtures/malicious/evil-hooks/pack.yml`
+- `packages/packs/src/fixtures/malicious/evil-scripts/pack.yml`
+- `packages/packs/src/fixtures/malicious/exec/pack.yml`
+- `packages/packs/src/fixtures/malicious/scripts-nested/pack.yml`
+- `packages/packs/src/fixtures/valid/context/agent-memory/pack.yml`
+- `packages/packs/src/fixtures/valid/policy/engineering/pack.yml`
+- `packages/packs/src/fixtures/valid/stack/nextjs/pack.yml`
+- `packages/packs/src/fixtures/valid/standards/web-security/pack.yml`
+- `packages/packs/src/index.ts`
+- `packages/packs/src/loader.test.ts`
+- `packages/packs/src/loader.ts`
+- `packages/packs/src/lock.test.ts`
+- `packages/packs/src/lock.ts`
+- `packages/packs/src/profiles.test.ts`
+- `packages/packs/src/profiles.ts`
+- `packages/packs/src/resolve.test.ts`
+- `packages/packs/src/resolve.ts`
+- `packages/packs/src/standards.test.ts`
+- `packages/packs/src/standards.ts`
+- `packages/packs/src/test-utils.ts`
+- `packages/packs/tsconfig.build.json`
+- `packages/packs/tsconfig.json`
 - `packages/schema/package.json`
 - `packages/schema/src/common.ts`
 - `packages/schema/src/fixtures/lock.v1.golden.yml`
@@ -150,6 +180,8 @@ Total files: **241**
 - `packages/schema/src/index.ts`
 - `packages/schema/src/migrations.test.ts`
 - `packages/schema/src/migrations.ts`
+- `packages/schema/src/pack-content.test.ts`
+- `packages/schema/src/pack-content.ts`
 - `packages/schema/src/pack-design.test.ts`
 - `packages/schema/src/pack-design.ts`
 - `packages/schema/src/project.test.ts`
@@ -184,6 +216,7 @@ Total files: **241**
 - `planning/handoffs/phase-01-handoff.md`
 - `planning/handoffs/phase-02-handoff.md`
 - `planning/handoffs/phase-03-handoff.md`
+- `planning/handoffs/phase-04-handoff.md`
 - `planning/handoffs/README.md`
 - `planning/handoffs/TEMPLATE.md`
 - `planning/MASTER-PLAN.md`

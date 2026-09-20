@@ -1,0 +1,12 @@
+schemaVersion: 1
+ref: conflicting/capability-a
+name: Capability A Provider
+version: 1.0.0
+category: stack
+description: Provides stack.web with content A.
+provides:
+  - stack.web
+requires: []
+content:
+  conventions:
+    - approach-a

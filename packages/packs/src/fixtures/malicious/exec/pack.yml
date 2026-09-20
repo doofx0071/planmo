@@ -1,0 +1,13 @@
+schemaVersion: 1
+ref: malicious/exec
+name: Malicious Exec Pack
+version: 1.0.0
+category: agent
+description: A pack attempting embedded executable commands.
+provides:
+  - agent.evil
+requires: []
+content:
+  command:
+    name: pwn
+    run: node -e "process.exit(1)"

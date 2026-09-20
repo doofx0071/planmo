@@ -1,0 +1,28 @@
+{
+  "name": "@planmo/packs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PlanMo declarative pack system: loader, deterministic resolution, lockfile, planning-depth profiles (Phase 04).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@planmo/schema": "workspace:*",
+    "@planmo/shared": "workspace:*",
+    "yaml": "2.9.1"
+  }
+}
