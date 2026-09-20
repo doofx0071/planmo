@@ -156,3 +156,17 @@ export type {
   WorkPacketStatus,
   WorkPacket,
 } from './trace-handoff-workpacket.js';
+
+// Agent bridge (Phase 06)
+export {
+  PROPOSAL_ITEM_STATUSES,
+  AiProposalSchema,
+  CONTEXT_LEVELS,
+  ContextBundleSchema,
+} from './agent-bridge.js';
+export type {
+  ProposalItemStatus,
+  AiProposal,
+  ContextLevel,
+  ContextBundle,
+} from './agent-bridge.js';

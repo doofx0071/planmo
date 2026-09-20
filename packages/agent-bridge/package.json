@@ -1,0 +1,29 @@
+{
+  "name": "@planmo/agent-bridge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PlanMo agent bridge: capability registry, context bundle compiler, standards injector, provider interfaces, execution packets, proposal validation (Phase 06).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@planmo/schema": "workspace:*",
+    "@planmo/shared": "workspace:*",
+    "@planmo/core": "workspace:*",
+    "@planmo/adapters": "workspace:*"
+  }
+}
