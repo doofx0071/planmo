@@ -50,6 +50,20 @@ Example:
 | Collision/symlink/path traversal suite (R-005, R-007) | negative + security fixtures in `paths.test.ts`/`writer.test.ts`, junction-based on Windows | P03-05 | covered above; exit-code contract (0 ok · 1 error · 2 collision · 3 not found) tested via CLI |
 | Deterministic diff | zero-dep LCS `unifiedDiff` (`diff.ts`) | P03-02 | 6 diff tests; deterministic output, empty diff for identical content |
 
+## Phase 04 trace
+
+| Requirement family | Decision/artifact | Task | Test/evidence |
+|---|---|---|---|
+| Declarative pack loader (ADR-0004, R-022) | `loadPack` — strict `PackSchema` validation + sha256 integrity + executable-construct rejection at any depth (`packages/packs/src/loader.ts`) | P04-01 | 8 tests: valid packs load; scripts/hooks/exec/nested executable keys rejected (PackLoadError, kind=executable); missing pack.yml fails closed |
+| Deterministic resolution + conflicts (ADR-0018) | `resolvePacks` — version pick, transitive `requires` closure, cycle detection, capability-conflict diagnostics, Kahn topological order (`resolve.ts`) | P04-02 | 12 tests: dependency-first order, identical-input fingerprint, highest-version pick, unknown-ref/missing-requires/cycle/capability-conflict surfaced |
+| Lockfile generation (exit gate: versions/checksums locked) | `buildLockfile` → strict `LockfileSchema` with ref/version/source/sha256; deterministic fingerprint (`lock.ts`) | P04-03 | 3 tests: locked version+integrity (matches raw-file digest), schema-valid shape, deterministic fingerprint |
+| Planning-depth profiles (exit gate: predictable compile) | `compilePlanningProfile`/`allPlanningProfiles` for lean/standard/production/high-assurance (`profiles.ts`) | P04-04 | 5 tests: all 4 depths compile, predictable (same input → equal output), custom → null, monotonic docs/gates, enumeration |
+| Malicious/conflicting pack fixtures (R-022) | Real on-disk fixture packs under `packages/packs/src/fixtures/` (malicious scripts/hooks/exec/nested; conflicting capability/cycle/missing-dep) | P04-05 | fixture files exercised by loader/resolver tests above |
+| Standards packs + selection (CHG-001 P04-06, REQ-STD-001/002/004) | `StandardsPackContentSchema` + `selectStandards` — class-aware, appliesTo filtering, precedence tiers, conflicts surfaced (`pack-content.ts`, `standards.ts`) | P04-06 | 9 tests: applicable selection, context filtering, same-tier conflict surfaced, cross-tier deterministic shadowing |
+| Engineering policy precedence (CHG-001 P04-07, REQ-STD-004) | `EngineeringPolicyContentSchema` + scope→precedence mapping in `selectStandards` | P04-07 | policy fixture + duplicate-policy-id conflict tests |
+| Pack provenance metadata (CHG-001 P04-08, REQ-TRUST-001) | `PackProvenanceSchema` (source/url/author/publishedAt/license/integrity) on `PackSchema` | P04-08 | 2 schema tests + loader accepts provenance-less local packs |
+| Context/memory policy declarations (CHG-001 P04-09, declarations only) | `ContextMemoryPolicySchema` — token budget, progressive disclosure, scopes, provenance/redaction declarations; NO storage engine | P04-09 | 4 schema tests + loader context-category fixture test |
+
 ## Phase 02 trace
 
 | Requirement family | Decision/artifact | Task | Test/evidence |
