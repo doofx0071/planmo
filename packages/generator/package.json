@@ -1,0 +1,29 @@
+{
+  "name": "@planmo/generator",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PlanMo planning compiler and artifact generator: canonical IR, renderers, generation manifest, synth preview (Phase 05).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@planmo/core": "workspace:*",
+    "@planmo/packs": "workspace:*",
+    "@planmo/schema": "workspace:*",
+    "@planmo/shared": "workspace:*"
+  }
+}

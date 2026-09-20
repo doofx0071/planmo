@@ -50,6 +50,20 @@ Example:
 | Collision/symlink/path traversal suite (R-005, R-007) | negative + security fixtures in `paths.test.ts`/`writer.test.ts`, junction-based on Windows | P03-05 | covered above; exit-code contract (0 ok · 1 error · 2 collision · 3 not found) tested via CLI |
 | Deterministic diff | zero-dep LCS `unifiedDiff` (`diff.ts`) | P03-02 | 6 diff tests; deterministic output, empty diff for identical content |
 
+## Phase 05 trace
+
+| Requirement family | Decision/artifact | Task | Test/evidence |
+|---|---|---|---|
+| Byte-stable generation | ADR-0019, `@planmo/generator` IR (`ir.ts`, P05-01) | P05-01 | canonical-JSON sha256 over sorted inputs; 24 IR tests incl. input-order independence; golden snapshots |
+| Plan document renderers | `render.ts` (ROADMAP/TRACKER/phases/handoff template) | P05-02 | 12 renderer tests; depth pruning lean→4 phases; byte-stability + hash-change sensitivity |
+| Generation manifest + checksums | `manifest.ts` (sha256 per artifact, path-sorted) | P05-03 | 17 tests: known sha256 vectors, lineage markers, schema round-trip, negative cases |
+| Golden repos (low/med/high) | `src/golden/{low,medium,high}/` — 48 committed snapshots | P05-04 | golden tests byte-compare real pipeline output (low 11, medium 15, high 22 artifacts) |
+| Idempotent regeneration | `compile.ts` + `idempotency.test.ts` | P05-05 | GEN2 diff bytes 0, manifest byte-identical; unmanaged content preserved; dry-run touches nothing; collision refusal |
+| Ownership classes generated/merged/seeded/user | ADR-0016, schema `OWNERSHIP_MODES` extended additively | P05-06 | schema tests accept canonical classes; synth tests per class |
+| Artifact lineage | `manifest.ts` `input:<hash>` + `pack:<ref>@<ver>` markers | P05-07 | 17 manifest tests incl. lineage traceability |
+| Upgrade/synth preview | `synth.ts` `previewSynth` (pure report, never writes) | P05-08 | 23 tests: create/overwrite/merge/skip/collision per class, user-owned never written, determinism |
+| Standards/context docs | `standards-context.ts` (STANDARDS.md, policies/<class>.md, CONTEXT.md) | P05-09 | 12 tests: precedence ordering, conflict surfacing, lineage, input-order independence |
+
 ## Phase 04 trace
 
 | Requirement family | Decision/artifact | Task | Test/evidence |
