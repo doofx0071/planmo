@@ -107,6 +107,42 @@ export type {
   DesignTokens,
 } from './pack-design.js';
 
+// Rich design profile model (Phase 07)
+export {
+  MOTION_PROFILES,
+  GEOMETRY_RADII,
+  GEOMETRY_BORDER_STRENGTHS,
+  SHADOW_USAGES,
+  TYPOGRAPHY_STRATEGIES,
+  ICON_STRATEGIES,
+  REGISTRY_TRUST_LEVELS,
+  RegistryItemSchema,
+  DesignGeometrySchema,
+  DesignTypographySchema,
+  DesignMotionSchema,
+  DesignIconsSchema,
+  DesignComponentsSchema,
+  DesignResponsiveSchema,
+  RichDesignProfileSchema,
+} from './design-profile.js';
+export type {
+  MotionProfile,
+  GeometryRadius,
+  GeometryBorderStrength,
+  ShadowUsage,
+  TypographyStrategy,
+  IconStrategy,
+  RegistryTrustLevel,
+  RegistryItem,
+  DesignGeometry,
+  DesignTypography,
+  DesignMotion,
+  DesignIcons,
+  DesignComponents,
+  DesignResponsive,
+  RichDesignProfile,
+} from './design-profile.js';
+
 // Pack content (CHG-001: standards, policy, context/memory declarations)
 export {
   STANDARD_CLASSES,

@@ -78,6 +78,18 @@ importers:
         specifier: 2.9.1
         version: 2.9.1
 
+  packages/design-engine:
+    dependencies:
+      '@planmo/core':
+        specifier: workspace:*
+        version: link:../core
+      '@planmo/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@planmo/shared':
+        specifier: workspace:*
+        version: link:../shared
+
   packages/generator:
     dependencies:
       '@planmo/core':

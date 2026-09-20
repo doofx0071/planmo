@@ -116,3 +116,10 @@ Source: `planning/changes/CHG-001-quality-context-governance/` (accepted 2026-09
 | REQ-ARCH-001..002 — fitness rules, cycle/orphan diagnostics | ADR-0012, `docs/13-standards-quality/architecture-fitness.md` | P09-07 | machine-readable rules; failures carry rule ID, path, requirement, remediation |
 | REQ-EVAL-001..003 — golden scenarios, AI rubric, token benchmark | ADR-0014, `docs/16-evals-trust/eval-engine.md` | P12-08, P12-09, P12-10 | deterministic rubric checks on fixtures; malicious-repo authority fixture |
 | REQ-TRUST-001..003 — pack provenance, no implicit execution, future SBOM/signature | ADR-0017 (trust future), `docs/16-evals-trust/trust-engine-future.md` | P04-08, P11-06 | declarative packs remain non-executable; trust metadata fields defined; no v1 blocker |
+
+## Phase 07 trace
+
+| Requirement family | Decision/artifact | Task | Test/evidence |
+|---|---|---|---|
+| REQ-DESIGN-001..003 — structured profile, accessibility precedence, sources separate from style | ADR-0003/0021, `@planmo/design-engine` (tokens/packs/shadcn/docs/accessibility/design-standards), `docs/05-design-engine/*` | P07-01..07 | 125 new tests (schema 27 → engine 112); DTCG alias/cycle/missing-ref/invalid-unit suite; 8 packs each validated by the token engine; WCAG relative-luminance contrast math (AA 4.5/3.0, AAA 7.0/4.5); community/untrusted registry items forced `requiresReview: true` (schema-enforced); byte-deterministic DTCG emit + docs render; E2E proof `scripts/e2e-phase07.mjs` |
+| Design anti-patterns / design standards as structured rules (CHG-001) | ADR-0021, `design-standards.ts` (13 rules, class `language`, `design.*` ids), `anti-patterns.ts` (universal + per-style) | P07-07 | 22 engine tests; every rule parses `StandardRuleSchema`; ids unique/dot-prefixed; `design.accessibility-outranks-style` present |
