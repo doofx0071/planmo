@@ -1,0 +1,158 @@
+import { createHash } from 'node:crypto';
+import type { PackLockEntry as PackLockEntryType } from '@planmo/schema';
+import type { ProjectConfig, PlanningDepth, PhaseMode } from '@planmo/schema';
+import type { ResolutionResult } from '@planmo/packs';
+import type { StandardsSelection, PlanningProfile } from '@planmo/packs';
+
+/**
+ * Planning compiler IR (P05-01).
+ *
+ * The IR is the deterministic intermediate representation the Phase 05
+ * pipeline compiles: normalized project model + lockfile + resolution +
+ * profile + standards selection → a plain, sorted, hash-stable IR that
+ * renderers consume. The IR itself is pure data: no clocks, no random, no
+ * filesystem — the same inputs always produce the same bytes (exit gate:
+ * "byte-stable or intentionally normalized output").
+ *
+ * The IR never carries AI output. AI remains an upstream proposal source;
+ * anything model-derived enters through the validated `ProjectConfig`
+ * (proposals are normalized before this module runs).
+ */
+
+export const IR_SCHEMA_VERSION = 1 as const;
+
+/** Canonical phase spine shared by all generated plan documents. */
+export interface PhaseNode {
+  /** Zero-padded phase number, e.g. "00", "05". */
+  id: string;
+  title: string;
+  objective: string;
+}
+
+/**
+ * Full canonical phase spine (00–12) — the same engine that produced this
+ * repo's own roadmap. Deterministic and fixed for a given IR version.
+ */
+export const CANONICAL_PHASES: readonly PhaseNode[] = [
+  { id: '00', title: 'Product & research foundation', objective: 'Lock product boundaries, naming, licensing criteria, and non-goals.' },
+  { id: '01', title: 'Repository & engineering foundation', objective: 'Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.' },
+  { id: '02', title: 'Canonical project model & schemas', objective: 'Schema-version every persisted PlanMo document and add migration tests.' },
+  { id: '03', title: 'CLI foundation', objective: 'Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.' },
+  { id: '04', title: 'Pack & profile system', objective: 'Implement declarative packs, deterministic resolution, lockfile, profiles.' },
+  { id: '05', title: 'Planning compiler & artifact generator', objective: 'Generate plan documents with an ownership manifest and reproducible regeneration.' },
+  { id: '06', title: 'Agent bridge', objective: 'Implement generic and per-agent adapters with a structured AI proposal contract.' },
+  { id: '07', title: 'Frontend design engine', objective: 'Implement design profiles, design tokens, eight styles, frontend docs.' },
+  { id: '08', title: 'Workflow/session engine', objective: 'Implement phases, handoffs, work packets, gates, planmo next.' },
+  { id: '09', title: 'Trace, validate, doctor & drift', objective: 'Implement trace graph, validation, drift detection, doctor command.' },
+  { id: '10', title: 'Existing repository adoption', objective: 'Support adopting an existing repository incrementally.' },
+  { id: '11', title: 'Ecosystem & integrations', objective: 'Packs registry, templates, agent ecosystem integrations.' },
+  { id: '12', title: 'Hardening, pilot & v1', objective: 'Hardening, security review, pilot, and v1 release.' },
+];
+
+/**
+ * Inputs to the IR compiler. Everything is already schema-validated at the
+ * boundary (ProjectConfigSchema / lockfile / resolution / profiles / packs);
+ * this module normalizes without re-validating.
+ */
+export interface IrInput {
+  project: ProjectConfig;
+  resolution: ResolutionResult;
+  lockfile: { planmoVersion: string; packs: readonly PackLockEntryType[] };
+  /** Compiled profile for the project's planning depth (null for custom). */
+  profile: PlanningProfile | null;
+  /** Standards + policy selection for the project context (never undefined). */
+  standards: StandardsSelection;
+}
+
+/**
+ * The compiled IR — a plain, deterministic, hash-stable snapshot of every
+ * input a renderer may need. All collections are sorted; there is no
+ * timestamp or ephemeral state anywhere in the structure.
+ */
+export interface PlanningIR {
+  schemaVersion: typeof IR_SCHEMA_VERSION;
+  /** sha256 of the canonical (sorted-key) serialization of the inputs. */
+  inputHash: string;
+  project: ProjectConfig;
+  depth: PlanningDepth;
+  phaseMode: PhaseMode;
+  /** Locked packs sorted by ref — the exact versions/checksums generation binds to. */
+  lockedPacks: readonly PackLockEntryType[];
+  /** Phases this project plans through (canonical spine, already filtered by depth). */
+  phases: readonly PhaseNode[];
+  /** Standards selection, sorted, with conflicts surfaced (never silently resolved). */
+  standards: StandardsSelection;
+  /** Compiled profile or null when depth is custom. */
+  profile: PlanningProfile | null;
+}
+
+/** Canonical JSON: recursive key-sort so identical inputs hash identically. */
+export function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value !== null && typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    const keys = Object.keys(obj).sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(obj[k])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+export function sha256Hex(text: string): string {
+  return createHash('sha256').update(text, 'utf8').digest('hex');
+}
+
+/**
+ * Depth → phase spine pruning. `lean` plans the first 4 phases, `standard`
+ * the first 7, `production` the first 10, `high-assurance` all 13, `custom`
+ * all 13 (the canonical spine is the safe default). Deterministic.
+ */
+export function phasesForDepth(depth: PlanningDepth): readonly PhaseNode[] {
+  const counts: Record<PlanningDepth, number> = {
+    lean: 4,
+    standard: 7,
+    production: 10,
+    'high-assurance': 13,
+    custom: 13,
+  };
+  return CANONICAL_PHASES.slice(0, counts[depth]);
+}
+
+function sortPacks(packs: readonly PackLockEntryType[]): readonly PackLockEntryType[] {
+  return [...packs].sort((a, b) => {
+    if (a.ref !== b.ref) return a.ref < b.ref ? -1 : 1;
+    if (a.version !== b.version) return a.version < b.version ? -1 : 1;
+    // Total order tiebreak: identical refs/versions ordered by digest so the
+    // sort is stable even for a duplicate-ref anomaly.
+    const da = a.integrity.digest;
+    const db = b.integrity.digest;
+    return da < db ? -1 : da > db ? 1 : 0;
+  });
+}
+
+/** Compile a deterministic IR from validated inputs (P05-01). */
+export function buildIr(input: IrInput): PlanningIR {
+  const sortedPacks = sortPacks(input.lockfile.packs);
+  const phases = phasesForDepth(input.project.planning.depth);
+
+  const hash = sha256Hex(
+    canonicalJson({
+      project: input.project,
+      packs: sortedPacks,
+      profile: input.profile,
+      standards: input.standards,
+      phases,
+    }),
+  );
+
+  return {
+    schemaVersion: IR_SCHEMA_VERSION,
+    inputHash: hash,
+    project: input.project,
+    depth: input.project.planning.depth,
+    phaseMode: input.project.planning.phaseMode,
+    lockedPacks: sortedPacks,
+    phases,
+    standards: input.standards,
+    profile: input.profile,
+  };
+}

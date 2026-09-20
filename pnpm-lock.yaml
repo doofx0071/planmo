@@ -57,6 +57,21 @@ importers:
         specifier: 2.9.1
         version: 2.9.1
 
+  packages/generator:
+    dependencies:
+      '@planmo/core':
+        specifier: workspace:*
+        version: link:../core
+      '@planmo/packs':
+        specifier: workspace:*
+        version: link:../packs
+      '@planmo/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@planmo/shared':
+        specifier: workspace:*
+        version: link:../shared
+
   packages/packs:
     dependencies:
       '@planmo/schema':

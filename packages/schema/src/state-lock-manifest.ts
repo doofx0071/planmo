@@ -83,7 +83,21 @@ export const ARTIFACT_KINDS = [
 ] as const;
 export type ArtifactKind = (typeof ARTIFACT_KINDS)[number];
 
-export const OWNERSHIP_MODES = ['managed', 'merge', 'user'] as const;
+/**
+ * Ownership modes. Canonical CHG-001 classes (ADR-0016): `generated` (PlanMo
+ * owns the whole file), `merged` (PlanMo owns structured sections), `seeded`
+ * (PlanMo created it once, then the user owns it), `user` (PlanMo never
+ * overwrites). Legacy values `managed`/`merge` remain accepted aliases so
+ * v1 manifests written before CHG-001 keep parsing.
+ */
+export const OWNERSHIP_MODES = [
+  'managed',
+  'merge',
+  'user',
+  'generated',
+  'merged',
+  'seeded',
+] as const;
 export type OwnershipMode = (typeof OWNERSHIP_MODES)[number];
 
 export const ManifestEntry = z.strictObject({

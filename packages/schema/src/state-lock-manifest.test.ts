@@ -144,4 +144,14 @@ describe('ManifestSchema (manifest.json)', () => {
     const { checksum, ...entry } = valid.entries[0]!;
     expectRejected(ManifestSchema, { ...valid, entries: [entry] });
   });
+
+  it('accepts canonical CHG-001 ownership classes', () => {
+    for (const mode of ['generated', 'merged', 'seeded', 'user'] as const) {
+      const parsed = roundTripJson(ManifestSchema, {
+        ...valid,
+        entries: [{ ...valid.entries[0], ownershipMode: mode }],
+      });
+      expect(parsed.entries[0]?.ownershipMode).toBe(mode);
+    }
+  });
 });
