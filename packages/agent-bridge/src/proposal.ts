@@ -21,3 +21,8 @@ export const proposalValidator: ProposalValidator = {
     return { ok: false, errors };
   },
 };
+
+/** Convenience alias: validate raw agent output against AiProposalSchema. */
+export function validateProposal(raw: unknown): ProposalValidation {
+  return proposalValidator.validate(raw);
+}

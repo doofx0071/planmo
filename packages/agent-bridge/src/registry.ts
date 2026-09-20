@@ -1,8 +1,12 @@
-import type {
-  AgentAdapter,
-  AgentInvocation,
-  AgentRequest,
-  AdapterCapabilities,
+import {
+  genericAdapter,
+  opencodeAdapter,
+  codexAdapter,
+  claudeCodeAdapter,
+  type AgentAdapter,
+  type AgentInvocation,
+  type AgentRequest,
+  type AdapterCapabilities,
 } from '@planmo/adapters';
 
 /**
@@ -15,8 +19,8 @@ import type {
  * allows adding adapters without architecture change).
  *
  * Lookups are deterministic and pure. Adapters register themselves through
- * `registerAdapter`; the registry exposes capability queries so the bridge
- * can choose an adapter for a request and degrade explicitly.
+ * `register`; the registry exposes capability queries so the bridge can
+ * choose an adapter for a request and degrade explicitly.
  */
 
 export interface AdapterRegistry {
@@ -40,7 +44,7 @@ export const NO_CAPABILITIES: AdapterCapabilities = {
   supportsInlineContext: false,
 };
 
-export function createRegistry(): AdapterRegistry {
+export function createRegistry(): MutableRegistry {
   const adapters = new Map<string, AgentAdapter>();
 
   const registry: AdapterRegistry = {
@@ -67,9 +71,29 @@ export function createRegistry(): AdapterRegistry {
 
   return Object.assign(registry, {
     register(adapter: AgentAdapter): void {
+      if (adapters.has(adapter.id)) {
+        throw new Error(`duplicate adapter registration: "${adapter.id}"`);
+      }
       adapters.set(adapter.id, adapter);
     },
   });
 }
 
 export type MutableRegistry = AdapterRegistry & { register(adapter: AgentAdapter): void };
+
+/**
+ * Default registry with all Phase 06 adapters registered: the three
+ * v1-primary agents (generic, opencode, claude-code) plus the codex
+ * extension adapter (ADR-0008: codex is not a v1-primary agent; the generic
+ * contract allows it as an extension without architecture change).
+ */
+export function createDefaultRegistry(): MutableRegistry {
+  const registry = createRegistry();
+  registry.register(genericAdapter);
+  registry.register(opencodeAdapter);
+  registry.register(claudeCodeAdapter);
+  // Codex: extension adapter, NOT a v1-primary agent (ADR-0008 reconcile;
+  // canonical AGENT_IDS stays opencode | claude-code | generic).
+  registry.register(codexAdapter);
+  return registry;
+}
