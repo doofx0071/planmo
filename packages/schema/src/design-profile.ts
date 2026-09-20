@@ -46,41 +46,46 @@ export type RegistryTrustLevel = (typeof REGISTRY_TRUST_LEVELS)[number];
  * third-party code before use. Registry content never bypasses PlanMo
  * path/ownership safety.
  */
-export const RegistryItemSchema = z.strictObject({
-  /** Registry id, e.g. "shadcn/ui". */
-  id: NonEmptyString,
-  /** HTTP(S) source URL — file:// and other schemes are rejected. */
-  url: z.string().refine((u) => u.startsWith('https://') || u.startsWith('http://'), {
-    message: 'registry source must be an http(s) URL',
-  }),
-  /** Trust classification — REQUIRED, never defaulted to official. */
-  trust: z.enum(REGISTRY_TRUST_LEVELS),
-  /** Resolved item name. */
-  name: NonEmptyString,
-  /** Version/ref when available. */
-  version: NonEmptyString.optional(),
-  /** Content integrity hash when available (e.g. sha256:…). */
-  integrity: z.string().regex(/^[a-z0-9]+:[A-Fa-f0-9]+$/).optional(),
-  /**
-   * Whether explicit human review is required before use. FORCED true for
-   * community/untrusted sources (cannot be disabled); official/verified may
-   * declare false explicitly. Default true (conservative).
-   */
-  requiresReview: z.boolean().default(true),
-  /** Source record for provenance (url + acquired version/integrity). */
-  sourceRecord: NonEmptyString.optional(),
-}).superRefine((item, ctx) => {
-  if (
-    (item.trust === 'community' || item.trust === 'untrusted') &&
-    item.requiresReview !== true
-  ) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['requiresReview'],
-      message: `trust "${item.trust}" forces requiresReview=true`,
-    });
-  }
-});
+export const RegistryItemSchema = z
+  .strictObject({
+    /** Registry id, e.g. "shadcn/ui". */
+    id: NonEmptyString,
+    /** HTTP(S) source URL — file:// and other schemes are rejected. */
+    url: z.string().refine((u) => u.startsWith('https://') || u.startsWith('http://'), {
+      message: 'registry source must be an http(s) URL',
+    }),
+    /** Trust classification — REQUIRED, never defaulted to official. */
+    trust: z.enum(REGISTRY_TRUST_LEVELS),
+    /** Resolved item name. */
+    name: NonEmptyString,
+    /** Version/ref when available. */
+    version: NonEmptyString.optional(),
+    /** Content integrity hash when available (e.g. sha256:…). */
+    integrity: z
+      .string()
+      .regex(/^[a-z0-9]+:[A-Fa-f0-9]+$/)
+      .optional(),
+    /**
+     * Whether explicit human review is required before use. FORCED true for
+     * community/untrusted sources (cannot be disabled); official/verified may
+     * declare false explicitly. Default true (conservative).
+     */
+    requiresReview: z.boolean().default(true),
+    /** Source record for provenance (url + acquired version/integrity). */
+    sourceRecord: NonEmptyString.optional(),
+  })
+  .superRefine((item, ctx) => {
+    if (
+      (item.trust === 'community' || item.trust === 'untrusted') &&
+      item.requiresReview !== true
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['requiresReview'],
+        message: `trust "${item.trust}" forces requiresReview=true`,
+      });
+    }
+  });
 export type RegistryItem = z.infer<typeof RegistryItemSchema>;
 
 // ---------------------------------------------------------------- rich profile

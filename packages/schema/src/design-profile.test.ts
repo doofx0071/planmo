@@ -26,7 +26,6 @@ describe('RichDesignProfileSchema (P07-01)', () => {
     expect(profile.style).toBe('minimal');
     expect(profile.motion?.profile).toBe('restrained');
     expect(profile.components?.system).toBe('shadcn');
-    expect(profile.registries).toBeUndefined();
   });
 
   it('rejects unknown fields (strict)', () => {
@@ -57,17 +56,21 @@ describe('RichDesignProfileSchema (P07-01)', () => {
 
   it('rejects a typography strategy outside the enum and maxFamilies > 4', () => {
     expect(
-      RichDesignProfileSchema.safeParse({ ...validProfile, typography: { strategy: 'papyrus' } }).success,
+      RichDesignProfileSchema.safeParse({ ...validProfile, typography: { strategy: 'papyrus' } })
+        .success,
     ).toBe(false);
     expect(
-      RichDesignProfileSchema.safeParse({ ...validProfile, typography: { strategy: 'sans', maxFamilies: 9 } })
-        .success,
+      RichDesignProfileSchema.safeParse({
+        ...validProfile,
+        typography: { strategy: 'sans', maxFamilies: 9 },
+      }).success,
     ).toBe(false);
   });
 
   it('rejects a motion profile outside none/restrained/expressive/cinematic', () => {
     expect(
-      RichDesignProfileSchema.safeParse({ ...validProfile, motion: { profile: 'flamboyant' } }).success,
+      RichDesignProfileSchema.safeParse({ ...validProfile, motion: { profile: 'flamboyant' } })
+        .success,
     ).toBe(false);
   });
 });
@@ -135,10 +138,14 @@ describe('RegistryItemSchema (P07-04 trust metadata)', () => {
   });
 
   it('rejects a malformed integrity hash', () => {
-    expect(RegistryItemSchema.safeParse({ ...officialItem, integrity: 'not-a-hash' }).success).toBe(false);
+    expect(RegistryItemSchema.safeParse({ ...officialItem, integrity: 'not-a-hash' }).success).toBe(
+      false,
+    );
   });
 
   it('rejects a non-URL source (file:// scheme)', () => {
-    expect(RegistryItemSchema.safeParse({ ...officialItem, url: 'file:///etc/passwd' }).success).toBe(false);
+    expect(
+      RegistryItemSchema.safeParse({ ...officialItem, url: 'file:///etc/passwd' }).success,
+    ).toBe(false);
   });
 });

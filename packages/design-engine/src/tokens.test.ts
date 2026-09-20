@@ -11,8 +11,12 @@ const baseTokens: DtcToken[] = [
 
 describe('dtcTokenEngine.resolve', () => {
   it('resolves by name and by alias reference', () => {
-    expect(dtcTokenEngine.resolve('color.surface.canvas', baseTokens)?.name).toBe('color.surface.canvas');
-    expect(dtcTokenEngine.resolve('{color.surface.canvas}', baseTokens)?.name).toBe('color.surface.canvas');
+    expect(dtcTokenEngine.resolve('color.surface.canvas', baseTokens)?.name).toBe(
+      'color.surface.canvas',
+    );
+    expect(dtcTokenEngine.resolve('{color.surface.canvas}', baseTokens)?.name).toBe(
+      'color.surface.canvas',
+    );
   });
 
   it('returns undefined for unknown aliases', () => {
@@ -26,9 +30,14 @@ describe('validate', () => {
   });
 
   it('detects missing references', () => {
-    const tokens = [...baseTokens, { name: 'color.broken', $type: 'color', $value: '{color.missing}' }];
+    const tokens = [
+      ...baseTokens,
+      { name: 'color.broken', $type: 'color', $value: '{color.missing}' },
+    ];
     const diagnostics = dtcTokenEngine.validate(tokens, {});
-    expect(diagnostics.some((d) => d.code === 'missing-reference' && d.token === 'color.broken')).toBe(true);
+    expect(
+      diagnostics.some((d) => d.code === 'missing-reference' && d.token === 'color.broken'),
+    ).toBe(true);
   });
 
   it('detects alias cycles', () => {
@@ -55,7 +64,9 @@ describe('validate', () => {
       { name: 'spacing.zero', $type: 'dimension', $value: '0' },
     ];
     const diagnostics = dtcTokenEngine.validate(tokens as DtcToken[], {});
-    expect(diagnostics.some((d) => d.code === 'invalid-value' && d.token === 'spacing.bad')).toBe(true);
+    expect(diagnostics.some((d) => d.code === 'invalid-value' && d.token === 'spacing.bad')).toBe(
+      true,
+    );
     expect(diagnostics.some((d) => d.token === 'spacing.zero')).toBe(false);
   });
 

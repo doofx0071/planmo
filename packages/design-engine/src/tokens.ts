@@ -1,5 +1,10 @@
 import type { MotionProfile } from '@planmo/schema';
-import type { DtcToken, DtcTokenEngine, TokenValidationDiagnostic, TokenValue } from './contracts.js';
+import type {
+  DtcToken,
+  DtcTokenEngine,
+  TokenValidationDiagnostic,
+  TokenValue,
+} from './contracts.js';
 
 /**
  * DTCG token engine (P07-02).
@@ -28,10 +33,7 @@ export function aliasTarget(value: string): string {
 }
 
 /** Find a token by exact name or alias reference; undefined when unknown. */
-export function findToken(
-  name: string,
-  tokens: readonly DtcToken[],
-): DtcToken | undefined {
+export function findToken(name: string, tokens: readonly DtcToken[]): DtcToken | undefined {
   return tokens.find((t) => t.name === name);
 }
 

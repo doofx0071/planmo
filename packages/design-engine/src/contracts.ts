@@ -13,12 +13,7 @@ import type { MotionProfile, RegistryItem, RichDesignProfile } from '@planmo/sch
 // ------------------------------------------------------------- DTCG tokens
 
 /** A DTCG token value: literal, alias reference, or nested object group. */
-export type TokenValue =
-  | string
-  | number
-  | readonly string[]
-  | readonly DtcToken[]
-  | DtcToken;
+export type TokenValue = string | number | readonly string[] | readonly DtcToken[] | DtcToken;
 
 export interface DtcToken {
   /** DTCG token name, e.g. "color.surface.canvas" (dot-separated). */
@@ -57,7 +52,10 @@ export interface DtcTokenEngine {
   /** Resolve an alias or name to its token; undefined when unknown. */
   resolve(nameOrRef: string, tokens: readonly DtcToken[]): DtcToken | undefined;
   /** Validate the token set: missing refs, cycles, invalid values, dups. */
-  validate(tokens: readonly DtcToken[], context: { motion?: MotionProfile }): readonly TokenValidationDiagnostic[];
+  validate(
+    tokens: readonly DtcToken[],
+    context: { motion?: MotionProfile },
+  ): readonly TokenValidationDiagnostic[];
   /** Emit canonical DTCG JSON (sorted, deterministic). */
   emit(tokens: readonly DtcToken[]): string;
 }
@@ -86,6 +84,11 @@ export interface RegistryResolveInput {
   integrity?: string;
   /** Optional version/ref. */
   version?: string;
+  /**
+   * Optional review override when the caller can prove prior review.
+   * Default true; FORCED true (never false) when trust is community/untrusted.
+   */
+  requiresReview?: boolean;
 }
 
 export interface RegistryResolveResult {
