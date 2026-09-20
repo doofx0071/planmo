@@ -69,3 +69,15 @@ Create `planning/handoffs/phase-06-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 06. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-06-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add:
+- Context Bundle contract;
+- Standards Injector;
+- ContextProvider and MemoryProvider interfaces;
+- portable agent-neutral context serialization;
+- Execution Packet rendering.
+
+A hosted/vector memory service is not required.

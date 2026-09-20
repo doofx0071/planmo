@@ -68,3 +68,14 @@ Create `planning/handoffs/phase-10-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 10. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-10-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add:
+- repository context map;
+- symbol/reference map;
+- standards discovery;
+- local lexical context index;
+- brownfield memory bootstrap;
+- memory poisoning/prompt-injection fixtures.

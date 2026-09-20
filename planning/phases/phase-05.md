@@ -68,3 +68,13 @@ Create `planning/handoffs/phase-05-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 05. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-05-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add:
+- generated/merged/seeded/user ownership;
+- artifact lineage;
+- safe synth/update preview;
+- standards/context docs generation;
+- golden tests for preserving user-owned files and merged sections.

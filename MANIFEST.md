@@ -1,6 +1,6 @@
 # PlanMo Planning Repository Manifest
 
-Total files: **191**
+Total files: **241**
 
 - `.changeset/config.json`
 - `.changeset/phase-03-cli-foundation.md`
@@ -70,6 +70,8 @@ Total files: **191**
 - `docs/10-engineering/package-boundaries.md`
 - `docs/10-engineering/versioning-and-releases.md`
 - `docs/11-research/2026-source-notes.md`
+- `docs/11-research/chg-001-inspiration-sources.md`
+- `docs/11-research/chg-001-research-summary.md`
 - `docs/11-research/licensing.md`
 - `docs/11-research/naming-and-availability.md`
 - `docs/11-research/research-decisions.md`
@@ -85,6 +87,30 @@ Total files: **191**
 - `docs/12-adrs/ADR-0009-monorepo-and-engineering-toolchain.md`
 - `docs/12-adrs/ADR-0010-cli-routing-and-build-tool.md`
 - `docs/12-adrs/ADR-0011-strict-versioned-schemas.md`
+- `docs/12-adrs/ADR-0012-standards-and-quality-engines.md`
+- `docs/12-adrs/ADR-0013-context-memory-authority-model.md`
+- `docs/12-adrs/ADR-0014-local-first-rebuildable-memory-index.md`
+- `docs/12-adrs/ADR-0015-change-engine-delta-model.md`
+- `docs/12-adrs/ADR-0016-managed-file-ownership-classes.md`
+- `docs/12-adrs/ADR-0017-task-graph-and-execution-packets.md`
+- `docs/13-standards-quality/architecture-fitness.md`
+- `docs/13-standards-quality/quality-engine.md`
+- `docs/13-standards-quality/refactoring-technical-debt.md`
+- `docs/13-standards-quality/standards-engine.md`
+- `docs/14-context-memory/architecture.md`
+- `docs/14-context-memory/evaluation.md`
+- `docs/14-context-memory/lifecycle.md`
+- `docs/14-context-memory/memory-model.md`
+- `docs/14-context-memory/repo-context-map.md`
+- `docs/14-context-memory/retrieval-token-budget.md`
+- `docs/14-context-memory/security.md`
+- `docs/14-context-memory/storage-portability.md`
+- `docs/15-change-governance/change-engine.md`
+- `docs/15-change-governance/context-quality-integration.md`
+- `docs/15-change-governance/managed-file-ownership.md`
+- `docs/15-change-governance/task-graph-execution-packets.md`
+- `docs/16-evals-trust/eval-engine.md`
+- `docs/16-evals-trust/trust-engine-future.md`
 - `eslint.config.js`
 - `MANIFEST.md`
 - `package.json`
@@ -141,8 +167,19 @@ Total files: **191**
 - `packages/shared/src/index.ts`
 - `packages/shared/tsconfig.build.json`
 - `packages/shared/tsconfig.json`
+- `planning/changes/CHG-001-quality-context-governance/acceptance-gates.md`
+- `planning/changes/CHG-001-quality-context-governance/decision.md`
+- `planning/changes/CHG-001-quality-context-governance/impact.md`
+- `planning/changes/CHG-001-quality-context-governance/migration-checklist.md`
+- `planning/changes/CHG-001-quality-context-governance/proposal.md`
+- `planning/changes/CHG-001-quality-context-governance/requirements.md`
+- `planning/changes/CHG-001-quality-context-governance/risks.md`
+- `planning/changes/CHG-001-quality-context-governance/roadmap-delta.md`
+- `planning/changes/CHG-001-quality-context-governance/source-pack.zip`
+- `planning/changes/CHG-001-quality-context-governance/tasks.md`
 - `planning/DECISIONS.md`
 - `planning/DEPENDENCIES.md`
+- `planning/handoffs/chg-001-rebaseline-handoff.md`
 - `planning/handoffs/phase-00-handoff.md`
 - `planning/handoffs/phase-01-handoff.md`
 - `planning/handoffs/phase-02-handoff.md`
@@ -152,6 +189,15 @@ Total files: **191**
 - `planning/MASTER-PLAN.md`
 - `planning/MILESTONES.md`
 - `planning/OPEN-QUESTIONS.md`
+- `planning/phase-addenda/phase-04-addendum.md`
+- `planning/phase-addenda/phase-05-addendum.md`
+- `planning/phase-addenda/phase-06-addendum.md`
+- `planning/phase-addenda/phase-07-addendum.md`
+- `planning/phase-addenda/phase-08-addendum.md`
+- `planning/phase-addenda/phase-09-addendum.md`
+- `planning/phase-addenda/phase-10-addendum.md`
+- `planning/phase-addenda/phase-11-addendum.md`
+- `planning/phase-addenda/phase-12-addendum.md`
 - `planning/phases/phase-00.md`
 - `planning/phases/phase-01.md`
 - `planning/phases/phase-02.md`
@@ -191,5 +237,9 @@ Total files: **191**
 - `ROADMAP.md`
 - `scripts/check-boundaries.mjs`
 - `SECURITY.md`
+- `specs/context-bundle.example.md`
+- `specs/context-request.example.yaml`
+- `specs/engineering-policy.example.yaml`
+- `specs/memory-record.example.yaml`
 - `tsconfig.base.json`
 - `vitest.config.ts`

@@ -68,3 +68,16 @@ Create `planning/handoffs/phase-04-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 04. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-04-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add to Phase 04:
+- standards packs;
+- engineering policy metadata;
+- deterministic standards precedence;
+- provenance fields;
+- context/memory policy declarations;
+- tests for conflicting policies and pack provenance.
+
+Do not implement memory storage yet.

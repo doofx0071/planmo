@@ -1,0 +1,21 @@
+schema_version: 1
+id: MEM-0001
+type: semantic
+scope:
+  project: planmo
+  package: core
+title: Canonical project model is authoritative
+content: >
+  Generated documentation and memory never override the versioned canonical
+  project model and accepted repository state.
+tags: [architecture, authority]
+importance: 10
+source_refs:
+  - docs/12-adrs/ADR-0002-canonical-project-model.md
+trust_class: accepted_policy
+sensitivity: internal
+created_at: 2026-09-20T00:00:00Z
+valid_from: 2026-09-20T00:00:00Z
+valid_to: null
+superseded_by: null
+expires_at: null

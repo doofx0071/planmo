@@ -1,0 +1,18 @@
+schema_version: 1
+project_id: planmo
+phase: '06'
+task_ids: [P06-07, P06-08]
+query: Implement context bundle compilation and standards injection
+paths:
+  - packages/agent-bridge/**
+  - packages/core/**
+token_budget: 6000
+include:
+  invariants: true
+  standards: true
+  memories: true
+  repo_map: true
+  tests: true
+exclude:
+  sensitivity:
+    - secret

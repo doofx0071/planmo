@@ -68,3 +68,14 @@ Create `planning/handoffs/phase-11-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 11. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-11-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add:
+- standards/context pack authoring;
+- context export/import;
+- optional MemoryProvider adapters;
+- provenance/trust metadata.
+
+Remote executable hooks remain out of scope.

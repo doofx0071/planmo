@@ -68,3 +68,15 @@ Create `planning/handoffs/phase-08-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 08. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-08-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add:
+- task DAG;
+- `ready` computation;
+- claim/release leases;
+- session memory lifecycle;
+- handoff-to-memory consolidation;
+- token-budgeted context for `planmo next`;
+- Change Engine workflow.

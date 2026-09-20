@@ -68,3 +68,15 @@ Create `planning/handoffs/phase-09-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 09. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-09-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add:
+- `planmo quality`;
+- standards drift;
+- architecture fitness rules;
+- technical-debt diagnostics;
+- stale/superseded memory detection;
+- context index integrity/rebuild diagnostics;
+- ownership/lineage diagnostics.

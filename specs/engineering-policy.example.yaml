@@ -1,0 +1,19 @@
+schema_version: 1
+quality:
+  strict_typing: true
+  forbid_unjustified_any: true
+  circular_dependencies: forbidden
+  changed_business_logic_requires_tests: true
+  negative_paths_required: true
+  refactor_unrelated_code: forbidden
+
+thresholds:
+  complexity_warning: 10
+  complexity_review: 15
+  file_lines_warning: 400
+  file_lines_review: 600
+
+policy:
+  thresholds_are_advisory: true
+  stack_pack_may_override: true
+  override_requires_rationale: true

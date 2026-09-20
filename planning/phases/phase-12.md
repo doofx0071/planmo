@@ -64,3 +64,14 @@ Create `planning/handoffs/phase-12-handoff.md` containing:
 
 ## Stop rule
 **HARD STOP after Phase 12. Do not start another phase in this session.**
+
+## CHG-001 addendum (accepted 2026-09-20)
+Sourced from `planning/phase-addenda/phase-12-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
+
+Add:
+- context retrieval evals;
+- token-usage benchmark;
+- poisoning/staleness tests;
+- corruption/rebuild tests;
+- optional semantic adapter eval;
+- trust metadata pilot.
