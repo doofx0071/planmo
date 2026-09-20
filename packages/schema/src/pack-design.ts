@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { NonEmptyString, PackRef, SemVerString, versionedObject } from './common.js';
+import { Checksum, NonEmptyString, PackRef, SemVerString, versionedObject } from './common.js';
 import {
   ACCESSIBILITY_LEVELS,
   DESIGN_DENSITIES,
@@ -12,14 +12,38 @@ import {
 /**
  * Declarative pack and design-profile schemas (P02-03).
  * Packs are declarative in v1: metadata + structured content, no executable
- * code (ADR-0004, MASTER-GUARDRAILS).
+ * code (ADR-0004, MASTER-GUARDRAILS). The loader (`@planmo/packs`) enforces
+ * the no-execution rule on `content` in addition to this strict shape.
  */
 
-export const PACK_CATEGORIES = ['stack', 'domain', 'risk', 'design', 'agent', 'workflow'] as const;
+export const PACK_CATEGORIES = [
+  'stack',
+  'domain',
+  'risk',
+  'design',
+  'agent',
+  'workflow',
+  'standards',
+  'policy',
+  'context',
+] as const;
 export type PackCategory = (typeof PACK_CATEGORIES)[number];
 
 /** A capability a pack provides or requires, e.g. "stack.nextjs", "design.minimal". */
 export const CapabilityRef = NonEmptyString;
+
+/** Remote pack provenance (REQ-TRUST-001 / CHG-001 P04-08). */
+export const PackProvenanceSchema = z.strictObject({
+  source: z.enum(['local', 'registry', 'git']),
+  /** Origin URL for registry/git sources. */
+  url: z.string().url().optional(),
+  author: NonEmptyString.optional(),
+  publishedAt: z.string().datetime().optional(),
+  license: NonEmptyString.optional(),
+  /** Integrity of the resolved remote content. */
+  integrity: Checksum.optional(),
+});
+export type PackProvenance = z.infer<typeof PackProvenanceSchema>;
 
 /**
  * Declarative pack manifest — `pack.yml` inside a pack directory.
@@ -39,6 +63,8 @@ export const PackSchema = versionedObject({
   requires: z.array(PackRef).default([]),
   /** Declarative pack content as structured data (shape validated by the loader). */
   content: z.record(z.string(), z.unknown()).default({}),
+  /** Trust/provenance metadata (local packs may omit; remote require it). */
+  provenance: PackProvenanceSchema.optional(),
 });
 export type PackDocument = z.infer<typeof PackSchema>;
 
