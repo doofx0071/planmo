@@ -29,12 +29,12 @@ P05-02,05,Implement artifact renderers,DONE,high
 P05-03,05,Implement generation manifest/checksums,DONE,high
 P05-04,05,Create golden generated-repository fixtures,DONE,critical
 P05-05,05,Test idempotent regeneration,DONE,critical
-P06-01,06,Define agent capability contract,TODO,high
-P06-02,06,Implement generic adapter,TODO,high
-P06-03,06,Implement OpenCode adapter,TODO,medium
-P06-04,06,Implement Codex adapter,TODO,medium
-P06-05,06,Implement Claude Code adapter,TODO,medium
-P06-06,06,Validate structured AI proposal schema,TODO,critical
+P06-01,06,Define agent capability contract,DONE,high
+P06-02,06,Implement generic adapter,DONE,high
+P06-03,06,Implement OpenCode adapter,DONE,medium
+P06-04,06,Implement Codex adapter,DONE,medium
+P06-05,06,Implement Claude Code adapter,DONE,medium
+P06-06,06,Validate structured AI proposal schema,DONE,critical
 P07-01,07,Implement design profile schema/model,TODO,high
 P07-02,07,Implement DTCG token generation,TODO,high
 P07-03,07,Create 8 initial design packs,TODO,medium
@@ -76,11 +76,11 @@ P05-06,05,Ownership classes generated/merged/seeded/user (CHG-001),DONE,high
 P05-07,05,Artifact lineage metadata (CHG-001),DONE,high
 P05-08,05,Upgrade/synth preview semantics (CHG-001),DONE,high
 P05-09,05,Standards/context artifact generation (CHG-001),DONE,medium
-P06-07,06,Context Bundle schema/compiler (CHG-001),TODO,high
-P06-08,06,Standards Injector (CHG-001),TODO,high
-P06-09,06,ContextProvider interface (CHG-001),TODO,high
-P06-10,06,MemoryProvider interface (CHG-001),TODO,high
-P06-11,06,Execution Packet context rendering (CHG-001),TODO,medium
+P06-07,06,Context Bundle schema/compiler (CHG-001),DONE,high
+P06-08,06,Standards Injector (CHG-001),DONE,high
+P06-09,06,ContextProvider interface (CHG-001),DONE,high
+P06-10,06,MemoryProvider interface (CHG-001),DONE,high
+P06-11,06,Execution Packet context rendering (CHG-001),DONE,medium
 P07-07,07,Design standards as structured standards + anti-pattern policies (CHG-001),TODO,medium
 P08-06,08,Task DAG / ready computation (CHG-001),TODO,high
 P08-07,08,Claims and leases (CHG-001),TODO,high
