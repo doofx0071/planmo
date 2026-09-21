@@ -49,10 +49,10 @@ describe('DESIGN_STANDARDS shape', () => {
     }
   });
 
-  it('uses class "language" because "design" is not a STANDARD_CLASSES member', () => {
-    expect(STANDARD_CLASSES).not.toContain('design' as never);
-    expect(DESIGN_STANDARDS_CLASS).toBe('language');
-    expect(DESIGN_STANDARDS.every((r) => r.class === 'language')).toBe(true);
+  it('uses class "design" (added to STANDARD_CLASSES in Phase 09)', () => {
+    expect(STANDARD_CLASSES).toContain('design');
+    expect(DESIGN_STANDARDS_CLASS).toBe('design');
+    expect(DESIGN_STANDARDS.every((r) => r.class === 'design')).toBe(true);
   });
 
   it('covers the mandated topics', () => {
@@ -73,11 +73,25 @@ describe('DESIGN_STANDARDS shape', () => {
 });
 
 describe('designStandardsFor', () => {
-  it('returns all DESIGN_STANDARDS sorted by id', () => {
+  it('returns all DESIGN_STANDARDS sorted by id for a normal frontend profile', () => {
     const result = designStandardsFor(sampleProfile);
     const expected = [...DESIGN_STANDARDS].map((r) => r.id).sort();
     expect(result.map((r) => r.id)).toEqual(expected);
     expect(result.length).toBe(DESIGN_STANDARDS.length);
+  });
+
+  it('drops web-domain rules for backendOnly profiles', () => {
+    const backend = designStandardsFor({ ...sampleProfile, backendOnly: true });
+    const ids = backend.map((r) => r.id);
+    expect(ids).not.toContain('design.contrast-floor'); // web domain
+    expect(ids).toContain('design.dtcg-canonical'); // universal
+    expect(backend.length).toBeLessThan(DESIGN_STANDARDS.length);
+  });
+
+  it('drops the touch-target floor for spacious density', () => {
+    const spacious = designStandardsFor({ ...sampleProfile, density: 'spacious' });
+    expect(spacious.map((r) => r.id)).not.toContain('design.touch-targets');
+    expect(spacious.map((r) => r.id)).toContain('design.contrast-floor');
   });
 
   it('is deterministic: identical profiles yield identical results', () => {

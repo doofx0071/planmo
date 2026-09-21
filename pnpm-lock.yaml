@@ -136,6 +136,21 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
+  packages/trace:
+    dependencies:
+      '@planmo/core':
+        specifier: workspace:*
+        version: link:../core
+      '@planmo/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@planmo/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@planmo/workflow':
+        specifier: workspace:*
+        version: link:../workflow
+
   packages/workflow:
     dependencies:
       '@planmo/agent-bridge':

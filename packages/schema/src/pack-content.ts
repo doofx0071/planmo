@@ -21,6 +21,7 @@ export const STANDARD_CLASSES = [
   'testing',
   'organization',
   'package-local',
+  'design',
 ] as const;
 export type StandardClass = (typeof STANDARD_CLASSES)[number];
 

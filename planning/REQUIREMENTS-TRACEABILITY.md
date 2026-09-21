@@ -100,6 +100,13 @@ Example:
 | Package boundaries | `docs/10-engineering/package-boundaries.md` + `scripts/check-boundaries.mjs` in CI | P01-05 | `pnpm boundary-check` exit 0; negative cases in script |
 | CLI smoke | `@planmo/cli` bin `planmo` (ADR-0010) | P01-01/02 | `node packages/cli/dist/bin.js --version` → `planmo 0.0.0`; CLI unit tests |
 
+## Phase 09 trace
+
+| Requirement family | Decision/artifact | Task | Test/evidence |
+|---|---|---|---|
+| REQ-DESIGN-*, REQ-QLT-*, REQ-ARCH-*, REQ-MEM-*, REQ-CTX-*, REQ-STD-* diagnostic surfaces | ADR-0023, `@planmo/trace` (TRC/VLD/DOC/QLT/DEBT/MEM/DRF/FIT stable codes), `design` class + `designStandardsFor` appliesTo (P09-08) | P09-01..10 | 73 new tests; every code family negative + clean-input-tested; byte-deterministic render + sorted diagnostics; no-score-field assertion for quality; `designStandardsFor` drops web rules on backendOnly and touch-target floor on spacious density; E2E `scripts/e2e-phase09.mjs` |
+| Traceability to tasks/tests (REQ-TRC) | `trace-graph.ts` (TRC-001..004), `trace-render.ts` (byte-stable plain text) | P09-01, P09-04 | 15 graph tests on drift fixture (orphan REQ-C, untested P03-01, dangling test, missing link target) + clean-input zero diagnostics |
+
 ## CHG-001 trace (Quality, Context, Memory & Governance)
 
 Source: `planning/changes/CHG-001-quality-context-governance/` (accepted 2026-09-20; ADRs 0012–0017).
@@ -107,13 +114,13 @@ Source: `planning/changes/CHG-001-quality-context-governance/` (accepted 2026-09
 | Requirement family | Decision/artifact | Task | Test/evidence |
 |---|---|---|---|
 | REQ-STD-001..004 — structured standards, applicable selection, discovery, precedence | ADR-0012/0018/0020, `docs/13-standards-quality/standards-engine.md` | P04-06, P04-07, P06-08, P09-08, P10-08 | later-phase tests; precedence conflicts surfaced not silently resolved; deterministic injector renders selected rules |
-| REQ-QLT-001..004 — maintainability review, refactoring policy, technical debt, quality diagnostics | ADR-0012, `docs/13-standards-quality/quality-engine.md`, `refactoring-technical-debt.md` | P09-06, P09-09 | `planmo quality` emits findings, not vanity scores; phase-close debt review |
+| REQ-QLT-001..004 — maintainability review, refactoring policy, technical debt, quality diagnostics | ADR-0012/0023, ...[truncated]
 | REQ-CTX-001..005 — context bundle, repo map, token budget, progressive disclosure, agent-neutral portability | ADR-0013/0014/0022, `docs/14-context-memory/architecture.md`, `retrieval-token-budget.md` | P06-07, P06-09, P08-10, P10-06, P10-09 | budget-bound context bundle; deterministic lexical baseline; export formats plain JSON/JSONL/MD; `planmo next` composes budgeted L0/L1/L2 via agent-bridge `compileContextBundle` |
 | REQ-MEM-001..010 — authority, types, provenance, temporal validity, scoping, local-first, rebuildable, secrets, pruning, poisoning defense | ADR-0013/0014/0020/0022, `docs/14-context-memory/memory-model.md`, `security.md`, `lifecycle.md` | P04-09, P06-10, P08-08, P08-09, P09-10, P10-10, P12-08, P12-10 | poisoning/staleness/security tests; canonical outranks memory; raw chat not durable by default; no-op rows when nothing stored; session-memory lifecycle + handoff consolidation (source mapping, provenance, `internal` sensitivity, supersede) 12 tests |
 | REQ-CHG-001..004 — change packages, deltas, impact, apply/archive | ADR-0015/0022, `docs/15-change-governance/change-engine.md` | P08-11 | `planmo change new/apply/archive`; ADDED/MODIFIED/REMOVED deltas; `ChangePackageSchema` (schema test 5) + change engine (apply stamps decision, double-apply refused) |
 | REQ-SYN-001..003 — ownership classes, lineage, upgrade preview | ADR-0016, `docs/15-change-governance/managed-file-ownership.md` | P05-06, P05-07, P05-08, P05-09 | upgrade preview shows collisions/migrations; no silent overwrite; writer checksums feed lineage |
 | REQ-WRK-001..003 — task graph, claims, execution packets | ADR-0017/0022, `docs/15-change-governance/task-graph-execution-packets.md` | P08-06, P08-07, P06-11 | ready/blocked computation; lease expiry; packet carries reqs+standards+context+risks+tests; DAG cycles/ready/ordered 30 tests; lease `expired()` pure query (caller reclaims) 16 tests |
-| REQ-ARCH-001..002 — fitness rules, cycle/orphan diagnostics | ADR-0012, `docs/13-standards-quality/architecture-fitness.md` | P09-07 | machine-readable rules; failures carry rule ID, path, requirement, remediation |
+| REQ-ARCH-001..002 — fitness rules, cycle/orphan diagnostics | ADR-0012/0023, `docs/13-standards-quality/architecture-fitness.md` | P09-07 | machine-readable rules; failures carry rule ID, path, requirement, remediation; FIT-001..003 (boundary edge, cycle, dist-import) tested |
 | REQ-EVAL-001..003 — golden scenarios, AI rubric, token benchmark | ADR-0014, `docs/16-evals-trust/eval-engine.md` | P12-08, P12-09, P12-10 | deterministic rubric checks on fixtures; malicious-repo authority fixture |
 | REQ-TRUST-001..003 — pack provenance, no implicit execution, future SBOM/signature | ADR-0017 (trust future), `docs/16-evals-trust/trust-engine-future.md` | P04-08, P11-06 | declarative packs remain non-executable; trust metadata fields defined; no v1 blocker |
 
