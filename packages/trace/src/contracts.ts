@@ -121,44 +121,13 @@ export interface TraceRenderer {
 }
 
 // ---------------------------------------------------------- validate (P09-02)
-
-export interface ValidateInput {
-  /** Required canonical document paths. */
-  docs: readonly string[];
-  state?: StateDocument;
-  /** Parsed task ids + statuses (canonical). */
-  tasks?: Readonly<Record<string, string>>;
-  /** Manifest entries "path -> sha256" when available. */
-  manifest?: Readonly<Record<string, string>>;
-}
-
-export interface Validator {
-  /** Cross-document invariants + schema presence checks; read-only. */
-  run(input: ValidateInput): DiagnosticReport;
-}
-
+// Canonical shapes live in validate.ts (ValidatorEngine, ValidationInput,
+// ValidateTaskRow, ValidationDocuments, ValidationResult).
+//
 // ------------------------------------------------------------ doctor (P09-03)
-
-export interface DoctorInput {
-  /** Injected environment facts (the CLI resolves these). */
-  env: {
-    nodeVersion: string;
-    pnpmVersion?: string;
-    gitAvailable: boolean;
-    workingDir: string;
-    /** Present canonical files. */
-    files: readonly string[];
-    /** Required tool files, e.g. package.json, tsconfig.base.json. */
-    toolchain: readonly string[];
-  };
-  /** Required workspace entry points (relative paths). */
-  requiredFiles?: readonly string[];
-}
-
-export interface Doctor {
-  /** Environmental/project health check — never mutates state. */
-  run(input: DoctorInput): DiagnosticReport;
-}
+// Canonical shapes live in doctor.ts (DoctorEngine, DoctorInput, DoctorResult,
+// DoctorHealth).
+//
 
 // ------------------------------------------------------------ quality (P09-06)
 

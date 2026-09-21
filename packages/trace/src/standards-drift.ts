@@ -1,9 +1,5 @@
 import type { StandardRule } from '@planmo/schema';
-import type {
-  Diagnostic,
-  StandardsDriftEngine,
-  StandardsDriftInput,
-} from './contracts.js';
+import type { Diagnostic, StandardsDriftEngine, StandardsDriftInput } from './contracts.js';
 import { countsOf, sortDiagnostics } from './contracts.js';
 
 /**

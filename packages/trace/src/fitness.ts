@@ -43,7 +43,10 @@ function edgeKey(from: string, to: string): string {
 
 export function fitnessEngine(): FitnessEngine {
   return {
-    evaluate(rules: FitnessRule): { diagnostics: readonly Diagnostic[]; counts: Record<'error' | 'warning' | 'info', number> } {
+    evaluate(rules: FitnessRule): {
+      diagnostics: readonly Diagnostic[];
+      counts: Record<'error' | 'warning' | 'info', number>;
+    } {
       const out: FitnessViolation[] = [];
       const seen = new Set<string>();
 

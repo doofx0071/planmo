@@ -26,7 +26,9 @@ describe('fitnessEngine (P09-07)', () => {
       observedEdges: { core: ['shared', 'schema', 'adapters'] },
     });
     const v = diagnostics.find((d) => d.code === 'FIT-001');
-    expect(diagnostics.some((d) => d.code === 'FIT-001' && d.target === 'core -> adapters')).toBe(true);
+    expect(diagnostics.some((d) => d.code === 'FIT-001' && d.target === 'core -> adapters')).toBe(
+      true,
+    );
     expect(v?.remediation?.length ?? 0).toBeGreaterThan(0);
     expect(counts.error).toBe(1);
   });
@@ -80,8 +82,12 @@ describe('standardsDriftEngine (P09-08)', () => {
 
   it('detects declared-missing (DRF-001) and selected-undeclared (DRF-002)', () => {
     const { diagnostics } = standardsDriftEngine().analyze(input());
-    expect(diagnostics.some((d) => d.code === 'DRF-001' && d.target === 'design.contrast-floor')).toBe(true);
-    expect(diagnostics.some((d) => d.code === 'DRF-002' && d.target === 'design.touch-targets')).toBe(true);
+    expect(
+      diagnostics.some((d) => d.code === 'DRF-001' && d.target === 'design.contrast-floor'),
+    ).toBe(true);
+    expect(
+      diagnostics.some((d) => d.code === 'DRF-002' && d.target === 'design.touch-targets'),
+    ).toBe(true);
   });
 
   it('flags unknown classes as errors (DRF-003)', () => {
@@ -96,7 +102,11 @@ describe('standardsDriftEngine (P09-08)', () => {
   it('hasStandardsDrift is true when warnings exist, false when clean', () => {
     expect(hasStandardsDrift(input())).toBe(true);
     expect(
-      hasStandardsDrift({ declared: [rule('a.b')], selected: [rule('a.b')], knownClasses: ['language'] }),
+      hasStandardsDrift({
+        declared: [rule('a.b')],
+        selected: [rule('a.b')],
+        knownClasses: ['language'],
+      }),
     ).toBe(false);
   });
 
@@ -111,7 +121,9 @@ describe('standardsDriftEngine (P09-08)', () => {
   });
 
   it('is deterministic', () => {
-    expect(standardsDriftEngine().analyze(input())).toEqual(standardsDriftEngine().analyze(input()));
+    expect(standardsDriftEngine().analyze(input())).toEqual(
+      standardsDriftEngine().analyze(input()),
+    );
   });
 });
 
