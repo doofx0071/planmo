@@ -4,13 +4,10 @@ import { STANDARD_CLASSES } from '@planmo/schema';
 /**
  * Structured design standards (P07-07, CHG-001).
  *
- * The fixed, deterministic set of frontend-design standards PlanMo enforces.
- * NOTE: `'design'` is NOT a member of STANDARD_CLASSES (verified against
- * packages/schema/src/pack-content.ts: global-engineering, language,
- * framework, domain, security, accessibility, testing, organization,
- * package-local), so rules use class `'language'` with `design.*` ids. The
- * ids keep the `design.` namespace so a future `'design'` class can adopt
- * them without renaming.
+ * The fixed, deterministic set of frontend-design standards PlanMo enforces,
+ all with class `'design'` (added to STANDARD_CLASSES in Phase 09 so these
+ rules finally have a real class; `design.*` ids match the namespace).
+ 
  *
  * DESIGN_STANDARDS is the source of truth; designStandardsFor(profile)
  * currently returns the full set sorted by id. Per-profile refinement
@@ -23,7 +20,7 @@ import { STANDARD_CLASSES } from '@planmo/schema';
 export const DESIGN_STANDARDS: readonly StandardRule[] = [
   {
     id: 'design.accessibility-outranks-style',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Never let visual style override accessibility: contrast, keyboard navigation, focus visibility, semantics, reduced motion, touch targets, and accessible names keep their WCAG 2.2 AA floors.',
     rationale:
@@ -32,7 +29,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.accessible-names',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Give every interactive and meaningful element an accessible name (WCAG 4.1.2, 2.5.3); icon-only controls need an aria-label or a visible text label.',
     rationale: 'Unnamed controls are unusable to assistive technology and fail WCAG 2.2 AA.',
@@ -41,7 +38,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.anti-patterns',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Ban purposeless continuous animation, excessive bounce, hidden state changes without announcement, hover-only essential actions, and autoplaying motion without a pause control.',
     rationale:
@@ -50,7 +47,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.contrast-floor',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Honor the contrast floor: 4.5:1 for normal text and 3:1 for large text and UI components (WCAG 1.4.3, 1.4.11); style cannot lower it.',
     rationale:
@@ -60,7 +57,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.dtcg-canonical',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Represent every design decision as a canonical DTCG token (ADR-0003); framework outputs (Tailwind, CSS custom properties, shadcn) are derived adapters, never the source of truth.',
     rationale:
@@ -69,7 +66,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.focus-visible',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Show a visible focus indicator on every interactive element (WCAG 2.4.7); focus outlines must never be removed entirely.',
     rationale:
@@ -79,7 +76,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.keyboard-navigation',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Make every interactive feature reachable and operable by keyboard alone (WCAG 2.1.1) with a logical, visible focus order.',
     rationale: 'Keyboard operability is the base requirement for all assistive technologies.',
@@ -88,7 +85,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.motion-profiles',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Constrain animation to the motion profiles none, restrained, expressive, or cinematic; restrained is the default for general product UI.',
     rationale:
@@ -97,7 +94,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.reduced-motion',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Honor prefers-reduced-motion for every user-visible animation (WCAG 2.3.3); motion must remain disable-able for reduced-motion users.',
     rationale:
@@ -106,7 +103,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.responsive-mobile-first',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Design mobile-first with explicit responsive rules; layouts must stay usable at small viewports without horizontal scroll or reflow traps (WCAG 1.4.10).',
     rationale:
@@ -116,7 +113,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.semantic-html',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Use semantic HTML and native interactive elements; never build UI with div-only structures that lose semantics, roles, and accessible names.',
     rationale:
@@ -126,7 +123,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.sources-vs-style',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Keep component sources (ecosystem, foundation, registries) separate from visual style decisions; a component source is a source, never a style.',
     rationale:
@@ -135,7 +132,7 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
   },
   {
     id: 'design.touch-targets',
-    class: 'language',
+    class: 'design',
     precedence: 'global-default',
     rule: 'Provide touch targets of at least 44px by default (WCAG 2.5.8); compact density must not shrink interactive targets below the floor.',
     rationale: 'Sub-44px targets are hard to hit on touch and fail WCAG 2.2 AA.',
@@ -145,16 +142,25 @@ export const DESIGN_STANDARDS: readonly StandardRule[] = [
 ];
 
 /**
- * Design standards applicable to a profile: currently the full DESIGN_STANDARDS
- * set, sorted by id. Per-profile refinement (appliesTo wiring, density-based
- * skips) lands in the standards-injection phase — this stays the simple,
- * deterministic contract until then.
+ * Design standards applicable to a profile (P09-08 refinement).
+ * Deterministic per-profile filtering:
+ * - backendOnly projects drop web-domain rules (no UI to regulate);
+ * - spacious density drops the touch-target floor (WCAG 2.5.8 is a
+ *   compensated-target rule: the 44px floor applies unless the target has
+ *   sufficient spacing/space — spacious density provides it);
+ * - everything else stays. Sort by id.
  */
-export function designStandardsFor(_profile: RichDesignProfile): readonly StandardRule[] {
-  return [...DESIGN_STANDARDS].sort((a, b) => a.id.localeCompare(b.id));
+export function designStandardsFor(profile: RichDesignProfile): readonly StandardRule[] {
+  const backendOnly = profile.backendOnly === true;
+  const spacious = profile.density === 'spacious';
+  return DESIGN_STANDARDS.filter((rule) => {
+    if (rule.appliesTo?.domain?.includes('web') && backendOnly) return false;
+    if (rule.id === 'design.touch-targets' && spacious) return false;
+    return true;
+  }).sort((a, b) => a.id.localeCompare(b.id));
 }
 
-/** Guard: 'design' is not a STANDARD_CLASSES member — rules use 'language'. */
+/** Guard: 'design' is now a STANDARD_CLASSES member (Phase 09). */
 export const DESIGN_STANDARDS_CLASS: 'design' | 'language' = (
   STANDARD_CLASSES as readonly string[]
 ).includes('design')

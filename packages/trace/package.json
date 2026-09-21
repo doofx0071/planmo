@@ -1,0 +1,30 @@
+{
+  "name": "@planmo/trace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PlanMo trace/validate/doctor/drift engine: trace graph, diagnostics with stable codes, quality findings, architecture fitness, standards drift, technical debt, memory health",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@planmo/core": "workspace:*",
+    "@planmo/shared": "workspace:*",
+    "@planmo/schema": "workspace:*",
+    "@planmo/workflow": "workspace:*"
+  }
+}
