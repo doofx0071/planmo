@@ -22,7 +22,7 @@ const ALLOWED = {
   shared: [],
   schema: ['shared'],
   core: ['shared', 'schema'],
-  cli: ['shared', 'schema', 'core', 'trace'],
+  cli: ['shared', 'schema', 'core', 'trace', 'scanner'],
   packs: ['core', 'shared', 'schema'],
   generator: ['core', 'shared', 'schema', 'packs'],
   scanner: ['core', 'shared', 'schema'],
