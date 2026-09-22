@@ -12,3 +12,5 @@ export * from './context-bundle.js';
 export * from './standards-injector.js';
 export * from './memory-provider.js';
 export * from './execution-packet.js';
+export * from './memory-portable.js';
+export * from './memory-file-provider.js';

@@ -56,11 +56,11 @@ P10-02,10,Implement stack/test/CI detection,DONE,high
 P10-03,10,Implement prompt-injection isolation policy,DONE,critical
 P10-04,10,Implement planmo adopt,DONE,high
 P10-05,10,Add malicious brownfield fixtures,DONE,critical
-P11-01,11,Define remote pack trust model,IN_PROGRESS,critical
-P11-02,11,Implement catalog/source abstraction,IN_PROGRESS,high
-P11-03,11,Implement checksums/pinning/reversibility,IN_PROGRESS,high
-P11-04,11,Document pack authoring,IN_PROGRESS,medium
-P11-05,11,Prototype GitHub export integration,IN_PROGRESS,low
+P11-01,11,Define remote pack trust model,DONE,critical
+P11-02,11,Implement catalog/source abstraction,DONE,high
+P11-03,11,Implement checksums/pinning/reversibility,DONE,high
+P11-04,11,Document pack authoring,DONE,medium
+P11-05,11,Prototype GitHub export integration,DONE,low
 P12-01,12,Run security review and threat-model validation,TODO,critical
 P12-02,12,Run property/fuzz tests on high-risk parsers,TODO,critical
 P12-03,12,Run cross-platform E2E matrix,TODO,critical
@@ -99,7 +99,7 @@ P10-08,10,Standards discovery (CHG-001),DONE,high
 P10-09,10,Local lexical context index (CHG-001),DONE,medium
 P10-10,10,Brownfield memory bootstrap (CHG-001),DONE,medium
 P10-11,10,Memory poisoning/prompt-injection fixtures (CHG-001),DONE,critical
-P11-06,11,Standards/context pack authoring + MemoryProvider adapters + portable context export (CHG-001),IN_PROGRESS,medium
+P11-06,11,Standards/context pack authoring + MemoryProvider adapters + portable context export (CHG-001),DONE,medium
 P12-08,12,Context retrieval evaluation (CHG-001),TODO,high
 P12-09,12,Token budget benchmark (CHG-001),TODO,high
 P12-10,12,Memory poisoning/staleness/security tests (CHG-001),TODO,critical

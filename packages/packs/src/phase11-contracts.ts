@@ -10,7 +10,13 @@
  * abstraction (catalog.ts), P11-03 checksums/pinning/reversibility
  * (install.ts), P11-05 GitHub export prototype (github-export.ts).
  */
-import type { Checksum, LockfileDocument, PackLockEntry, PackProvenance, TrustLevel } from '@planmo/schema';
+import type {
+  Checksum,
+  LockfileDocument,
+  PackLockEntry,
+  PackProvenance,
+  TrustLevel,
+} from '@planmo/schema';
 import type { LoadedPack } from './loader.js';
 import type { ResolutionResult } from './resolve.js';
 
@@ -36,10 +42,7 @@ export interface TrustClassification {
 }
 
 /** Classify a pack's trust level + review burden (REQ-TRUST-001/002). */
-export declare function classifyTrust(input: TrustInput): TrustClassification;
-
-/** Deterministic one-line trust summary for reports/CLI. */
-export declare function formatTrust(classification: TrustClassification): string;
+// Implementation: ./trust.ts
 
 // --------------------------------------------------------- catalog (P11-02)
 
@@ -78,17 +81,7 @@ export interface CatalogFetcher {
 }
 
 /** Resolve declared sources into entries (integrity verified per remote entry). */
-export declare function resolveCatalog(
-  sources: readonly CatalogSource[],
-  fetcher: CatalogFetcher,
-): Promise<readonly CatalogEntry[]>;
-
-/** Deterministic selection: pinned version > highest valid version. */
-export declare function pickCatalogEntry(
-  entries: readonly CatalogEntry[],
-  ref: string,
-  version?: string,
-): CatalogEntry | null;
+// Implementation: ./catalog.ts
 
 // -------------------------------------------------- install & verify (P11-03)
 
@@ -110,22 +103,7 @@ export interface InstallPlan {
 }
 
 /** Diff two lockfiles into a reversible install/update plan (P11-03). */
-export declare function planLockDiff(
-  from: LockfileDocument | null,
-  to: LockfileDocument,
-): InstallPlan;
-
-/** Verify every lock entry's integrity against actual resolved content. */
-export declare function verifyLockIntegrity(
-  lock: LockfileDocument,
-  readContent: (entry: PackLockEntry) => Promise<string>,
-): Promise<{ ok: boolean; failures: readonly string[] }>;
-
-/** Build the "next" lock for `refs` from a deterministic resolution. */
-export declare function lockFromResolution(
-  result: ResolutionResult,
-  planmoVersion: string,
-): LockfileDocument;
+// Implementation: ./install.ts
 
 // ------------------------------------------------- github export (P11-05)
 
@@ -146,12 +124,13 @@ export interface GithubExportPayload {
 }
 
 /** Render an additive GitHub export payload from planning artifacts (P11-05). */
-export declare function renderGithubExport(input: {
-  owner: string;
-  repo: string;
-  branch: string;
-  summaryLines: readonly string[];
-  files: readonly ExportFile[];
-}): GithubExportPayload;
-
-export type { Checksum, LockfileDocument, PackLockEntry, PackProvenance, TrustLevel, LoadedPack, ResolutionResult };
+// Implementation: ./github-export.ts
+export type {
+  Checksum,
+  LockfileDocument,
+  PackLockEntry,
+  PackProvenance,
+  TrustLevel,
+  LoadedPack,
+  ResolutionResult,
+};

@@ -1,6 +1,6 @@
 # PlanMo Planning Repository Manifest
 
-Total files: **511**
+Total files: **528**
 
 - `.changeset/config.json`
 - `.changeset/phase-03-cli-foundation.md`
@@ -10,6 +10,7 @@ Total files: **511**
 - `.changeset/phase-07-frontend-design-engine.md`
 - `.changeset/phase-08-workflow-session-engine.md`
 - `.changeset/phase-09-trace-validate-doctor-drift.md`
+- `.changeset/phase-11-ecosystem-and-integrations.md`
 - `.changeset/README.md`
 - `.changeset/smoky-pianos-cli.md`
 - `.gitattributes`
@@ -41,6 +42,7 @@ Total files: **511**
 - `docs/03-cli/exit-codes.md`
 - `docs/03-cli/filesystem-safety.md`
 - `docs/03-cli/interactive-wizard.md`
+- `docs/04-packs/authoring.md`
 - `docs/04-packs/pack-security.md`
 - `docs/04-packs/pack-system.md`
 - `docs/04-packs/planning-profiles.md`
@@ -106,6 +108,7 @@ Total files: **511**
 - `docs/12-adrs/ADR-0022-workflow-session-engine-transitions-packets-leases-gates-session-memory.md`
 - `docs/12-adrs/ADR-0023-trace-validate-doctor-drift.md`
 - `docs/12-adrs/ADR-0024-safe-existing-repository-adoption-scanner-package.md`
+- `docs/12-adrs/ADR-0025-deterministic-pack-trust-classification-and-catalog-abstraction.md`
 - `docs/13-standards-quality/architecture-fitness.md`
 - `docs/13-standards-quality/quality-engine.md`
 - `docs/13-standards-quality/refactoring-technical-debt.md`
@@ -144,6 +147,10 @@ Total files: **511**
 - `packages/agent-bridge/src/context-bundle.ts`
 - `packages/agent-bridge/src/execution-packet.ts`
 - `packages/agent-bridge/src/index.ts`
+- `packages/agent-bridge/src/memory-file-provider.test.ts`
+- `packages/agent-bridge/src/memory-file-provider.ts`
+- `packages/agent-bridge/src/memory-portable.test.ts`
+- `packages/agent-bridge/src/memory-portable.ts`
 - `packages/agent-bridge/src/memory-provider.ts`
 - `packages/agent-bridge/src/phase11-contracts.ts`
 - `packages/agent-bridge/src/proposal.ts`
@@ -262,6 +269,8 @@ Total files: **511**
 - `packages/generator/tsconfig.build.json`
 - `packages/generator/tsconfig.json`
 - `packages/packs/package.json`
+- `packages/packs/src/catalog.test.ts`
+- `packages/packs/src/catalog.ts`
 - `packages/packs/src/fixtures/conflicting/capability-a/pack.yml`
 - `packages/packs/src/fixtures/conflicting/capability-b/pack.yml`
 - `packages/packs/src/fixtures/conflicting/cycle-a/pack.yml`
@@ -275,7 +284,11 @@ Total files: **511**
 - `packages/packs/src/fixtures/valid/policy/engineering/pack.yml`
 - `packages/packs/src/fixtures/valid/stack/nextjs/pack.yml`
 - `packages/packs/src/fixtures/valid/standards/web-security/pack.yml`
+- `packages/packs/src/github-export.test.ts`
+- `packages/packs/src/github-export.ts`
 - `packages/packs/src/index.ts`
+- `packages/packs/src/install.test.ts`
+- `packages/packs/src/install.ts`
 - `packages/packs/src/loader.test.ts`
 - `packages/packs/src/loader.ts`
 - `packages/packs/src/lock.test.ts`
@@ -288,6 +301,8 @@ Total files: **511**
 - `packages/packs/src/standards.test.ts`
 - `packages/packs/src/standards.ts`
 - `packages/packs/src/test-utils.ts`
+- `packages/packs/src/trust.test.ts`
+- `packages/packs/src/trust.ts`
 - `packages/packs/tsconfig.build.json`
 - `packages/packs/tsconfig.json`
 - `packages/scanner/package.json`
@@ -447,6 +462,7 @@ Total files: **511**
 - `planning/handoffs/phase-08-handoff.md`
 - `planning/handoffs/phase-09-handoff.md`
 - `planning/handoffs/phase-10-handoff.md`
+- `planning/handoffs/phase-11-handoff.md`
 - `planning/handoffs/README.md`
 - `planning/handoffs/TEMPLATE.md`
 - `planning/MASTER-PLAN.md`
@@ -506,6 +522,7 @@ Total files: **511**
 - `scripts/e2e-phase08.mjs`
 - `scripts/e2e-phase09.mjs`
 - `scripts/e2e-phase10.mjs`
+- `scripts/e2e-phase11.mjs`
 - `SECURITY.md`
 - `specs/context-bundle.example.md`
 - `specs/context-request.example.yaml`

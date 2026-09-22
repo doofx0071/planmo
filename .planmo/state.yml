@@ -1,6 +1,7 @@
 schemaVersion: 1
-currentPhase: "11"
+currentPhase: "12"
 status: planned
-completedPhases: ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
+completedPhases: ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"]
 blockedTasks: []
-nextPrompt: prompts/12-phase-11-ecosystem-and-integrations.md
+nextPrompt: prompts/13-phase-12-hardening-pilot-and-v1.md
+lastHandoff: planning/handoffs/phase-11-handoff.md

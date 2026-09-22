@@ -20,24 +20,6 @@ export interface PortableMemoryDocument {
 }
 
 /** Deterministic export of a context + memory view into a portable format. */
-export declare function exportMemoryPortable(
-  view: Pick<ContextView, 'project' | 'contextId' | 'estimatedTokens'> | null,
-  rows: readonly MemoryRowView[],
-  format: PortableFormat,
-): string;
-
-/** Round-trip import; throws a descriptive error on malformed/stale input. */
-export declare function importMemoryPortable(
-  text: string,
-  format: PortableFormat,
-): PortableMemoryDocument;
-
-/** File-backed MemoryProvider adapter over a portable rows source. */
-export declare function createFileMemoryProvider(options: {
-  /** Read the raw portable text for `contextId` (may be empty). */
-  readText: (contextId: string) => Promise<string>;
-  format: PortableFormat;
-  limit?: number;
-}): MemoryProvider;
+// Implementation: ./memory-portable.ts
 
 export type { MemoryRowView, MemoryProvider, ContextView };
