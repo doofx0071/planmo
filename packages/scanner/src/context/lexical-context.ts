@@ -14,9 +14,27 @@
 import type { LexicalContextEngine, LexicalToken } from '../contracts.js';
 
 const STOPWORDS: ReadonlySet<string> = new Set([
-  'the', 'and', 'or', 'of', 'to', 'in', 'for',
-  'is', 'are', 'be', 'was', 'were',
-  'it', 'this', 'that', 'with', 'on', 'at', 'by', 'from', 'as',
+  'the',
+  'and',
+  'or',
+  'of',
+  'to',
+  'in',
+  'for',
+  'is',
+  'are',
+  'be',
+  'was',
+  'were',
+  'it',
+  'this',
+  'that',
+  'with',
+  'on',
+  'at',
+  'by',
+  'from',
+  'as',
 ]);
 
 const IDENTIFIER_RE = /[A-Za-z_][A-Za-z0-9_]*/g;
@@ -26,13 +44,13 @@ const MARKER_RE = /\b(TODO|FIXME|HACK)\b/gi;
 export const MAX_TOKENS_PER_FILE = 512;
 
 function byCountDescThenTokenAsc(a: LexicalToken, b: LexicalToken): number {
-  return (
-    (b.count - a.count) ||
-    (a.token < b.token ? -1 : a.token > b.token ? 1 : 0)
-  );
+  return b.count - a.count || (a.token < b.token ? -1 : a.token > b.token ? 1 : 0);
 }
 
-function indexFile(file: string, content: string): {
+function indexFile(
+  file: string,
+  content: string,
+): {
   file: string;
   tokens: LexicalToken[];
   markers: string[];

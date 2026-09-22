@@ -85,7 +85,10 @@ function scriptOf(evidence: DetectionEvidence): string | null {
 }
 
 export function contextMapEngine(): ContextMapEngine {
-  const map = async (scan: ScanReport, detection: DetectionReport): Promise<RepositoryContextMap> => {
+  const map = async (
+    scan: ScanReport,
+    detection: DetectionReport,
+  ): Promise<RepositoryContextMap> => {
     const filesByPath = new Set<string>();
     const dirsByPath = new Set<string>();
     for (const entry of scan.entries) {

@@ -27,7 +27,12 @@ function symlink(path: string): ScanEntry {
   return { path, type: 'symlink', size: 4 };
 }
 
-function evidence(path: string, code: string, match: string, source: DetectionEvidence['source'] = 'manifest'): DetectionEvidence {
+function evidence(
+  path: string,
+  code: string,
+  match: string,
+  source: DetectionEvidence['source'] = 'manifest',
+): DetectionEvidence {
   return { path, source, code, match };
 }
 
@@ -59,7 +64,12 @@ describe('contextMapEngine.map — entry points', () => {
   it('includes manifest main/bin/exports keys from detection evidence', async () => {
     const scan: ScanReport = {
       root: 'repo',
-      entries: [dir('src'), file('README.md'), file('package.json'), file('packages/a/package.json')],
+      entries: [
+        dir('src'),
+        file('README.md'),
+        file('package.json'),
+        file('packages/a/package.json'),
+      ],
       warnings: [],
       stats: { files: 4, dirs: 1, symlinks: 0, totalBytes: 0 },
       truncatedBy: null,
@@ -247,7 +257,11 @@ describe('contextMapEngine.map — warnings passthrough + CTX warnings', () => {
       root: 'repo',
       entries: [file('.env.local'), file('src/index.ts'), dir('src')],
       warnings: [
-        { code: 'SCN-004', path: 'big.bin', message: 'file exceeds maxFileBytes (20 > 10); skipped' },
+        {
+          code: 'SCN-004',
+          path: 'big.bin',
+          message: 'file exceeds maxFileBytes (20 > 10); skipped',
+        },
         { code: 'SCN-007', path: 'node_modules', message: 'excluded by exclude prefix' },
       ],
       stats: { files: 2, dirs: 1, symlinks: 0, totalBytes: 20 },
@@ -267,7 +281,10 @@ describe('contextMapEngine.map — warnings passthrough + CTX warnings', () => {
       stats: { files: files.length, dirs: 0, symlinks: 0, totalBytes: 0 },
       truncatedBy: null,
     });
-    const withEnv = await contextMapEngine().map(scan([file('.env'), file('src/.env.local')]), detection());
+    const withEnv = await contextMapEngine().map(
+      scan([file('.env'), file('src/.env.local')]),
+      detection(),
+    );
     expect(withEnv.warnings.filter((w) => w.startsWith('CTX-001'))).toHaveLength(2);
 
     const exampleOnly = await contextMapEngine().map(scan([file('.env.example')]), detection());

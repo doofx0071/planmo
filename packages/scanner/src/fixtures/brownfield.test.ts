@@ -4,7 +4,12 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { FIXTURE_TREE_ROOT } from '../contracts.js';
-import { brownfieldDescription, brownfieldFiles, brownfieldFixture, brownfieldTreeRoot } from '../fixtures/brownfield.js';
+import {
+  brownfieldDescription,
+  brownfieldFiles,
+  brownfieldFixture,
+  brownfieldTreeRoot,
+} from '../fixtures/brownfield.js';
 import { nodeFileReader } from '../scan/node-reader.js';
 import { safeScanner } from '../scan/safe-scanner.js';
 import { constructorReader } from '../scan/virtual-reader.js';
@@ -119,7 +124,10 @@ describe('brownfield fixture — scanner integration', () => {
 
   it('virtual reader scan over the fixture map is byte-identical to the real scan', async () => {
     const real = await safeScanner().scan(treeDir, nodeFileReader());
-    const virtual = await safeScanner().scan('', constructorReader(Object.fromEntries(brownfieldFiles)));
+    const virtual = await safeScanner().scan(
+      '',
+      constructorReader(Object.fromEntries(brownfieldFiles)),
+    );
     expect(virtual.entries).toEqual(real.entries);
     expect(virtual.stats).toEqual(real.stats);
     expect(virtual.warnings).toEqual(real.warnings);

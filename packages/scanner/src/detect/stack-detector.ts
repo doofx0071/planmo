@@ -79,12 +79,25 @@ const TEST_CONFIG_FILES: Readonly<Record<string, readonly string[]>> = {
     'jest.config.cts',
     'jest.config.json',
   ],
-  mocha: ['.mocharc.json', '.mocharc.jsonc', '.mocharc.js', '.mocharc.cjs', '.mocharc.mjs', '.mocharc.yaml', '.mocharc.yml'],
+  mocha: [
+    '.mocharc.json',
+    '.mocharc.jsonc',
+    '.mocharc.js',
+    '.mocharc.cjs',
+    '.mocharc.mjs',
+    '.mocharc.yaml',
+    '.mocharc.yml',
+  ],
   ava: ['ava.config.js', 'ava.config.cjs', 'ava.config.mjs', 'ava.config.ts'],
 };
 
 /** Root-relative language/bundler manifest + lockfile markers. */
-const MANIFEST_MARKERS: readonly { file: string; id: string; category: StackCategory; source: EvidenceSource }[] = [
+const MANIFEST_MARKERS: readonly {
+  file: string;
+  id: string;
+  category: StackCategory;
+  source: EvidenceSource;
+}[] = [
   { file: 'Cargo.toml', id: 'rust', category: 'language', source: 'manifest' },
   { file: 'Cargo.lock', id: 'rust', category: 'language', source: 'lockfile' },
   { file: 'go.mod', id: 'go', category: 'language', source: 'manifest' },
@@ -180,7 +193,12 @@ function finalizeGroups(groups: ReadonlyMap<string, EvidenceGroup>): {
   for (const [id, group] of groups) {
     const evidence = [...group.evidence].sort(byPathThenCodeThenMatch);
     if (group.category !== null) {
-      stacks.push({ id, category: group.category, confidence: groupConfidence(evidence), evidence });
+      stacks.push({
+        id,
+        category: group.category,
+        confidence: groupConfidence(evidence),
+        evidence,
+      });
     } else if (PKG_TEST_IDS.includes(id) || id === 'pytest') {
       testFrameworks.push(id);
     } else if (CI_DECLARATIONS.some((ci) => ci.id === id)) {
@@ -205,7 +223,11 @@ export const stackDetector: DetectionEngine = {
     const groups = new Map<string, EvidenceGroup>();
     const seen = new Set<string>();
 
-    const addEvidence = (id: string, category: StackCategory | null, ev: DetectionEvidence): void => {
+    const addEvidence = (
+      id: string,
+      category: StackCategory | null,
+      ev: DetectionEvidence,
+    ): void => {
       const key = `${id}\u0000${ev.path}\u0000${ev.code}\u0000${ev.match}`;
       if (seen.has(key)) return;
       seen.add(key);
@@ -217,7 +239,11 @@ export const stackDetector: DetectionEngine = {
       group.evidence.push(ev);
     };
 
-    const manifestEv = (path: string, code: DetectionEvidence['code'], match: string): DetectionEvidence => ({
+    const manifestEv = (
+      path: string,
+      code: DetectionEvidence['code'],
+      match: string,
+    ): DetectionEvidence => ({
       path,
       source: 'manifest',
       code,
@@ -243,7 +269,12 @@ export const stackDetector: DetectionEngine = {
           addEvidence('node', 'runtime', manifestEv(path, 'DET-001', 'bin'));
         }
         const engines = pkg['engines'];
-        if (engines !== null && typeof engines === 'object' && !Array.isArray(engines) && 'node' in engines) {
+        if (
+          engines !== null &&
+          typeof engines === 'object' &&
+          !Array.isArray(engines) &&
+          'node' in engines
+        ) {
           addEvidence('node', 'runtime', manifestEv(path, 'DET-001', 'engines.node'));
         }
         for (const section of [
@@ -253,7 +284,11 @@ export const stackDetector: DetectionEngine = {
           for (const dep of section[1]) {
             const rule = PKG_DEP_RULES[dep];
             if (rule !== undefined) {
-              addEvidence(rule.id, rule.category, manifestEv(path, 'DET-001', `${section[0]}.${dep}`));
+              addEvidence(
+                rule.id,
+                rule.category,
+                manifestEv(path, 'DET-001', `${section[0]}.${dep}`),
+              );
             }
             if (PKG_TEST_IDS.includes(dep)) {
               addEvidence(dep, null, manifestEv(path, 'DET-001', `${section[0]}.${dep}`));
@@ -290,7 +325,12 @@ export const stackDetector: DetectionEngine = {
       // --- CI workflow declarations ---
       for (const ci of CI_DECLARATIONS) {
         if (ci.isMatch(path)) {
-          addEvidence(ci.id, null, { path, source: 'ci-declaration', code: 'DET-005', match: path });
+          addEvidence(ci.id, null, {
+            path,
+            source: 'ci-declaration',
+            code: 'DET-005',
+            match: path,
+          });
         }
       }
 
@@ -306,12 +346,22 @@ export const stackDetector: DetectionEngine = {
         addEvidence('pytest', null, { path, source: 'config', code: 'DET-003', match: path });
       }
       if (path === 'pyproject.toml' && text.includes('[tool.pytest')) {
-        addEvidence('pytest', null, { path, source: 'config', code: 'DET-003', match: '[tool.pytest]' });
+        addEvidence('pytest', null, {
+          path,
+          source: 'config',
+          code: 'DET-003',
+          match: '[tool.pytest]',
+        });
       }
 
       // --- tests/ directory convention (file-convention heuristic) ---
       if (path === 'tests/' || path.startsWith('tests/')) {
-        addEvidence('pytest', null, { path, source: 'file-convention', code: 'DET-004', match: path });
+        addEvidence('pytest', null, {
+          path,
+          source: 'file-convention',
+          code: 'DET-004',
+          match: path,
+        });
       }
     }
 

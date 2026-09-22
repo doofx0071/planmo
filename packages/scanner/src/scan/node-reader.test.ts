@@ -43,9 +43,15 @@ describe('NodeFileReader — real filesystem reader (the only node:fs module)', 
     try {
       const report: ScanReport = await safeScanner().scan(dir, nodeFileReader());
       expect(report.root).toBe(dir.replace(/[\\/]+$/, ''));
-      expect(
-        report.entries.map((e) => e.path.replace(/\\/g, '/')),
-      ).toEqual(['README.md', 'dist', 'dist/ignored.js', 'src', 'src/index.ts', 'src/lib', 'src/lib/util.ts']);
+      expect(report.entries.map((e) => e.path.replace(/\\/g, '/'))).toEqual([
+        'README.md',
+        'dist',
+        'dist/ignored.js',
+        'src',
+        'src/index.ts',
+        'src/lib',
+        'src/lib/util.ts',
+      ]);
       expect(report.stats).toEqual({ files: 4, dirs: 3, symlinks: 0, totalBytes: 74 });
       expect(report.warnings).toEqual([]);
       expect(report.truncatedBy).toBeNull();
@@ -130,10 +136,18 @@ describe('NodeFileReader — real filesystem reader (the only node:fs module)', 
         path: join(dir, 'missing-dir'),
         reason: 'not-found',
       });
-      await expect(reader.stat(join(dir, 'missing.txt'))).rejects.toMatchObject({ reason: 'not-found' });
-      await expect(reader.readFile(join(dir, 'missing.txt'))).rejects.toMatchObject({ reason: 'not-found' });
-      await expect(reader.readDir(join(dir, 'src', 'index.ts'))).rejects.toBeInstanceOf(ReaderError);
-      await expect(reader.readFile(join(dir, 'src'))).rejects.toMatchObject({ reason: 'is-a-directory' });
+      await expect(reader.stat(join(dir, 'missing.txt'))).rejects.toMatchObject({
+        reason: 'not-found',
+      });
+      await expect(reader.readFile(join(dir, 'missing.txt'))).rejects.toMatchObject({
+        reason: 'not-found',
+      });
+      await expect(reader.readDir(join(dir, 'src', 'index.ts'))).rejects.toBeInstanceOf(
+        ReaderError,
+      );
+      await expect(reader.readFile(join(dir, 'src'))).rejects.toMatchObject({
+        reason: 'is-a-directory',
+      });
       await expect(reader.linkTarget(join(dir, 'src'))).rejects.toBeInstanceOf(ReaderError);
     } finally {
       rmSync(dir, { recursive: true, force: true });

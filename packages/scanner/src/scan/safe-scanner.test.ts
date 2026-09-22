@@ -79,7 +79,9 @@ describe('safeScanner.scan — ordering + stats', () => {
       fileEntries.reduce((acc, e) => acc + bytes(sampleTree()[e.path] as string), 0),
     );
     for (const entry of report.entries) {
-      expect(entry.size).toBe(entry.type === 'file' ? bytes(sampleTree()[entry.path] as string) : 0);
+      expect(entry.size).toBe(
+        entry.type === 'file' ? bytes(sampleTree()[entry.path] as string) : 0,
+      );
     }
     expect(report.truncatedBy).toBeNull();
     expect(report.warnings).toEqual([]);
@@ -178,7 +180,13 @@ describe('safeScanner.scan — include/exclude', () => {
     const report = await safeScanner().scan('', constructorReader(sampleTree()), {
       include: ['src'],
     });
-    expect(report.entries.map((e) => e.path)).toEqual(['src', 'src/index.ts', 'src/lib', 'src/lib/README', 'src/lib/util.ts']);
+    expect(report.entries.map((e) => e.path)).toEqual([
+      'src',
+      'src/index.ts',
+      'src/lib',
+      'src/lib/README',
+      'src/lib/util.ts',
+    ]);
     expect(report.warnings).toEqual([]);
   });
 
@@ -224,8 +232,12 @@ describe('safeScanner.scan — include/exclude', () => {
   });
 
   it('trailing-slash prefixes behave identically', async () => {
-    const a = await safeScanner().scan('', constructorReader(sampleTree()), { exclude: ['node_modules/'] });
-    const b = await safeScanner().scan('', constructorReader(sampleTree()), { exclude: ['node_modules'] });
+    const a = await safeScanner().scan('', constructorReader(sampleTree()), {
+      exclude: ['node_modules/'],
+    });
+    const b = await safeScanner().scan('', constructorReader(sampleTree()), {
+      exclude: ['node_modules'],
+    });
     expect(a.entries).toEqual(b.entries);
   });
 });
@@ -341,7 +353,9 @@ describe('safeScanner.scan — unreadable and unsupported entries', () => {
     const reader = constructorReader(sampleTree(), { failures: { stat: ['package.json'] } });
     const report = await safeScanner().scan('', reader);
     expect(report.entries.some((e) => e.path === 'package.json')).toBe(false);
-    expect(report.warnings.some((w) => w.code === 'SCN-005' && w.path === 'package.json')).toBe(true);
+    expect(report.warnings.some((w) => w.code === 'SCN-005' && w.path === 'package.json')).toBe(
+      true,
+    );
   });
 
   it('SCN-006 unsupported type: skipped, not counted', async () => {
@@ -395,7 +409,16 @@ describe('safeScanner.scan — warnings sorted', () => {
 
 describe('safeScanner.isSafeRelativePath', () => {
   it('accepts ordinary POSIX-relative paths', () => {
-    for (const path of ['a', 'a/b', 'src/index.ts', 'README.md', 'a/b/c.txt', '-rf', '--upload.txt', '..hidden.ts']) {
+    for (const path of [
+      'a',
+      'a/b',
+      'src/index.ts',
+      'README.md',
+      'a/b/c.txt',
+      '-rf',
+      '--upload.txt',
+      '..hidden.ts',
+    ]) {
       expect(isSafeRelativePath(path), path).toBe(true);
     }
   });

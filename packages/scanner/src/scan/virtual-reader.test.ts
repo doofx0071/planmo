@@ -79,7 +79,12 @@ describe('ConstructorReader — symlinks, other types, base, binary', () => {
   it('exposes symlinks via stat (size = target byte length) and linkTarget', async () => {
     const reader = new ConstructorReader(
       { src: null, 'src/index.ts': 'x' },
-      { symlinks: new Map([['link', 'src/index.ts'], ['abs', '/etc/passwd']]) },
+      {
+        symlinks: new Map([
+          ['link', 'src/index.ts'],
+          ['abs', '/etc/passwd'],
+        ]),
+      },
     );
     expect(await reader.stat('link')).toEqual({ type: 'symlink', size: 12 });
     expect(await reader.linkTarget('link')).toBe('src/index.ts');
@@ -94,7 +99,9 @@ describe('ConstructorReader — symlinks, other types, base, binary', () => {
       { src: null, 'src/index.ts': 'x' },
       { symlinks: new Map([['link', 'src/index.ts']]) },
     );
-    await expect(reader.readFile('link')).rejects.toMatchObject({ reason: 'refused: symlink not followed' });
+    await expect(reader.readFile('link')).rejects.toMatchObject({
+      reason: 'refused: symlink not followed',
+    });
     await expect(reader.readDir('link')).rejects.toMatchObject({ reason: 'not-a-directory' });
     await expect(reader.linkTarget('src')).rejects.toMatchObject({ reason: 'not-a-symlink' });
   });
@@ -139,7 +146,9 @@ describe('ConstructorReader — failure injection', () => {
     await expect(reader.readDir('a')).rejects.toMatchObject({ reason: 'injected-failure' });
     await expect(reader.readFile('a/x.txt')).rejects.toMatchObject({ reason: 'injected-failure' });
     await expect(reader.stat('b')).rejects.toMatchObject({ reason: 'injected-failure' });
-    await expect(reader.linkTarget('a/x.txt')).rejects.toMatchObject({ reason: 'injected-failure' });
+    await expect(reader.linkTarget('a/x.txt')).rejects.toMatchObject({
+      reason: 'injected-failure',
+    });
     // unrelated paths stay functional
     expect(await reader.readDir('')).toEqual(['a', 'b']);
     expect(await reader.readDir('b')).toEqual(['y.txt']);

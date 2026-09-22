@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { DetectionEvidence } from '../contracts.js';
 import { stackDetector } from './stack-detector.js';
 
-const E = (path: string, source: DetectionEvidence['source'], code: string, match: string): DetectionEvidence => ({
+const E = (
+  path: string,
+  source: DetectionEvidence['source'],
+  code: string,
+  match: string,
+): DetectionEvidence => ({
   path,
   source,
   code,
@@ -15,7 +20,11 @@ describe('stack-detector: JS/TS ecosystems from package.json', () => {
       new Map([
         [
           'package.json',
-          JSON.stringify({ name: 'app', dependencies: { react: '^18.3' }, devDependencies: { typescript: '^5.6' } }),
+          JSON.stringify({
+            name: 'app',
+            dependencies: { react: '^18.3' },
+            devDependencies: { typescript: '^5.6' },
+          }),
         ],
       ]),
     );
@@ -34,11 +43,15 @@ describe('stack-detector: JS/TS ecosystems from package.json', () => {
 
     const react = report.stacks.find((s) => s.id === 'react')!;
     expect(react.category).toBe('framework');
-    expect(react.evidence).toEqual([E('package.json', 'manifest', 'DET-001', 'dependencies.react')]);
+    expect(react.evidence).toEqual([
+      E('package.json', 'manifest', 'DET-001', 'dependencies.react'),
+    ]);
 
     const typescript = report.stacks.find((s) => s.id === 'typescript')!;
     expect(typescript.category).toBe('toolchain');
-    expect(typescript.evidence).toEqual([E('package.json', 'manifest', 'DET-001', 'devDependencies.typescript')]);
+    expect(typescript.evidence).toEqual([
+      E('package.json', 'manifest', 'DET-001', 'devDependencies.typescript'),
+    ]);
   });
 
   it('claims node from devDependencies, bin and engines.node', async () => {
@@ -77,7 +90,9 @@ describe('stack-detector: JS/TS ecosystems from package.json', () => {
     expect(report.stacks.map((s) => s.id)).toEqual(['express', 'next', 'node', 'vite', 'vue']);
     const vite = report.stacks.find((s) => s.id === 'vite')!;
     expect(vite.category).toBe('toolchain');
-    expect(vite.evidence).toEqual([E('package.json', 'manifest', 'DET-001', 'devDependencies.vite')]);
+    expect(vite.evidence).toEqual([
+      E('package.json', 'manifest', 'DET-001', 'devDependencies.vite'),
+    ]);
   });
 
   it('sorts evidence path asc then code asc', async () => {
@@ -287,7 +302,10 @@ describe('stack-detector: test frameworks', () => {
       new Map([
         [
           'package.json',
-          JSON.stringify({ name: 'app', scripts: { test: 'vitest run', 'test:unit': 'jest --ci' } }),
+          JSON.stringify({
+            name: 'app',
+            scripts: { test: 'vitest run', 'test:unit': 'jest --ci' },
+          }),
         ],
       ]),
     );
@@ -324,7 +342,11 @@ describe('stack-detector: test frameworks', () => {
       new Map([
         [
           'package.json',
-          JSON.stringify({ name: 'app', devDependencies: { vitest: '^2' }, scripts: { test: 'vitest' } }),
+          JSON.stringify({
+            name: 'app',
+            devDependencies: { vitest: '^2' },
+            scripts: { test: 'vitest' },
+          }),
         ],
         ['vitest.config.ts', 'export default {}'],
       ]),
@@ -337,7 +359,11 @@ describe('stack-detector: test frameworks', () => {
       new Map([
         [
           'package.json',
-          JSON.stringify({ name: 'app', dependencies: { jest: '^29' }, devDependencies: { jest: '^29' } }),
+          JSON.stringify({
+            name: 'app',
+            dependencies: { jest: '^29' },
+            devDependencies: { jest: '^29' },
+          }),
         ],
       ]),
     );
@@ -345,7 +371,9 @@ describe('stack-detector: test frameworks', () => {
   });
 
   it('reports no test frameworks when none are present', async () => {
-    const report = await stackDetector.detect(new Map([['package.json', JSON.stringify({ name: 'app' })]]));
+    const report = await stackDetector.detect(
+      new Map([['package.json', JSON.stringify({ name: 'app' })]]),
+    );
     expect(report.testFrameworks).toEqual([]);
     expect(report.stacks).toEqual([]);
   });
@@ -372,7 +400,14 @@ describe('stack-detector: empty and irrelevant inputs', () => {
 
   it('is deterministic across repeated calls', async () => {
     const manifests = new Map([
-      ['package.json', JSON.stringify({ name: 'app', dependencies: { react: '^18' }, devDependencies: { vitest: '^2' } })],
+      [
+        'package.json',
+        JSON.stringify({
+          name: 'app',
+          dependencies: { react: '^18' },
+          devDependencies: { vitest: '^2' },
+        }),
+      ],
       ['Cargo.toml', '[package]\n'],
       ['.github/workflows/ci.yml', 'name: CI'],
     ]);

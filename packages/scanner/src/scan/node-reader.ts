@@ -52,7 +52,11 @@ function toReaderError(path: string, error: unknown): ReaderError {
   const code = errorCode(error);
   const reason =
     (code !== undefined && ERRNO_REASONS[code]) ||
-    (code !== undefined ? `os-error-${code}` : error instanceof Error ? 'unknown-error' : 'unknown-error');
+    (code !== undefined
+      ? `os-error-${code}`
+      : error instanceof Error
+        ? 'unknown-error'
+        : 'unknown-error');
   return new ReaderError(path, reason);
 }
 

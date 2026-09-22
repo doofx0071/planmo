@@ -18,13 +18,16 @@ describe('lexical-context: identifier histogram', () => {
   });
 
   it('drops the fixed stopword set', async () => {
-    const stopwords = 'the and or of to in for is are be was were it this that with on at by from as';
+    const stopwords =
+      'the and or of to in for is are be was were it this that with on at by from as';
     const result = await lexicalContext.index(new Map([['stop.txt', stopwords]]));
     expect(result[0]!.tokens).toEqual([]);
   });
 
   it('keeps stopwords when they are part of a longer identifier or differ in case', async () => {
-    const result = await lexicalContext.index(new Map([['case.ts', 'The the theorem isThis at_at']]));
+    const result = await lexicalContext.index(
+      new Map([['case.ts', 'The the theorem isThis at_at']]),
+    );
     expect(result[0]!.tokens).toEqual([
       { token: 'The', count: 1 },
       { token: 'at_at', count: 1 },
@@ -42,7 +45,9 @@ describe('lexical-context: identifier histogram', () => {
   it('caps tokens per file at 512 and keeps deterministic order', async () => {
     const lines: string[] = [];
     for (let i = 0; i < 600; i += 1) lines.push(`token_${i}`);
-    const result = await lexicalContext.index(new Map([['big.ts', lines.join(' ')]]) as ReadonlyMap<string, string>);
+    const result = await lexicalContext.index(
+      new Map([['big.ts', lines.join(' ')]]) as ReadonlyMap<string, string>,
+    );
     const tokens = result[0]!.tokens;
     expect(tokens).toHaveLength(MAX_TOKENS_PER_FILE);
     expect(tokens[0]!.count).toBe(1);
