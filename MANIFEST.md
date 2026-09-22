@@ -1,486 +1,515 @@
-# PlanMo MANIFEST
+# PlanMo Planning Repository Manifest
 
-Total tracked files: 447
+Total files: **511**
 
-.changeset/README.md
-.changeset/config.json
-.changeset/phase-03-cli-foundation.md
-.changeset/phase-04-pack-and-profile-system.md
-.changeset/phase-05-planning-compiler-and-artifact-generator.md
-.changeset/phase-06-agent-bridge.md
-.changeset/phase-07-frontend-design-engine.md
-.changeset/phase-08-workflow-session-engine.md
-.changeset/smoky-pianos-cli.md
-.gitattributes
-.github/ISSUE_TEMPLATE/bug.yml
-.github/ISSUE_TEMPLATE/feature.yml
-.github/PULL_REQUEST_TEMPLATE.md
-.github/workflows/ci.yaml
-.gitignore
-.npmrc
-.planmo/project.yml
-.planmo/state.yml
-.prettierignore
-.prettierrc.json
-AGENTS.md
-CHANGELOG.md
-CONTRIBUTING.md
-MANIFEST.md
-README.md
-ROADMAP.md
-SECURITY.md
-docs/01-product/competitive-positioning.md
-docs/01-product/non-goals.md
-docs/01-product/personas.md
-docs/01-product/product-requirements.md
-docs/01-product/vision.md
-docs/02-architecture/canonical-project-model.md
-docs/02-architecture/determinism.md
-docs/02-architecture/repository-structure.md
-docs/02-architecture/schema-versioning.md
-docs/02-architecture/state-and-manifest.md
-docs/02-architecture/system-architecture.md
-docs/03-cli/command-surface.md
-docs/03-cli/exit-codes.md
-docs/03-cli/filesystem-safety.md
-docs/03-cli/interactive-wizard.md
-docs/04-packs/pack-security.md
-docs/04-packs/pack-system.md
-docs/04-packs/planning-profiles.md
-docs/04-packs/resolution.md
-docs/04-packs/versioning.md
-docs/05-design-engine/accessibility-and-motion.md
-docs/05-design-engine/design-engine.md
-docs/05-design-engine/design-profile.md
-docs/05-design-engine/shadcn-and-registries.md
-docs/05-design-engine/style-catalog.md
-docs/05-design-engine/tokens.md
-docs/06-agent-engine/agent-engine.md
-docs/06-agent-engine/ai-boundary.md
-docs/06-agent-engine/parallel-agents.md
-docs/06-agent-engine/prompt-injection-model.md
-docs/06-agent-engine/session-model.md
-docs/07-workflows/change-management.md
-docs/07-workflows/execution-graph.md
-docs/07-workflows/handoffs.md
-docs/08-security/pack-trust.md
-docs/08-security/secrets-and-privacy.md
-docs/08-security/secure-filesystem.md
-docs/08-security/threat-model.md
-docs/09-testing/golden-fixtures.md
-docs/09-testing/performance.md
-docs/09-testing/property-and-fuzz.md
-docs/09-testing/release-test-gates.md
-docs/09-testing/test-matrix.md
-docs/09-testing/test-strategy.md
-docs/09-worker-brief-phase-09.md
-docs/10-engineering/ci.md
-docs/10-engineering/dependency-policy.md
-docs/10-engineering/git-and-pr-workflow.md
-docs/10-engineering/package-boundaries.md
-docs/10-engineering/versioning-and-releases.md
-docs/11-research/2026-source-notes.md
-docs/11-research/chg-001-inspiration-sources.md
-docs/11-research/chg-001-research-summary.md
-docs/11-research/licensing.md
-docs/11-research/naming-and-availability.md
-docs/11-research/research-decisions.md
-docs/11-research/support-matrix.md
-docs/12-adrs/ADR-0001-cli-first-agent-native.md
-docs/12-adrs/ADR-0002-canonical-project-model.md
-docs/12-adrs/ADR-0003-dtcg-design-tokens.md
-docs/12-adrs/ADR-0004-declarative-packs-v1.md
-docs/12-adrs/ADR-0005-fresh-session-phase-gates.md
-docs/12-adrs/ADR-0006-semver-and-changesets.md
-docs/12-adrs/ADR-0007-naming-and-distribution-targets.md
-docs/12-adrs/ADR-0008-initial-supported-agents-platforms-styles.md
-docs/12-adrs/ADR-0009-monorepo-and-engineering-toolchain.md
-docs/12-adrs/ADR-0010-cli-routing-and-build-tool.md
-docs/12-adrs/ADR-0011-strict-versioned-schemas.md
-docs/12-adrs/ADR-0012-standards-and-quality-engines.md
-docs/12-adrs/ADR-0013-context-memory-authority-model.md
-docs/12-adrs/ADR-0014-local-first-rebuildable-memory-index.md
-docs/12-adrs/ADR-0015-change-engine-delta-model.md
-docs/12-adrs/ADR-0016-managed-file-ownership-classes.md
-docs/12-adrs/ADR-0017-task-graph-and-execution-packets.md
-docs/12-adrs/ADR-0018-deterministic-pack-resolution-and-locking.md
-docs/12-adrs/ADR-0019-deterministic-planning-compiler-and-generation-manifest.md
-docs/12-adrs/ADR-0020-agent-bridge-capabilities-validation-and-context-bundles.md
-docs/12-adrs/ADR-0021-frontend-design-engine-dtcg-tokens-design-packs-registry-trust.md
-docs/12-adrs/ADR-0022-workflow-session-engine-transitions-packets-leases-gates-session-memory.md
-docs/13-standards-quality/architecture-fitness.md
-docs/13-standards-quality/quality-engine.md
-docs/13-standards-quality/refactoring-technical-debt.md
-docs/13-standards-quality/standards-engine.md
-docs/14-context-memory/architecture.md
-docs/14-context-memory/evaluation.md
-docs/14-context-memory/lifecycle.md
-docs/14-context-memory/memory-model.md
-docs/14-context-memory/repo-context-map.md
-docs/14-context-memory/retrieval-token-budget.md
-docs/14-context-memory/security.md
-docs/14-context-memory/storage-portability.md
-docs/15-change-governance/change-engine.md
-docs/15-change-governance/context-quality-integration.md
-docs/15-change-governance/managed-file-ownership.md
-docs/15-change-governance/task-graph-execution-packets.md
-docs/16-evals-trust/eval-engine.md
-docs/16-evals-trust/trust-engine-future.md
-eslint.config.js
-package.json
-packages/adapters/package.json
-packages/adapters/src/claude-code.test.ts
-packages/adapters/src/claude-code.ts
-packages/adapters/src/codex.test.ts
-packages/adapters/src/codex.ts
-packages/adapters/src/contract.ts
-packages/adapters/src/generic-opencode.test.ts
-packages/adapters/src/generic.ts
-packages/adapters/src/index.ts
-packages/adapters/src/opencode.ts
-packages/adapters/tsconfig.build.json
-packages/adapters/tsconfig.json
-packages/agent-bridge/package.json
-packages/agent-bridge/src/bridge.test.ts
-packages/agent-bridge/src/context-bundle.ts
-packages/agent-bridge/src/execution-packet.ts
-packages/agent-bridge/src/index.ts
-packages/agent-bridge/src/memory-provider.ts
-packages/agent-bridge/src/proposal.ts
-packages/agent-bridge/src/providers.ts
-packages/agent-bridge/src/registry.ts
-packages/agent-bridge/src/standards-injector.ts
-packages/agent-bridge/tsconfig.build.json
-packages/agent-bridge/tsconfig.json
-packages/cli/package.json
-packages/cli/src/bin.ts
-packages/cli/src/env.d.ts
-packages/cli/src/index.test.ts
-packages/cli/src/index.ts
-packages/cli/tsconfig.build.json
-packages/cli/tsconfig.json
-packages/core/package.json
-packages/core/src/diff.test.ts
-packages/core/src/diff.ts
-packages/core/src/errors.ts
-packages/core/src/index.ts
-packages/core/src/init.test.ts
-packages/core/src/init.ts
-packages/core/src/paths.test.ts
-packages/core/src/paths.ts
-packages/core/src/status.test.ts
-packages/core/src/status.ts
-packages/core/src/test-utils.ts
-packages/core/src/writer.test.ts
-packages/core/src/writer.ts
-packages/core/tsconfig.build.json
-packages/core/tsconfig.json
-packages/design-engine/package.json
-packages/design-engine/src/accessibility.test.ts
-packages/design-engine/src/accessibility.ts
-packages/design-engine/src/anti-patterns.ts
-packages/design-engine/src/contracts.ts
-packages/design-engine/src/design-standards.test.ts
-packages/design-engine/src/design-standards.ts
-packages/design-engine/src/docs.test.ts
-packages/design-engine/src/docs.ts
-packages/design-engine/src/index.ts
-packages/design-engine/src/packs.test.ts
-packages/design-engine/src/packs.ts
-packages/design-engine/src/shadcn.test.ts
-packages/design-engine/src/shadcn.ts
-packages/design-engine/src/tokens.test.ts
-packages/design-engine/src/tokens.ts
-packages/design-engine/tsconfig.build.json
-packages/design-engine/tsconfig.json
-packages/generator/package.json
-packages/generator/scripts/update-goldens.mjs
-packages/generator/src/compile.ts
-packages/generator/src/contracts.ts
-packages/generator/src/fixtures.ts
-packages/generator/src/golden.test.ts
-packages/generator/src/golden/high/planning_CONTEXT.md
-packages/generator/src/golden/high/planning_ROADMAP.md
-packages/generator/src/golden/high/planning_STANDARDS.md
-packages/generator/src/golden/high/planning_TRACKER.md
-packages/generator/src/golden/high/planning_handoffs_TEMPLATE.md
-packages/generator/src/golden/high/planning_phases_phase-00.md
-packages/generator/src/golden/high/planning_phases_phase-01.md
-packages/generator/src/golden/high/planning_phases_phase-02.md
-packages/generator/src/golden/high/planning_phases_phase-03.md
-packages/generator/src/golden/high/planning_phases_phase-04.md
-packages/generator/src/golden/high/planning_phases_phase-05.md
-packages/generator/src/golden/high/planning_phases_phase-06.md
-packages/generator/src/golden/high/planning_phases_phase-07.md
-packages/generator/src/golden/high/planning_phases_phase-08.md
-packages/generator/src/golden/high/planning_phases_phase-09.md
-packages/generator/src/golden/high/planning_phases_phase-10.md
-packages/generator/src/golden/high/planning_phases_phase-11.md
-packages/generator/src/golden/high/planning_phases_phase-12.md
-packages/generator/src/golden/high/planning_policies_language.md
-packages/generator/src/golden/high/planning_policies_organization.md
-packages/generator/src/golden/high/planning_policies_security.md
-packages/generator/src/golden/high/planning_policies_testing.md
-packages/generator/src/golden/low/planning_CONTEXT.md
-packages/generator/src/golden/low/planning_ROADMAP.md
-packages/generator/src/golden/low/planning_STANDARDS.md
-packages/generator/src/golden/low/planning_TRACKER.md
-packages/generator/src/golden/low/planning_handoffs_TEMPLATE.md
-packages/generator/src/golden/low/planning_phases_phase-00.md
-packages/generator/src/golden/low/planning_phases_phase-01.md
-packages/generator/src/golden/low/planning_phases_phase-02.md
-packages/generator/src/golden/low/planning_phases_phase-03.md
-packages/generator/src/golden/low/planning_policies_language.md
-packages/generator/src/golden/low/planning_policies_security.md
-packages/generator/src/golden/medium/planning_CONTEXT.md
-packages/generator/src/golden/medium/planning_ROADMAP.md
-packages/generator/src/golden/medium/planning_STANDARDS.md
-packages/generator/src/golden/medium/planning_TRACKER.md
-packages/generator/src/golden/medium/planning_handoffs_TEMPLATE.md
-packages/generator/src/golden/medium/planning_phases_phase-00.md
-packages/generator/src/golden/medium/planning_phases_phase-01.md
-packages/generator/src/golden/medium/planning_phases_phase-02.md
-packages/generator/src/golden/medium/planning_phases_phase-03.md
-packages/generator/src/golden/medium/planning_phases_phase-04.md
-packages/generator/src/golden/medium/planning_phases_phase-05.md
-packages/generator/src/golden/medium/planning_phases_phase-06.md
-packages/generator/src/golden/medium/planning_policies_language.md
-packages/generator/src/golden/medium/planning_policies_organization.md
-packages/generator/src/golden/medium/planning_policies_security.md
-packages/generator/src/idempotency.test.ts
-packages/generator/src/index.ts
-packages/generator/src/ir.test.ts
-packages/generator/src/ir.ts
-packages/generator/src/manifest.test.ts
-packages/generator/src/manifest.ts
-packages/generator/src/render.test.ts
-packages/generator/src/render.ts
-packages/generator/src/standards-context.test.ts
-packages/generator/src/standards-context.ts
-packages/generator/src/synth.test.ts
-packages/generator/src/synth.ts
-packages/generator/tsconfig.build.json
-packages/generator/tsconfig.json
-packages/packs/package.json
-packages/packs/src/fixtures/conflicting/capability-a/pack.yml
-packages/packs/src/fixtures/conflicting/capability-b/pack.yml
-packages/packs/src/fixtures/conflicting/cycle-a/pack.yml
-packages/packs/src/fixtures/conflicting/cycle-b/pack.yml
-packages/packs/src/fixtures/conflicting/missing-dep/pack.yml
-packages/packs/src/fixtures/malicious/evil-hooks/pack.yml
-packages/packs/src/fixtures/malicious/evil-scripts/pack.yml
-packages/packs/src/fixtures/malicious/exec/pack.yml
-packages/packs/src/fixtures/malicious/scripts-nested/pack.yml
-packages/packs/src/fixtures/valid/context/agent-memory/pack.yml
-packages/packs/src/fixtures/valid/policy/engineering/pack.yml
-packages/packs/src/fixtures/valid/stack/nextjs/pack.yml
-packages/packs/src/fixtures/valid/standards/web-security/pack.yml
-packages/packs/src/index.ts
-packages/packs/src/loader.test.ts
-packages/packs/src/loader.ts
-packages/packs/src/lock.test.ts
-packages/packs/src/lock.ts
-packages/packs/src/profiles.test.ts
-packages/packs/src/profiles.ts
-packages/packs/src/resolve.test.ts
-packages/packs/src/resolve.ts
-packages/packs/src/standards.test.ts
-packages/packs/src/standards.ts
-packages/packs/src/test-utils.ts
-packages/packs/tsconfig.build.json
-packages/packs/tsconfig.json
-packages/schema/package.json
-packages/schema/src/agent-bridge.test.ts
-packages/schema/src/agent-bridge.ts
-packages/schema/src/change-engine.test.ts
-packages/schema/src/change-engine.ts
-packages/schema/src/common.ts
-packages/schema/src/design-profile.test.ts
-packages/schema/src/design-profile.ts
-packages/schema/src/fixtures/README.md
-packages/schema/src/fixtures/lock.v1.golden.yml
-packages/schema/src/fixtures/manifest.v1.golden.json
-packages/schema/src/fixtures/project.v0.legacy.yml
-packages/schema/src/fixtures/project.v1.golden.yml
-packages/schema/src/fixtures/state.v0.legacy.yml
-packages/schema/src/fixtures/state.v1.golden.yml
-packages/schema/src/golden.test.ts
-packages/schema/src/index.ts
-packages/schema/src/migrations.test.ts
-packages/schema/src/migrations.ts
-packages/schema/src/pack-content.test.ts
-packages/schema/src/pack-content.ts
-packages/schema/src/pack-design.test.ts
-packages/schema/src/pack-design.ts
-packages/schema/src/project.test.ts
-packages/schema/src/project.ts
-packages/schema/src/schema-versioning.ts
-packages/schema/src/state-lock-manifest.test.ts
-packages/schema/src/state-lock-manifest.ts
-packages/schema/src/test-utils.ts
-packages/schema/src/trace-handoff-workpacket.test.ts
-packages/schema/src/trace-handoff-workpacket.ts
-packages/schema/tsconfig.build.json
-packages/schema/tsconfig.json
-packages/shared/package.json
-packages/shared/src/index.test.ts
-packages/shared/src/index.ts
-packages/shared/tsconfig.build.json
-packages/shared/tsconfig.json
-packages/trace/package.json
-packages/trace/src/contracts.ts
-packages/trace/src/debt.ts
-packages/trace/src/doctor.ts
-packages/trace/src/fitness.ts
-packages/trace/src/fixtures/drift.ts
-packages/trace/src/index.ts
-packages/trace/src/lead.test.ts
-packages/trace/src/memory-health.ts
-packages/trace/src/quality-debt-memory.test.ts
-packages/trace/src/quality.ts
-packages/trace/src/standards-drift.ts
-packages/trace/src/trace-graph.test.ts
-packages/trace/src/trace-graph.ts
-packages/trace/src/trace-render.ts
-packages/trace/src/validate-doctor.test.ts
-packages/trace/src/validate.ts
-packages/trace/tsconfig.build.json
-packages/trace/tsconfig.json
-packages/workflow/package.json
-packages/workflow/src/change.ts
-packages/workflow/src/consolidate.ts
-packages/workflow/src/contracts.ts
-packages/workflow/src/gates.test.ts
-packages/workflow/src/gates.ts
-packages/workflow/src/handoff.ts
-packages/workflow/src/index.ts
-packages/workflow/src/leases.test.ts
-packages/workflow/src/leases.ts
-packages/workflow/src/next.ts
-packages/workflow/src/packets.ts
-packages/workflow/src/session-memory-consolidate.test.ts
-packages/workflow/src/session-memory.ts
-packages/workflow/src/task-dag-packets.test.ts
-packages/workflow/src/task-dag.ts
-packages/workflow/src/transition.ts
-packages/workflow/src/workflow.test.ts
-packages/workflow/tsconfig.build.json
-packages/workflow/tsconfig.json
-planning/DECISIONS.md
-planning/DEPENDENCIES.md
-planning/MASTER-PLAN.md
-planning/MILESTONES.md
-planning/OPEN-QUESTIONS.md
-planning/REQUIREMENTS-TRACEABILITY.md
-planning/RISKS.md
-planning/ROADMAP.md
-planning/TRACKER.md
-planning/changes/CHG-001-quality-context-governance/acceptance-gates.md
-planning/changes/CHG-001-quality-context-governance/decision.md
-planning/changes/CHG-001-quality-context-governance/impact.md
-planning/changes/CHG-001-quality-context-governance/migration-checklist.md
-planning/changes/CHG-001-quality-context-governance/proposal.md
-planning/changes/CHG-001-quality-context-governance/requirements.md
-planning/changes/CHG-001-quality-context-governance/risks.md
-planning/changes/CHG-001-quality-context-governance/roadmap-delta.md
-planning/changes/CHG-001-quality-context-governance/source-pack.zip
-planning/changes/CHG-001-quality-context-governance/tasks.md
-planning/handoffs/README.md
-planning/handoffs/TEMPLATE.md
-planning/handoffs/chg-001-rebaseline-handoff.md
-planning/handoffs/phase-00-handoff.md
-planning/handoffs/phase-01-handoff.md
-planning/handoffs/phase-02-handoff.md
-planning/handoffs/phase-03-handoff.md
-planning/handoffs/phase-04-handoff.md
-planning/handoffs/phase-05-handoff.md
-planning/handoffs/phase-06-handoff.md
-planning/handoffs/phase-07-handoff.md
-planning/handoffs/phase-08-handoff.md
-planning/phase-addenda/phase-04-addendum.md
-planning/phase-addenda/phase-05-addendum.md
-planning/phase-addenda/phase-06-addendum.md
-planning/phase-addenda/phase-07-addendum.md
-planning/phase-addenda/phase-08-addendum.md
-planning/phase-addenda/phase-09-addendum.md
-planning/phase-addenda/phase-10-addendum.md
-planning/phase-addenda/phase-11-addendum.md
-planning/phase-addenda/phase-12-addendum.md
-planning/phases/phase-00.md
-planning/phases/phase-01.md
-planning/phases/phase-02.md
-planning/phases/phase-03.md
-planning/phases/phase-04.md
-planning/phases/phase-05.md
-planning/phases/phase-06.md
-planning/phases/phase-07.md
-planning/phases/phase-08.md
-planning/phases/phase-09.md
-planning/phases/phase-10.md
-planning/phases/phase-11.md
-planning/phases/phase-12.md
-planning/tasks.csv
-pnpm-lock.yaml
-pnpm-workspace.yaml
-prompts/01-phase-00-product-and-research-foundation.md
-prompts/02-phase-01-repository-and-engineering-foundation.md
-prompts/03-phase-02-canonical-project-model-and-schemas.md
-prompts/04-phase-03-cli-foundation.md
-prompts/05-phase-04-pack-and-profile-system.md
-prompts/06-phase-05-planning-compiler-and-artifact-generator.md
-prompts/07-phase-06-agent-bridge.md
-prompts/08-phase-07-frontend-design-engine.md
-prompts/09-phase-08-workflow-session-engine.md
-prompts/10-phase-09-trace-validate-doctor-and-drift.md
-prompts/11-phase-10-existing-repository-adoption.md
-prompts/12-phase-11-ecosystem-and-integrations.md
-prompts/13-phase-12-hardening-pilot-and-v1.md
-prompts/MASTER-GUARDRAILS.md
-prompts/README.md
-scripts/check-boundaries.mjs
-scripts/e2e-phase05.mjs
-scripts/e2e-phase06.mjs
-scripts/e2e-phase07.mjs
-scripts/e2e-phase08.mjs
-scripts/e2e-phase09.mjs
-specs/context-bundle.example.md
-specs/context-request.example.yaml
-specs/engineering-policy.example.yaml
-specs/memory-record.example.yaml
-tsconfig.base.json
-vitest.config.ts
-packages/scanner/package.json
-packages/scanner/tsconfig.json
-packages/scanner/tsconfig.build.json
-packages/scanner/src/adopt/adopt.ts
-packages/scanner/src/adopt/adopt.test.ts
-packages/scanner/src/context/context-map.ts
-packages/scanner/src/context/context-map.test.ts
-packages/scanner/src/context/lexical-context.ts
-packages/scanner/src/context/lexical-context.test.ts
-packages/scanner/src/context/memory-bootstrap.ts
-packages/scanner/src/context/memory-bootstrap.test.ts
-packages/scanner/src/context/standards-discovery.ts
-packages/scanner/src/context/standards-discovery.test.ts
-packages/scanner/src/context/symbol-index.ts
-packages/scanner/src/context/symbol-index.test.ts
-packages/scanner/src/contracts.ts
-packages/scanner/src/detect/stack-detector.ts
-packages/scanner/src/detect/stack-detector.test.ts
-packages/scanner/src/fixtures/brownfield.ts
-packages/scanner/src/fixtures/brownfield.test.ts
-packages/scanner/src/fixtures/poisoning.ts
-packages/scanner/src/fixtures/poisoning.test.ts
-packages/scanner/src/fixtures/trees/brownfield/** (21 files, placeholders only)
-packages/scanner/src/fixtures/trees/poisoning/** (3 files)
-packages/scanner/src/index.ts
-packages/scanner/src/pipeline.ts
-packages/scanner/src/scan/node-reader.ts
-packages/scanner/src/scan/node-reader.test.ts
-packages/scanner/src/scan/safe-scanner.ts
-packages/scanner/src/scan/safe-scanner.test.ts
-packages/scanner/src/scan/virtual-reader.ts
-packages/scanner/src/scan/virtual-reader.test.ts
-packages/scanner/src/security/prompt-isolation.ts
-packages/scanner/src/security/prompt-isolation.test.ts
-scripts/e2e-phase10.mjs
+- `.changeset/config.json`
+- `.changeset/phase-03-cli-foundation.md`
+- `.changeset/phase-04-pack-and-profile-system.md`
+- `.changeset/phase-05-planning-compiler-and-artifact-generator.md`
+- `.changeset/phase-06-agent-bridge.md`
+- `.changeset/phase-07-frontend-design-engine.md`
+- `.changeset/phase-08-workflow-session-engine.md`
+- `.changeset/phase-09-trace-validate-doctor-drift.md`
+- `.changeset/README.md`
+- `.changeset/smoky-pianos-cli.md`
+- `.gitattributes`
+- `.github/ISSUE_TEMPLATE/bug.yml`
+- `.github/ISSUE_TEMPLATE/feature.yml`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/workflows/ci.yaml`
+- `.gitignore`
+- `.npmrc`
+- `.planmo/project.yml`
+- `.planmo/state.yml`
+- `.prettierignore`
+- `.prettierrc.json`
+- `AGENTS.md`
+- `CHANGELOG.md`
+- `CONTRIBUTING.md`
+- `docs/01-product/competitive-positioning.md`
+- `docs/01-product/non-goals.md`
+- `docs/01-product/personas.md`
+- `docs/01-product/product-requirements.md`
+- `docs/01-product/vision.md`
+- `docs/02-architecture/canonical-project-model.md`
+- `docs/02-architecture/determinism.md`
+- `docs/02-architecture/repository-structure.md`
+- `docs/02-architecture/schema-versioning.md`
+- `docs/02-architecture/state-and-manifest.md`
+- `docs/02-architecture/system-architecture.md`
+- `docs/03-cli/command-surface.md`
+- `docs/03-cli/exit-codes.md`
+- `docs/03-cli/filesystem-safety.md`
+- `docs/03-cli/interactive-wizard.md`
+- `docs/04-packs/pack-security.md`
+- `docs/04-packs/pack-system.md`
+- `docs/04-packs/planning-profiles.md`
+- `docs/04-packs/resolution.md`
+- `docs/04-packs/versioning.md`
+- `docs/05-design-engine/accessibility-and-motion.md`
+- `docs/05-design-engine/design-engine.md`
+- `docs/05-design-engine/design-profile.md`
+- `docs/05-design-engine/shadcn-and-registries.md`
+- `docs/05-design-engine/style-catalog.md`
+- `docs/05-design-engine/tokens.md`
+- `docs/06-agent-engine/agent-engine.md`
+- `docs/06-agent-engine/ai-boundary.md`
+- `docs/06-agent-engine/parallel-agents.md`
+- `docs/06-agent-engine/prompt-injection-model.md`
+- `docs/06-agent-engine/session-model.md`
+- `docs/07-workflows/change-management.md`
+- `docs/07-workflows/execution-graph.md`
+- `docs/07-workflows/handoffs.md`
+- `docs/08-security/pack-trust.md`
+- `docs/08-security/secrets-and-privacy.md`
+- `docs/08-security/secure-filesystem.md`
+- `docs/08-security/threat-model.md`
+- `docs/09-testing/golden-fixtures.md`
+- `docs/09-testing/performance.md`
+- `docs/09-testing/property-and-fuzz.md`
+- `docs/09-testing/release-test-gates.md`
+- `docs/09-testing/test-matrix.md`
+- `docs/09-testing/test-strategy.md`
+- `docs/10-engineering/ci.md`
+- `docs/10-engineering/dependency-policy.md`
+- `docs/10-engineering/git-and-pr-workflow.md`
+- `docs/10-engineering/package-boundaries.md`
+- `docs/10-engineering/versioning-and-releases.md`
+- `docs/11-research/2026-source-notes.md`
+- `docs/11-research/chg-001-inspiration-sources.md`
+- `docs/11-research/chg-001-research-summary.md`
+- `docs/11-research/licensing.md`
+- `docs/11-research/naming-and-availability.md`
+- `docs/11-research/research-decisions.md`
+- `docs/11-research/support-matrix.md`
+- `docs/12-adrs/ADR-0001-cli-first-agent-native.md`
+- `docs/12-adrs/ADR-0002-canonical-project-model.md`
+- `docs/12-adrs/ADR-0003-dtcg-design-tokens.md`
+- `docs/12-adrs/ADR-0004-declarative-packs-v1.md`
+- `docs/12-adrs/ADR-0005-fresh-session-phase-gates.md`
+- `docs/12-adrs/ADR-0006-semver-and-changesets.md`
+- `docs/12-adrs/ADR-0007-naming-and-distribution-targets.md`
+- `docs/12-adrs/ADR-0008-initial-supported-agents-platforms-styles.md`
+- `docs/12-adrs/ADR-0009-monorepo-and-engineering-toolchain.md`
+- `docs/12-adrs/ADR-0010-cli-routing-and-build-tool.md`
+- `docs/12-adrs/ADR-0011-strict-versioned-schemas.md`
+- `docs/12-adrs/ADR-0012-standards-and-quality-engines.md`
+- `docs/12-adrs/ADR-0013-context-memory-authority-model.md`
+- `docs/12-adrs/ADR-0014-local-first-rebuildable-memory-index.md`
+- `docs/12-adrs/ADR-0015-change-engine-delta-model.md`
+- `docs/12-adrs/ADR-0016-managed-file-ownership-classes.md`
+- `docs/12-adrs/ADR-0017-task-graph-and-execution-packets.md`
+- `docs/12-adrs/ADR-0018-deterministic-pack-resolution-and-locking.md`
+- `docs/12-adrs/ADR-0019-deterministic-planning-compiler-and-generation-manifest.md`
+- `docs/12-adrs/ADR-0020-agent-bridge-capabilities-validation-and-context-bundles.md`
+- `docs/12-adrs/ADR-0021-frontend-design-engine-dtcg-tokens-design-packs-registry-trust.md`
+- `docs/12-adrs/ADR-0022-workflow-session-engine-transitions-packets-leases-gates-session-memory.md`
+- `docs/12-adrs/ADR-0023-trace-validate-doctor-drift.md`
+- `docs/12-adrs/ADR-0024-safe-existing-repository-adoption-scanner-package.md`
+- `docs/13-standards-quality/architecture-fitness.md`
+- `docs/13-standards-quality/quality-engine.md`
+- `docs/13-standards-quality/refactoring-technical-debt.md`
+- `docs/13-standards-quality/standards-engine.md`
+- `docs/14-context-memory/architecture.md`
+- `docs/14-context-memory/evaluation.md`
+- `docs/14-context-memory/lifecycle.md`
+- `docs/14-context-memory/memory-model.md`
+- `docs/14-context-memory/repo-context-map.md`
+- `docs/14-context-memory/retrieval-token-budget.md`
+- `docs/14-context-memory/security.md`
+- `docs/14-context-memory/storage-portability.md`
+- `docs/15-change-governance/change-engine.md`
+- `docs/15-change-governance/context-quality-integration.md`
+- `docs/15-change-governance/managed-file-ownership.md`
+- `docs/15-change-governance/task-graph-execution-packets.md`
+- `docs/16-evals-trust/eval-engine.md`
+- `docs/16-evals-trust/trust-engine-future.md`
+- `eslint.config.js`
+- `MANIFEST.md`
+- `package.json`
+- `packages/adapters/package.json`
+- `packages/adapters/src/claude-code.test.ts`
+- `packages/adapters/src/claude-code.ts`
+- `packages/adapters/src/codex.test.ts`
+- `packages/adapters/src/codex.ts`
+- `packages/adapters/src/contract.ts`
+- `packages/adapters/src/generic-opencode.test.ts`
+- `packages/adapters/src/generic.ts`
+- `packages/adapters/src/index.ts`
+- `packages/adapters/src/opencode.ts`
+- `packages/adapters/tsconfig.build.json`
+- `packages/adapters/tsconfig.json`
+- `packages/agent-bridge/package.json`
+- `packages/agent-bridge/src/bridge.test.ts`
+- `packages/agent-bridge/src/context-bundle.ts`
+- `packages/agent-bridge/src/execution-packet.ts`
+- `packages/agent-bridge/src/index.ts`
+- `packages/agent-bridge/src/memory-provider.ts`
+- `packages/agent-bridge/src/phase11-contracts.ts`
+- `packages/agent-bridge/src/proposal.ts`
+- `packages/agent-bridge/src/providers.ts`
+- `packages/agent-bridge/src/registry.ts`
+- `packages/agent-bridge/src/standards-injector.ts`
+- `packages/agent-bridge/tsconfig.build.json`
+- `packages/agent-bridge/tsconfig.json`
+- `packages/cli/package.json`
+- `packages/cli/src/bin.ts`
+- `packages/cli/src/env.d.ts`
+- `packages/cli/src/index.test.ts`
+- `packages/cli/src/index.ts`
+- `packages/cli/tsconfig.build.json`
+- `packages/cli/tsconfig.json`
+- `packages/core/package.json`
+- `packages/core/src/diff.test.ts`
+- `packages/core/src/diff.ts`
+- `packages/core/src/errors.ts`
+- `packages/core/src/index.ts`
+- `packages/core/src/init.test.ts`
+- `packages/core/src/init.ts`
+- `packages/core/src/paths.test.ts`
+- `packages/core/src/paths.ts`
+- `packages/core/src/status.test.ts`
+- `packages/core/src/status.ts`
+- `packages/core/src/test-utils.ts`
+- `packages/core/src/writer.test.ts`
+- `packages/core/src/writer.ts`
+- `packages/core/tsconfig.build.json`
+- `packages/core/tsconfig.json`
+- `packages/design-engine/package.json`
+- `packages/design-engine/src/accessibility.test.ts`
+- `packages/design-engine/src/accessibility.ts`
+- `packages/design-engine/src/anti-patterns.ts`
+- `packages/design-engine/src/contracts.ts`
+- `packages/design-engine/src/design-standards.test.ts`
+- `packages/design-engine/src/design-standards.ts`
+- `packages/design-engine/src/docs.test.ts`
+- `packages/design-engine/src/docs.ts`
+- `packages/design-engine/src/index.ts`
+- `packages/design-engine/src/packs.test.ts`
+- `packages/design-engine/src/packs.ts`
+- `packages/design-engine/src/shadcn.test.ts`
+- `packages/design-engine/src/shadcn.ts`
+- `packages/design-engine/src/tokens.test.ts`
+- `packages/design-engine/src/tokens.ts`
+- `packages/design-engine/tsconfig.build.json`
+- `packages/design-engine/tsconfig.json`
+- `packages/generator/package.json`
+- `packages/generator/scripts/update-goldens.mjs`
+- `packages/generator/src/compile.ts`
+- `packages/generator/src/contracts.ts`
+- `packages/generator/src/fixtures.ts`
+- `packages/generator/src/golden.test.ts`
+- `packages/generator/src/golden/high/planning_CONTEXT.md`
+- `packages/generator/src/golden/high/planning_handoffs_TEMPLATE.md`
+- `packages/generator/src/golden/high/planning_phases_phase-00.md`
+- `packages/generator/src/golden/high/planning_phases_phase-01.md`
+- `packages/generator/src/golden/high/planning_phases_phase-02.md`
+- `packages/generator/src/golden/high/planning_phases_phase-03.md`
+- `packages/generator/src/golden/high/planning_phases_phase-04.md`
+- `packages/generator/src/golden/high/planning_phases_phase-05.md`
+- `packages/generator/src/golden/high/planning_phases_phase-06.md`
+- `packages/generator/src/golden/high/planning_phases_phase-07.md`
+- `packages/generator/src/golden/high/planning_phases_phase-08.md`
+- `packages/generator/src/golden/high/planning_phases_phase-09.md`
+- `packages/generator/src/golden/high/planning_phases_phase-10.md`
+- `packages/generator/src/golden/high/planning_phases_phase-11.md`
+- `packages/generator/src/golden/high/planning_phases_phase-12.md`
+- `packages/generator/src/golden/high/planning_policies_language.md`
+- `packages/generator/src/golden/high/planning_policies_organization.md`
+- `packages/generator/src/golden/high/planning_policies_security.md`
+- `packages/generator/src/golden/high/planning_policies_testing.md`
+- `packages/generator/src/golden/high/planning_ROADMAP.md`
+- `packages/generator/src/golden/high/planning_STANDARDS.md`
+- `packages/generator/src/golden/high/planning_TRACKER.md`
+- `packages/generator/src/golden/low/planning_CONTEXT.md`
+- `packages/generator/src/golden/low/planning_handoffs_TEMPLATE.md`
+- `packages/generator/src/golden/low/planning_phases_phase-00.md`
+- `packages/generator/src/golden/low/planning_phases_phase-01.md`
+- `packages/generator/src/golden/low/planning_phases_phase-02.md`
+- `packages/generator/src/golden/low/planning_phases_phase-03.md`
+- `packages/generator/src/golden/low/planning_policies_language.md`
+- `packages/generator/src/golden/low/planning_policies_security.md`
+- `packages/generator/src/golden/low/planning_ROADMAP.md`
+- `packages/generator/src/golden/low/planning_STANDARDS.md`
+- `packages/generator/src/golden/low/planning_TRACKER.md`
+- `packages/generator/src/golden/medium/planning_CONTEXT.md`
+- `packages/generator/src/golden/medium/planning_handoffs_TEMPLATE.md`
+- `packages/generator/src/golden/medium/planning_phases_phase-00.md`
+- `packages/generator/src/golden/medium/planning_phases_phase-01.md`
+- `packages/generator/src/golden/medium/planning_phases_phase-02.md`
+- `packages/generator/src/golden/medium/planning_phases_phase-03.md`
+- `packages/generator/src/golden/medium/planning_phases_phase-04.md`
+- `packages/generator/src/golden/medium/planning_phases_phase-05.md`
+- `packages/generator/src/golden/medium/planning_phases_phase-06.md`
+- `packages/generator/src/golden/medium/planning_policies_language.md`
+- `packages/generator/src/golden/medium/planning_policies_organization.md`
+- `packages/generator/src/golden/medium/planning_policies_security.md`
+- `packages/generator/src/golden/medium/planning_ROADMAP.md`
+- `packages/generator/src/golden/medium/planning_STANDARDS.md`
+- `packages/generator/src/golden/medium/planning_TRACKER.md`
+- `packages/generator/src/idempotency.test.ts`
+- `packages/generator/src/index.ts`
+- `packages/generator/src/ir.test.ts`
+- `packages/generator/src/ir.ts`
+- `packages/generator/src/manifest.test.ts`
+- `packages/generator/src/manifest.ts`
+- `packages/generator/src/render.test.ts`
+- `packages/generator/src/render.ts`
+- `packages/generator/src/standards-context.test.ts`
+- `packages/generator/src/standards-context.ts`
+- `packages/generator/src/synth.test.ts`
+- `packages/generator/src/synth.ts`
+- `packages/generator/tsconfig.build.json`
+- `packages/generator/tsconfig.json`
+- `packages/packs/package.json`
+- `packages/packs/src/fixtures/conflicting/capability-a/pack.yml`
+- `packages/packs/src/fixtures/conflicting/capability-b/pack.yml`
+- `packages/packs/src/fixtures/conflicting/cycle-a/pack.yml`
+- `packages/packs/src/fixtures/conflicting/cycle-b/pack.yml`
+- `packages/packs/src/fixtures/conflicting/missing-dep/pack.yml`
+- `packages/packs/src/fixtures/malicious/evil-hooks/pack.yml`
+- `packages/packs/src/fixtures/malicious/evil-scripts/pack.yml`
+- `packages/packs/src/fixtures/malicious/exec/pack.yml`
+- `packages/packs/src/fixtures/malicious/scripts-nested/pack.yml`
+- `packages/packs/src/fixtures/valid/context/agent-memory/pack.yml`
+- `packages/packs/src/fixtures/valid/policy/engineering/pack.yml`
+- `packages/packs/src/fixtures/valid/stack/nextjs/pack.yml`
+- `packages/packs/src/fixtures/valid/standards/web-security/pack.yml`
+- `packages/packs/src/index.ts`
+- `packages/packs/src/loader.test.ts`
+- `packages/packs/src/loader.ts`
+- `packages/packs/src/lock.test.ts`
+- `packages/packs/src/lock.ts`
+- `packages/packs/src/phase11-contracts.ts`
+- `packages/packs/src/profiles.test.ts`
+- `packages/packs/src/profiles.ts`
+- `packages/packs/src/resolve.test.ts`
+- `packages/packs/src/resolve.ts`
+- `packages/packs/src/standards.test.ts`
+- `packages/packs/src/standards.ts`
+- `packages/packs/src/test-utils.ts`
+- `packages/packs/tsconfig.build.json`
+- `packages/packs/tsconfig.json`
+- `packages/scanner/package.json`
+- `packages/scanner/src/adopt/adopt.test.ts`
+- `packages/scanner/src/adopt/adopt.ts`
+- `packages/scanner/src/context/context-map.test.ts`
+- `packages/scanner/src/context/context-map.ts`
+- `packages/scanner/src/context/lexical-context.test.ts`
+- `packages/scanner/src/context/lexical-context.ts`
+- `packages/scanner/src/context/memory-bootstrap.test.ts`
+- `packages/scanner/src/context/memory-bootstrap.ts`
+- `packages/scanner/src/context/standards-discovery.test.ts`
+- `packages/scanner/src/context/standards-discovery.ts`
+- `packages/scanner/src/context/symbol-index.test.ts`
+- `packages/scanner/src/context/symbol-index.ts`
+- `packages/scanner/src/contracts.ts`
+- `packages/scanner/src/detect/stack-detector.test.ts`
+- `packages/scanner/src/detect/stack-detector.ts`
+- `packages/scanner/src/fixtures/brownfield.test.ts`
+- `packages/scanner/src/fixtures/brownfield.ts`
+- `packages/scanner/src/fixtures/poisoning.test.ts`
+- `packages/scanner/src/fixtures/poisoning.ts`
+- `packages/scanner/src/fixtures/trees/brownfield/.env.example`
+- `packages/scanner/src/fixtures/trees/brownfield/.github/workflows/ci.yml`
+- `packages/scanner/src/fixtures/trees/brownfield/.gitignore`
+- `packages/scanner/src/fixtures/trees/brownfield/bin/brownfield.js`
+- `packages/scanner/src/fixtures/trees/brownfield/docs/architecture.md`
+- `packages/scanner/src/fixtures/trees/brownfield/package.json`
+- `packages/scanner/src/fixtures/trees/brownfield/pnpm-lock.yaml`
+- `packages/scanner/src/fixtures/trees/brownfield/public/assets/logo.svg`
+- `packages/scanner/src/fixtures/trees/brownfield/public/index.html`
+- `packages/scanner/src/fixtures/trees/brownfield/README.md`
+- `packages/scanner/src/fixtures/trees/brownfield/scripts/-rf`
+- `packages/scanner/src/fixtures/trees/brownfield/scripts/convert.py`
+- `packages/scanner/src/fixtures/trees/brownfield/src/..hidden.ts`
+- `packages/scanner/src/fixtures/trees/brownfield/src/app.ts`
+- `packages/scanner/src/fixtures/trees/brownfield/src/index.ts`
+- `packages/scanner/src/fixtures/trees/brownfield/src/lib/format.ts`
+- `packages/scanner/src/fixtures/trees/brownfield/src/lib/strings.ts`
+- `packages/scanner/src/fixtures/trees/brownfield/src/routes/health.ts`
+- `packages/scanner/src/fixtures/trees/brownfield/tests/format.check.js`
+- `packages/scanner/src/fixtures/trees/brownfield/tests/smoke.js`
+- `packages/scanner/src/fixtures/trees/brownfield/tools/--upload.txt`
+- `packages/scanner/src/fixtures/trees/poisoning/AGENTS.instructions.md`
+- `packages/scanner/src/fixtures/trees/poisoning/README.md`
+- `packages/scanner/src/fixtures/trees/poisoning/src/comment.ts`
+- `packages/scanner/src/index.ts`
+- `packages/scanner/src/pipeline.ts`
+- `packages/scanner/src/scan/node-reader.test.ts`
+- `packages/scanner/src/scan/node-reader.ts`
+- `packages/scanner/src/scan/safe-scanner.test.ts`
+- `packages/scanner/src/scan/safe-scanner.ts`
+- `packages/scanner/src/scan/virtual-reader.test.ts`
+- `packages/scanner/src/scan/virtual-reader.ts`
+- `packages/scanner/src/security/prompt-isolation.test.ts`
+- `packages/scanner/src/security/prompt-isolation.ts`
+- `packages/scanner/tsconfig.build.json`
+- `packages/scanner/tsconfig.json`
+- `packages/schema/package.json`
+- `packages/schema/src/agent-bridge.test.ts`
+- `packages/schema/src/agent-bridge.ts`
+- `packages/schema/src/change-engine.test.ts`
+- `packages/schema/src/change-engine.ts`
+- `packages/schema/src/common.ts`
+- `packages/schema/src/design-profile.test.ts`
+- `packages/schema/src/design-profile.ts`
+- `packages/schema/src/fixtures/lock.v1.golden.yml`
+- `packages/schema/src/fixtures/manifest.v1.golden.json`
+- `packages/schema/src/fixtures/project.v0.legacy.yml`
+- `packages/schema/src/fixtures/project.v1.golden.yml`
+- `packages/schema/src/fixtures/README.md`
+- `packages/schema/src/fixtures/state.v0.legacy.yml`
+- `packages/schema/src/fixtures/state.v1.golden.yml`
+- `packages/schema/src/golden.test.ts`
+- `packages/schema/src/index.ts`
+- `packages/schema/src/migrations.test.ts`
+- `packages/schema/src/migrations.ts`
+- `packages/schema/src/pack-content.test.ts`
+- `packages/schema/src/pack-content.ts`
+- `packages/schema/src/pack-design.test.ts`
+- `packages/schema/src/pack-design.ts`
+- `packages/schema/src/project.test.ts`
+- `packages/schema/src/project.ts`
+- `packages/schema/src/schema-versioning.ts`
+- `packages/schema/src/state-lock-manifest.test.ts`
+- `packages/schema/src/state-lock-manifest.ts`
+- `packages/schema/src/test-utils.ts`
+- `packages/schema/src/trace-handoff-workpacket.test.ts`
+- `packages/schema/src/trace-handoff-workpacket.ts`
+- `packages/schema/tsconfig.build.json`
+- `packages/schema/tsconfig.json`
+- `packages/shared/package.json`
+- `packages/shared/src/index.test.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/tsconfig.build.json`
+- `packages/shared/tsconfig.json`
+- `packages/trace/package.json`
+- `packages/trace/src/contracts.ts`
+- `packages/trace/src/debt.ts`
+- `packages/trace/src/doctor.ts`
+- `packages/trace/src/fitness.ts`
+- `packages/trace/src/fixtures/drift.ts`
+- `packages/trace/src/index.ts`
+- `packages/trace/src/lead.test.ts`
+- `packages/trace/src/memory-health.ts`
+- `packages/trace/src/quality-debt-memory.test.ts`
+- `packages/trace/src/quality.ts`
+- `packages/trace/src/standards-drift.ts`
+- `packages/trace/src/trace-graph.test.ts`
+- `packages/trace/src/trace-graph.ts`
+- `packages/trace/src/trace-render.ts`
+- `packages/trace/src/validate-doctor.test.ts`
+- `packages/trace/src/validate.ts`
+- `packages/trace/tsconfig.build.json`
+- `packages/trace/tsconfig.json`
+- `packages/workflow/package.json`
+- `packages/workflow/src/change.ts`
+- `packages/workflow/src/consolidate.ts`
+- `packages/workflow/src/contracts.ts`
+- `packages/workflow/src/gates.test.ts`
+- `packages/workflow/src/gates.ts`
+- `packages/workflow/src/handoff.ts`
+- `packages/workflow/src/index.ts`
+- `packages/workflow/src/leases.test.ts`
+- `packages/workflow/src/leases.ts`
+- `packages/workflow/src/next.ts`
+- `packages/workflow/src/packets.ts`
+- `packages/workflow/src/session-memory-consolidate.test.ts`
+- `packages/workflow/src/session-memory.ts`
+- `packages/workflow/src/task-dag-packets.test.ts`
+- `packages/workflow/src/task-dag.ts`
+- `packages/workflow/src/transition.ts`
+- `packages/workflow/src/workflow.test.ts`
+- `packages/workflow/tsconfig.build.json`
+- `packages/workflow/tsconfig.json`
+- `planning/changes/CHG-001-quality-context-governance/acceptance-gates.md`
+- `planning/changes/CHG-001-quality-context-governance/decision.md`
+- `planning/changes/CHG-001-quality-context-governance/impact.md`
+- `planning/changes/CHG-001-quality-context-governance/migration-checklist.md`
+- `planning/changes/CHG-001-quality-context-governance/proposal.md`
+- `planning/changes/CHG-001-quality-context-governance/requirements.md`
+- `planning/changes/CHG-001-quality-context-governance/risks.md`
+- `planning/changes/CHG-001-quality-context-governance/roadmap-delta.md`
+- `planning/changes/CHG-001-quality-context-governance/source-pack.zip`
+- `planning/changes/CHG-001-quality-context-governance/tasks.md`
+- `planning/DECISIONS.md`
+- `planning/DEPENDENCIES.md`
+- `planning/handoffs/chg-001-rebaseline-handoff.md`
+- `planning/handoffs/phase-00-handoff.md`
+- `planning/handoffs/phase-01-handoff.md`
+- `planning/handoffs/phase-02-handoff.md`
+- `planning/handoffs/phase-03-handoff.md`
+- `planning/handoffs/phase-04-handoff.md`
+- `planning/handoffs/phase-05-handoff.md`
+- `planning/handoffs/phase-06-handoff.md`
+- `planning/handoffs/phase-07-handoff.md`
+- `planning/handoffs/phase-08-handoff.md`
+- `planning/handoffs/phase-09-handoff.md`
+- `planning/handoffs/phase-10-handoff.md`
+- `planning/handoffs/README.md`
+- `planning/handoffs/TEMPLATE.md`
+- `planning/MASTER-PLAN.md`
+- `planning/MILESTONES.md`
+- `planning/OPEN-QUESTIONS.md`
+- `planning/phase-addenda/phase-04-addendum.md`
+- `planning/phase-addenda/phase-05-addendum.md`
+- `planning/phase-addenda/phase-06-addendum.md`
+- `planning/phase-addenda/phase-07-addendum.md`
+- `planning/phase-addenda/phase-08-addendum.md`
+- `planning/phase-addenda/phase-09-addendum.md`
+- `planning/phase-addenda/phase-10-addendum.md`
+- `planning/phase-addenda/phase-11-addendum.md`
+- `planning/phase-addenda/phase-12-addendum.md`
+- `planning/phases/phase-00.md`
+- `planning/phases/phase-01.md`
+- `planning/phases/phase-02.md`
+- `planning/phases/phase-03.md`
+- `planning/phases/phase-04.md`
+- `planning/phases/phase-05.md`
+- `planning/phases/phase-06.md`
+- `planning/phases/phase-07.md`
+- `planning/phases/phase-08.md`
+- `planning/phases/phase-09.md`
+- `planning/phases/phase-10.md`
+- `planning/phases/phase-11.md`
+- `planning/phases/phase-12.md`
+- `planning/REQUIREMENTS-TRACEABILITY.md`
+- `planning/RISKS.md`
+- `planning/ROADMAP.md`
+- `planning/tasks.csv`
+- `planning/TRACKER.md`
+- `planning/WORKER-BRIEF-phase-11.md`
+- `pnpm-lock.yaml`
+- `pnpm-workspace.yaml`
+- `prompts/01-phase-00-product-and-research-foundation.md`
+- `prompts/02-phase-01-repository-and-engineering-foundation.md`
+- `prompts/03-phase-02-canonical-project-model-and-schemas.md`
+- `prompts/04-phase-03-cli-foundation.md`
+- `prompts/05-phase-04-pack-and-profile-system.md`
+- `prompts/06-phase-05-planning-compiler-and-artifact-generator.md`
+- `prompts/07-phase-06-agent-bridge.md`
+- `prompts/08-phase-07-frontend-design-engine.md`
+- `prompts/09-phase-08-workflow-session-engine.md`
+- `prompts/10-phase-09-trace-validate-doctor-and-drift.md`
+- `prompts/11-phase-10-existing-repository-adoption.md`
+- `prompts/12-phase-11-ecosystem-and-integrations.md`
+- `prompts/13-phase-12-hardening-pilot-and-v1.md`
+- `prompts/MASTER-GUARDRAILS.md`
+- `prompts/README.md`
+- `README.md`
+- `ROADMAP.md`
+- `scripts/check-boundaries.mjs`
+- `scripts/e2e-phase05.mjs`
+- `scripts/e2e-phase06.mjs`
+- `scripts/e2e-phase07.mjs`
+- `scripts/e2e-phase08.mjs`
+- `scripts/e2e-phase09.mjs`
+- `scripts/e2e-phase10.mjs`
+- `SECURITY.md`
+- `specs/context-bundle.example.md`
+- `specs/context-request.example.yaml`
+- `specs/engineering-policy.example.yaml`
+- `specs/memory-record.example.yaml`
+- `tsconfig.base.json`
+- `vitest.config.ts`

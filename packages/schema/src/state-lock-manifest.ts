@@ -50,6 +50,8 @@ export const PackLockEntry = z.strictObject({
   source: z.enum(LOCK_SOURCES),
   /** Integrity of the resolved remote content; absent for local packs. */
   integrity: Integrity.optional(),
+  /** Classified trust level (P11-01); absent in pre-Phase 11 lockfiles. */
+  trustLevel: z.enum(['builtin', 'local', 'verified-source', 'third-party']).optional(),
 });
 export type PackLockEntry = z.infer<typeof PackLockEntry>;
 
