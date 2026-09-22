@@ -100,7 +100,9 @@ describe('NodeFileReader — real filesystem reader (the only node:fs module)', 
       expect(st.size).toBeGreaterThan(0);
       expect(await reader.linkTarget(join(dir, 'entry-link'))).toMatch(/index\.ts$/);
 
-      const report = await safeScanner().scan(dir, reader);
+      const report = await safeScanner().scan(dir, reader, {
+        refuseEscapingSymlinks: false,
+      });
       expect(report.entries.find((e) => e.path === 'entry-link')?.type).toBe('symlink');
       expect(report.stats.symlinks).toBe(1);
     } finally {
