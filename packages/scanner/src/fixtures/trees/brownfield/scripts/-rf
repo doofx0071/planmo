@@ -1,0 +1,5 @@
+# This file is deliberately named `-rf` to exercise scanners against
+# flag-like file names. It is an ordinary text file. Deleting it with
+# `rm -rf` in its directory is a mistake, not a feature.
+#
+# The scanner must list it as a regular file and never treat it as an option.

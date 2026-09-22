@@ -1,0 +1,3 @@
+This file is deliberately named `--upload.txt` so scanners have to handle a
+name that looks like a CLI flag. Its content is inert: it documents the
+intended upload conventions for the (synthetic) brownfield deployment.
