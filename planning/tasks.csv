@@ -61,13 +61,13 @@ P11-02,11,Implement catalog/source abstraction,DONE,high
 P11-03,11,Implement checksums/pinning/reversibility,DONE,high
 P11-04,11,Document pack authoring,DONE,medium
 P11-05,11,Prototype GitHub export integration,DONE,low
-P12-01,12,Run security review and threat-model validation,IN_PROGRESS,critical
-P12-02,12,Run property/fuzz tests on high-risk parsers,IN_PROGRESS,critical
-P12-03,12,Run cross-platform E2E matrix,IN_PROGRESS,critical
-P12-04,12,Validate upgrades/migrations,IN_PROGRESS,high
-P12-05,12,Pilot PlanMo on representative projects,IN_PROGRESS,critical
-P12-06,12,Publish docs/examples/package release candidate,IN_PROGRESS,high
-P12-07,12,Conduct 1.0 go/no-go review,IN_PROGRESS,critical
+P12-01,12,Run security review and threat-model validation,DONE,critical
+P12-02,12,Run property/fuzz tests on high-risk parsers,DONE,critical
+P12-03,12,Run cross-platform E2E matrix,DONE,critical
+P12-04,12,Validate upgrades/migrations,DONE,high
+P12-05,12,Pilot PlanMo on representative projects,DONE,critical
+P12-06,12,Publish docs/examples/package release candidate,DONE,high
+P12-07,12,Conduct 1.0 go/no-go review,DONE,critical
 P04-06,04,Standards pack schema/resolution (CHG-001),DONE,high
 P04-07,04,Engineering policy precedence (CHG-001),DONE,high
 P04-08,04,Pack provenance metadata (CHG-001),DONE,high
@@ -100,7 +100,7 @@ P10-09,10,Local lexical context index (CHG-001),DONE,medium
 P10-10,10,Brownfield memory bootstrap (CHG-001),DONE,medium
 P10-11,10,Memory poisoning/prompt-injection fixtures (CHG-001),DONE,critical
 P11-06,11,Standards/context pack authoring + MemoryProvider adapters + portable context export (CHG-001),DONE,medium
-P12-08,12,Context retrieval evaluation (CHG-001),IN_PROGRESS,high
-P12-09,12,Token budget benchmark (CHG-001),IN_PROGRESS,high
-P12-10,12,Memory poisoning/staleness/security tests (CHG-001),IN_PROGRESS,critical
-P12-11,12,Index corruption/rebuild tests (CHG-001),IN_PROGRESS,high
+P12-08,12,Context retrieval evaluation (CHG-001),DONE,high
+P12-09,12,Token budget benchmark (CHG-001),DONE,high
+P12-10,12,Memory poisoning/staleness/security tests (CHG-001),DONE,critical
+P12-11,12,Index corruption/rebuild tests (CHG-001),DONE,high

@@ -1,6 +1,6 @@
 # PlanMo Planning Repository Manifest
 
-Total files: **528**
+Total files: **548**
 
 - `.changeset/config.json`
 - `.changeset/phase-03-cli-foundation.md`
@@ -11,6 +11,7 @@ Total files: **528**
 - `.changeset/phase-08-workflow-session-engine.md`
 - `.changeset/phase-09-trace-validate-doctor-drift.md`
 - `.changeset/phase-11-ecosystem-and-integrations.md`
+- `.changeset/phase-12-release-candidate.md`
 - `.changeset/README.md`
 - `.changeset/smoky-pianos-cli.md`
 - `.gitattributes`
@@ -39,6 +40,7 @@ Total files: **528**
 - `docs/02-architecture/state-and-manifest.md`
 - `docs/02-architecture/system-architecture.md`
 - `docs/03-cli/command-surface.md`
+- `docs/03-cli/examples.md`
 - `docs/03-cli/exit-codes.md`
 - `docs/03-cli/filesystem-safety.md`
 - `docs/03-cli/interactive-wizard.md`
@@ -66,6 +68,7 @@ Total files: **528**
 - `docs/08-security/secrets-and-privacy.md`
 - `docs/08-security/secure-filesystem.md`
 - `docs/08-security/threat-model.md`
+- `docs/08-security/threat-model-validation-phase12.md`
 - `docs/09-testing/golden-fixtures.md`
 - `docs/09-testing/performance.md`
 - `docs/09-testing/property-and-fuzz.md`
@@ -76,6 +79,7 @@ Total files: **528**
 - `docs/10-engineering/dependency-policy.md`
 - `docs/10-engineering/git-and-pr-workflow.md`
 - `docs/10-engineering/package-boundaries.md`
+- `docs/10-engineering/pilots.md`
 - `docs/10-engineering/versioning-and-releases.md`
 - `docs/11-research/2026-source-notes.md`
 - `docs/11-research/chg-001-inspiration-sources.md`
@@ -136,8 +140,8 @@ Total files: **528**
 - `packages/adapters/src/codex.test.ts`
 - `packages/adapters/src/codex.ts`
 - `packages/adapters/src/contract.ts`
-- `packages/adapters/src/generic-opencode.test.ts`
 - `packages/adapters/src/generic.ts`
+- `packages/adapters/src/generic-opencode.test.ts`
 - `packages/adapters/src/index.ts`
 - `packages/adapters/src/opencode.ts`
 - `packages/adapters/tsconfig.build.json`
@@ -145,10 +149,13 @@ Total files: **528**
 - `packages/agent-bridge/package.json`
 - `packages/agent-bridge/src/bridge.test.ts`
 - `packages/agent-bridge/src/context-bundle.ts`
+- `packages/agent-bridge/src/context-retrieval-eval.test.ts`
 - `packages/agent-bridge/src/execution-packet.ts`
 - `packages/agent-bridge/src/index.ts`
+- `packages/agent-bridge/src/memory-corruption-rebuild.test.ts`
 - `packages/agent-bridge/src/memory-file-provider.test.ts`
 - `packages/agent-bridge/src/memory-file-provider.ts`
+- `packages/agent-bridge/src/memory-poisoning-staleness.test.ts`
 - `packages/agent-bridge/src/memory-portable.test.ts`
 - `packages/agent-bridge/src/memory-portable.ts`
 - `packages/agent-bridge/src/memory-provider.ts`
@@ -175,6 +182,7 @@ Total files: **528**
 - `packages/core/src/init.ts`
 - `packages/core/src/paths.test.ts`
 - `packages/core/src/paths.ts`
+- `packages/core/src/property-fuzz-paths.test.ts`
 - `packages/core/src/status.test.ts`
 - `packages/core/src/status.ts`
 - `packages/core/src/test-utils.ts`
@@ -194,6 +202,7 @@ Total files: **528**
 - `packages/design-engine/src/index.ts`
 - `packages/design-engine/src/packs.test.ts`
 - `packages/design-engine/src/packs.ts`
+- `packages/design-engine/src/property-fuzz-tokens.test.ts`
 - `packages/design-engine/src/shadcn.test.ts`
 - `packages/design-engine/src/shadcn.ts`
 - `packages/design-engine/src/tokens.test.ts`
@@ -260,6 +269,7 @@ Total files: **528**
 - `packages/generator/src/ir.ts`
 - `packages/generator/src/manifest.test.ts`
 - `packages/generator/src/manifest.ts`
+- `packages/generator/src/property-fuzz-ir.test.ts`
 - `packages/generator/src/render.test.ts`
 - `packages/generator/src/render.ts`
 - `packages/generator/src/standards-context.test.ts`
@@ -296,6 +306,8 @@ Total files: **528**
 - `packages/packs/src/phase11-contracts.ts`
 - `packages/packs/src/profiles.test.ts`
 - `packages/packs/src/profiles.ts`
+- `packages/packs/src/property-fuzz-loader.test.ts`
+- `packages/packs/src/property-fuzz-resolve.test.ts`
 - `packages/packs/src/resolve.test.ts`
 - `packages/packs/src/resolve.ts`
 - `packages/packs/src/standards.test.ts`
@@ -310,6 +322,7 @@ Total files: **528**
 - `packages/scanner/src/adopt/adopt.ts`
 - `packages/scanner/src/context/context-map.test.ts`
 - `packages/scanner/src/context/context-map.ts`
+- `packages/scanner/src/context/index-corruption-rebuild.test.ts`
 - `packages/scanner/src/context/lexical-context.test.ts`
 - `packages/scanner/src/context/lexical-context.ts`
 - `packages/scanner/src/context/memory-bootstrap.test.ts`
@@ -335,8 +348,8 @@ Total files: **528**
 - `packages/scanner/src/fixtures/trees/brownfield/public/assets/logo.svg`
 - `packages/scanner/src/fixtures/trees/brownfield/public/index.html`
 - `packages/scanner/src/fixtures/trees/brownfield/README.md`
-- `packages/scanner/src/fixtures/trees/brownfield/scripts/-rf`
 - `packages/scanner/src/fixtures/trees/brownfield/scripts/convert.py`
+- `packages/scanner/src/fixtures/trees/brownfield/scripts/-rf`
 - `packages/scanner/src/fixtures/trees/brownfield/src/..hidden.ts`
 - `packages/scanner/src/fixtures/trees/brownfield/src/app.ts`
 - `packages/scanner/src/fixtures/trees/brownfield/src/index.ts`
@@ -386,12 +399,14 @@ Total files: **528**
 - `packages/schema/src/pack-design.ts`
 - `packages/schema/src/project.test.ts`
 - `packages/schema/src/project.ts`
+- `packages/schema/src/property-fuzz-versioning.test.ts`
 - `packages/schema/src/schema-versioning.ts`
 - `packages/schema/src/state-lock-manifest.test.ts`
 - `packages/schema/src/state-lock-manifest.ts`
 - `packages/schema/src/test-utils.ts`
 - `packages/schema/src/trace-handoff-workpacket.test.ts`
 - `packages/schema/src/trace-handoff-workpacket.ts`
+- `packages/schema/src/upgrade-migration-e2e.test.ts`
 - `packages/schema/tsconfig.build.json`
 - `packages/schema/tsconfig.json`
 - `packages/shared/package.json`
@@ -408,14 +423,14 @@ Total files: **528**
 - `packages/trace/src/index.ts`
 - `packages/trace/src/lead.test.ts`
 - `packages/trace/src/memory-health.ts`
-- `packages/trace/src/quality-debt-memory.test.ts`
 - `packages/trace/src/quality.ts`
+- `packages/trace/src/quality-debt-memory.test.ts`
 - `packages/trace/src/standards-drift.ts`
 - `packages/trace/src/trace-graph.test.ts`
 - `packages/trace/src/trace-graph.ts`
 - `packages/trace/src/trace-render.ts`
-- `packages/trace/src/validate-doctor.test.ts`
 - `packages/trace/src/validate.ts`
+- `packages/trace/src/validate-doctor.test.ts`
 - `packages/trace/tsconfig.build.json`
 - `packages/trace/tsconfig.json`
 - `packages/workflow/package.json`
@@ -430,10 +445,10 @@ Total files: **528**
 - `packages/workflow/src/leases.ts`
 - `packages/workflow/src/next.ts`
 - `packages/workflow/src/packets.ts`
-- `packages/workflow/src/session-memory-consolidate.test.ts`
 - `packages/workflow/src/session-memory.ts`
-- `packages/workflow/src/task-dag-packets.test.ts`
+- `packages/workflow/src/session-memory-consolidate.test.ts`
 - `packages/workflow/src/task-dag.ts`
+- `packages/workflow/src/task-dag-packets.test.ts`
 - `packages/workflow/src/transition.ts`
 - `packages/workflow/src/workflow.test.ts`
 - `packages/workflow/tsconfig.build.json`
@@ -450,6 +465,7 @@ Total files: **528**
 - `planning/changes/CHG-001-quality-context-governance/tasks.md`
 - `planning/DECISIONS.md`
 - `planning/DEPENDENCIES.md`
+- `planning/go-no-go-phase12.md`
 - `planning/handoffs/chg-001-rebaseline-handoff.md`
 - `planning/handoffs/phase-00-handoff.md`
 - `planning/handoffs/phase-01-handoff.md`
@@ -496,6 +512,7 @@ Total files: **528**
 - `planning/tasks.csv`
 - `planning/TRACKER.md`
 - `planning/WORKER-BRIEF-phase-11.md`
+- `planning/WORKER-BRIEF-phase-12.md`
 - `pnpm-lock.yaml`
 - `pnpm-workspace.yaml`
 - `prompts/01-phase-00-product-and-research-foundation.md`
@@ -523,6 +540,9 @@ Total files: **528**
 - `scripts/e2e-phase09.mjs`
 - `scripts/e2e-phase10.mjs`
 - `scripts/e2e-phase11.mjs`
+- `scripts/e2e-phase12-pilots.mjs`
+- `scripts/eval-context-retrieval.mjs`
+- `scripts/eval-token-budget.mjs`
 - `SECURITY.md`
 - `specs/context-bundle.example.md`
 - `specs/context-request.example.yaml`

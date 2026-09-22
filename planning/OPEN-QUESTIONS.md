@@ -2,7 +2,7 @@
 
 Deferred to owning phases:
 1. ~~public npm package name (`planmo`, scoped package, fallback)~~ — **RESOLVED** in Phase 00: ADR-0007, `docs/11-research/naming-and-availability.md`.
-2. final open-source license — criteria locked in Phase 00 (P00-05, `docs/11-research/licensing.md`); final selection at Phase 12 go/no-go, default recommendation MIT.
+2. final open-source license — criteria locked in Phase 00 (P00-05, `docs/11-research/licensing.md`); **recommendation confirmed at Phase 12 go/no-go: MIT** (maintainer approval + LICENSE/SPDX/trademark note still required before publish — `planning/go-no-go-phase12.md`).
 3. ~~CLI router choice~~ — **RESOLVED** in Phase 01: ADR-0010 (zero-dependency internal command registry in v1).
 4. ~~package build tool~~ — **RESOLVED** in Phase 01: ADR-0010 (plain `tsc` emit; bundler/npm packaging at Phase 11).
 5. direct LLM adapters in v1 vs post-v1 (Phase 06).
