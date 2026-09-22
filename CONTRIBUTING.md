@@ -16,3 +16,12 @@ Conventional Commit examples:
 - `test(packs): cover deterministic resolution order`
 
 A task is DONE only after applicable acceptance criteria, tests, docs, traceability, and security review are complete.
+
+## Trademark note
+
+"PlanMo" is a trademark of the PlanMo maintainers, protected by policy and
+usage rather than by the MIT license. The MIT license grants copyright
+permission only, not trademark rights: do not use the PlanMo name or logo to
+promote a derivative work without permission. Rename derivatives (for example
+"X, a fork of PlanMo") and reserve the PlanMo name for unmodified upstream
+distributions. See `docs/11-research/licensing.md`.

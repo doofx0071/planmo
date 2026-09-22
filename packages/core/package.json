@@ -1,9 +1,9 @@
 {
   "name": "@planmo/core",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "PlanMo deterministic core engine (CLI foundation work starts in Phase 03).",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

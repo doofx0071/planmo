@@ -1,6 +1,7 @@
 {
   "name": "@planmo/trace",
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "license": "MIT",
   "private": true,
   "description": "PlanMo trace/validate/doctor/drift engine: trace graph, diagnostics with stable codes, quality findings, architecture fitness, standards drift, technical debt, memory health",
   "type": "module",

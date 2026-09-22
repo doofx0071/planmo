@@ -1,9 +1,9 @@
 {
   "name": "@planmo/cli",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "PlanMo CLI entry point (smoke commands only until Phase 03 CLI foundation).",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "planmo": "./dist/bin.js"
