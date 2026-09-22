@@ -114,7 +114,8 @@ export interface ScannerEngine {
 // P10-02 stack/test/CI detection (detect/ — Worker B)
 // ---------------------------------------------------------------------------
 
-export type EvidenceSource = 'manifest' | 'lockfile' | 'config' | 'file-convention' | 'ci-declaration';
+export type EvidenceSource =
+  'manifest' | 'lockfile' | 'config' | 'file-convention' | 'ci-declaration';
 
 export interface DetectionEvidence {
   /** Path relative to root that produced the signal. */
@@ -202,7 +203,8 @@ export interface InjectionIsolationEngine {
 export interface AdoptChange {
   /** Path inside .planmo/adopt/ that WOULD be written. */
   path: string;
-  kind: 'plan-report' | 'context-map' | 'detection-summary' | 'injection-summary' | 'manifest-record';
+  kind:
+    'plan-report' | 'context-map' | 'detection-summary' | 'injection-summary' | 'manifest-record';
   /** Byte length of the would-be artifact. */
   bytes: number;
 }
@@ -281,7 +283,9 @@ export interface LexicalContextEngine {
   readonly name: 'lexical-context';
   /** Per-file identifier histogram (cap 512 tokens/file, sorted count desc then token asc)
    *  plus doc markers (TODO/FIXME/HACK), deterministic. */
-  index(files: ReadonlyMap<string, string>): Promise<readonly { file: string; tokens: LexicalToken[]; markers: string[] }[]>;
+  index(
+    files: ReadonlyMap<string, string>,
+  ): Promise<readonly { file: string; tokens: LexicalToken[]; markers: string[] }[]>;
 }
 
 export interface MemoryFact {

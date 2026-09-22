@@ -263,7 +263,9 @@ async function runAdopt(argv: string[], io: CliIO): Promise<number> {
   const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
   try {
     const { report } = await analyzeRepository(root, nodeFileReader());
-    io.out(report.reportMarkdown.endsWith('\n') ? report.reportMarkdown : `${report.reportMarkdown}\n`);
+    io.out(
+      report.reportMarkdown.endsWith('\n') ? report.reportMarkdown : `${report.reportMarkdown}\n`,
+    );
     if (report.injectionSummary.poisoned > 0) {
       io.err(
         `adopt: WARNING ${report.injectionSummary.poisoned} file(s) contain prompt-injection-like content ` +
@@ -271,7 +273,9 @@ async function runAdopt(argv: string[], io: CliIO): Promise<number> {
       );
     }
     if (report.injectionSummary.suspicious > 0) {
-      io.err(`adopt: NOTE ${report.injectionSummary.suspicious} file(s) are suspicious (single marker).`);
+      io.err(
+        `adopt: NOTE ${report.injectionSummary.suspicious} file(s) are suspicious (single marker).`,
+      );
     }
     return 0;
   } catch (err) {

@@ -81,7 +81,9 @@ export const adopt: AdoptEngine = Object.freeze({
       },
     ];
     const changes = Object.freeze(
-      changeEntries.slice().sort((a, b) => compareAsc(a.kind, b.kind) || compareAsc(a.path, b.path)),
+      changeEntries
+        .slice()
+        .sort((a, b) => compareAsc(a.kind, b.kind) || compareAsc(a.path, b.path)),
     );
 
     return {

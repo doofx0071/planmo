@@ -55,7 +55,10 @@ check('link: safe child', !linkEscapes('src', '../src/lib/x'));
 // 2. Safe scan of the REAL brownfield fixture tree.
 const scan = await safeScanner().scan(brownfieldRoot, nodeFileReader());
 check('scan: found fixture files', scan.entries.length >= 15);
-check('scan: all paths safe', scan.entries.every((f) => isSafeRelativePath(f.path)));
+check(
+  'scan: all paths safe',
+  scan.entries.every((f) => isSafeRelativePath(f.path)),
+);
 check(
   'scan: deterministic order',
   scan.entries.every((f, i) => i === 0 || scan.entries[i - 1].path < f.path),
@@ -70,7 +73,10 @@ check(
   'detect: github-actions CI declared',
   brownfield.detection.ciSystems.includes('github-actions'),
 );
-check('detect: evidence paths present', brownfield.detection.stacks.every((x) => x.evidence.length >= 1));
+check(
+  'detect: evidence paths present',
+  brownfield.detection.stacks.every((x) => x.evidence.length >= 1),
+);
 if (!brownfield.detection.stacks.every((x) => x.evidence.length >= 1)) {
   console.log('     stacks:', JSON.stringify(brownfield.detection.stacks));
 }
@@ -86,25 +92,33 @@ check(
     brownfield.report.reportMarkdown.includes('## Detection summary') &&
     brownfield.report.reportMarkdown.includes('## Injection summary'),
 );
-check('adopt: benign fixture repo has no poisoned files', brownfield.report.injectionSummary.poisoned === 0);
+check(
+  'adopt: benign fixture repo has no poisoned files',
+  brownfield.report.injectionSummary.poisoned === 0,
+);
 
 // 4. Poisoning fixture tree: prompt-injection isolation.
 const poisoned = await analyzeRepository(poisoningRoot, nodeFileReader());
-check(
-  'inject: poisoned file detected',
-  poisoned.report.injectionSummary.poisoned >= 1,
-);
+check('inject: poisoned file detected', poisoned.report.injectionSummary.poisoned >= 1);
 check('inject: policy immutable', promptIsolation.policyIsImmutable === true);
 const doc = policy();
 check('inject: policy document non-empty', doc.markerPhrases.length >= 5 && doc.rules.length >= 1);
-const poisonedFiles = poisoned.injections.filter((i) => i.classification === 'poisoned').map((i) => i.path);
+const poisonedFiles = poisoned.injections
+  .filter((i) => i.classification === 'poisoned')
+  .map((i) => i.path);
 console.log(`     poisoned files: ${poisonedFiles.join(', ')}`);
 check(
   'inject: authority-override + comment-injection files flagged',
   poisonedFiles.includes('AGENTS.instructions.md') && poisonedFiles.includes('src/comment.ts'),
 );
-check('inject: benign README stays benign', poisoned.injections.some((i) => i.path === 'README.md' && i.classification === 'benign'));
-check('fixture: brownfield description declared', typeof brownfieldDescription === 'string' && brownfieldDescription.length > 10);
+check(
+  'inject: benign README stays benign',
+  poisoned.injections.some((i) => i.path === 'README.md' && i.classification === 'benign'),
+);
+check(
+  'fixture: brownfield description declared',
+  typeof brownfieldDescription === 'string' && brownfieldDescription.length > 10,
+);
 
 // 5. Standards discovery precedence (pure paths, no fs).
 const standards = await standardsDiscovery.discover([
@@ -118,7 +132,10 @@ check(
   'standards: nested AGENTS.md ranks below root',
   standards.policyDocs.map((d) => d.path).indexOf('apps/x/AGENTS.md') > 0,
 );
-check('standards: README is informational', standards.informationalDocs.some((d) => d.path === 'README.md'));
+check(
+  'standards: README is informational',
+  standards.informationalDocs.some((d) => d.path === 'README.md'),
+);
 
 // 6. Fail-closed symlink handling with the virtual reader.
 const symlinkTree = {
@@ -159,5 +176,7 @@ check(
 );
 
 console.log('');
-console.log(failures === 0 ? 'E2E PHASE 10: ALL CHECKS PASSED' : `E2E PHASE 10: ${failures} FAILURE(S)`);
+console.log(
+  failures === 0 ? 'E2E PHASE 10: ALL CHECKS PASSED' : `E2E PHASE 10: ${failures} FAILURE(S)`,
+);
 process.exit(failures === 0 ? 0 : 1);
