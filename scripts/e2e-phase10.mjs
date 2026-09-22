@@ -12,7 +12,6 @@
  */
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';
-import { readFileSync } from 'node:fs';
 
 let failures = 0;
 const check = (label, ok) => {
