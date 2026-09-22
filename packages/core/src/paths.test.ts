@@ -1,6 +1,6 @@
-import { realpathSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { symlink } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 
 /**
  * Create a directory link. On Windows use a junction (no admin required);
@@ -78,9 +78,17 @@ describe('findProjectRoot', () => {
     await tempWrite(root, '.planmo/state.yml', 'x');
     await tempDir(root, 'a/b/c');
     const found = await findProjectRoot(join(root, 'a', 'b', 'c'));
-    // Canonicalize both sides: tmpdir paths differ per OS (macOS /var ->
-    // /private/var via realpath; Windows 8.3 short names vs long names).
-    expect(realpathSync(found)).toBe(realpathSync(resolve(root)));
+    if (process.platform === 'win32') {
+      // Windows tmpdir may carry 8.3 short names (RUNNER~1 vs runneradmin)
+      // that realpath expands inconsistently — compare the aliasing-invariant
+      // tail (Temp\planmo-test-*) and anchor on the state.yml marker.
+      const tail = (p: string) => p.split(sep).slice(-4).join(sep).toLowerCase();
+      expect(tail(found)).toBe(tail(resolve(root)));
+      expect(existsSync(join(found, '.planmo', 'state.yml'))).toBe(true);
+    } else {
+      // Canonicalize both sides (macOS /var -> /private/var via realpath).
+      expect(realpathSync(found)).toBe(realpathSync(resolve(root)));
+    }
   });
 
   it('throws ProjectNotFoundError when no .planmo exists above', async () => {
