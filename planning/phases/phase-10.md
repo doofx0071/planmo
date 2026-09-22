@@ -69,6 +69,36 @@ Create `planning/handoffs/phase-10-handoff.md` containing:
 ## Stop rule
 **HARD STOP after Phase 10. Do not start another phase in this session.**
 
+## Completion record (2026-09-22)
+
+- P10-01..11 all DONE (tasks.csv); exit gates verified below.
+- Ship: `@planmo/scanner` package + `planmo adopt` CLI shell; ADR-0024.
+
+### Exit gate evidence
+
+- **Scanner treats repo content as untrusted data** — fail-closed defaults
+  (refuseEscapingSymlinks: true), binary/NUL rejection, traversal + symlink
+  escape rejection; e2e sections 1–6 (35 checks) + scan suites.
+- **Detection evidence-backed with confidence/source metadata** — DET-001..005
+  with source + confidence (high/medium/heuristic); e2e asserts node/typescript
+  stacks + github-actions CI + per-stack evidence paths.
+- **adopt defaults to dry-run; never rewrites app code** —
+  `rewritesApplicationCode: false` literal; changes confined to
+  `.planmo/adopt/`; CLI reports to stdout/stderr only; e2e + CLI smoke.
+- **Prompt-like instructions cannot override PlanMo policy** —
+  `policyIsImmutable: true`, marker list constant; poisoned/suspicious/benign
+  classification; e2e asserts policy immutability + policy document.
+- **Malicious path/symlink/config fixtures covered** — brownfield tree
+  (`-rf`, `--upload.txt`, `..hidden.ts`, CI yml, `.env.example` placeholders),
+  symlink trees via virtual reader (escaping/absolute/unknown), poisoning tree
+  (authority-override + comment injection); e2e sections 2, 4, 6.
+
+### Records
+
+- Handoff: `planning/handoffs/phase-10-handoff.md`
+- E2E: `scripts/e2e-phase10.mjs` — 35/35 green
+- Tests: 813 passed / 2 skipped (vitest), all packages; boundaries OK
+
 ## CHG-001 addendum (accepted 2026-09-20)
 Sourced from `planning/phase-addenda/phase-10-addendum.md`; full change package in `planning/changes/CHG-001-quality-context-governance/`.
 

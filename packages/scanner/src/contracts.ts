@@ -39,6 +39,18 @@ export class ReaderError extends Error {
   }
 }
 
+/**
+ * OPTIONAL capability a FileReader may additionally expose. When present, the
+ * safe scanner can verify symlink targets; when absent it fails CLOSED with
+ * SCN-003 ("escape status unverifiable") for every symlink it encounters.
+ * (Canonical definition lives in scan/safe-scanner.ts — Worker A; this copy is
+ * frozen for cross-module reference and MUST stay structurally identical.)
+ */
+export interface LinkTargetReader {
+  /** Resolve a symlink's target without following it (single hop). */
+  linkTarget(path: string): Promise<string>;
+}
+
 // ---------------------------------------------------------------------------
 // P10-01 safe scanner (scan/ — Worker A)
 // ---------------------------------------------------------------------------
@@ -286,6 +298,41 @@ export interface MemoryBootstrapEngine {
   readonly name: 'memory-bootstrap';
   /** Derive durable facts (with provenance) from scan + detection + injection summaries. */
   bootstrap(scan: ScanReport, detection: DetectionReport): Promise<readonly MemoryFact[]>;
+}
+
+// ---------------------------------------------------------------------------
+// P10-08 standards discovery (context/ — Worker B; frozen after backfill)
+// ---------------------------------------------------------------------------
+
+export type StandardsDocKind = 'agents' | 'claude' | 'cursorrules' | 'readme';
+export type StandardsDocRole = 'policy' | 'informational';
+
+export interface StandardsDoc {
+  /** POSIX path relative to repo root. */
+  path: string;
+  kind: StandardsDocKind;
+  /** 'policy' = instruction-bearing (AGENTS.md/CLAUDE.md/.cursorrules); 'informational' = README. */
+  role: StandardsDocRole;
+  /** Number of path segments minus one (root file = 0). */
+  depth: number;
+  /** Deterministic precedence rank; lower wins. */
+  rank: number;
+}
+
+export interface StandardsDiscoveryResult {
+  /** All matches sorted rank asc, then path asc. */
+  docs: readonly StandardsDoc[];
+  /** Instruction-bearing docs only (excludes README), same sort. */
+  policyDocs: readonly StandardsDoc[];
+  /** README docs (informational, rank max), same sort. */
+  informationalDocs: readonly StandardsDoc[];
+}
+
+export interface StandardsDiscoveryEngine {
+  readonly name: 'standards-discovery';
+  /** Pure structural classification; never touches filesystem or content.
+   *  rank = kindBase + depth (agents 0, claude 1000, cursorrules 2000, readme 3000). */
+  discover(paths: readonly string[]): Promise<StandardsDiscoveryResult>;
 }
 
 // ---------------------------------------------------------------------------

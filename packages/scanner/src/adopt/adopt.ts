@@ -26,7 +26,13 @@ const ADOPT_DIR = '.planmo/adopt/';
 
 export const adopt: AdoptEngine = Object.freeze({
   name: 'adopt',
-  plan({ scan, detection, injections, root }): AdoptReport {
+  plan(input: {
+    scan: ScanReport;
+    detection: DetectionReport;
+    injections: readonly InjectionScanResult[];
+    root: string;
+  }): AdoptReport {
+    const { scan, detection, injections, root } = input;
     const scanSummary = scan.stats;
     const detectionSummary: AdoptReport['detectionSummary'] = {
       stacks: detection.stacks.length,
@@ -52,29 +58,30 @@ export const adopt: AdoptEngine = Object.freeze({
       injectionsCount: injections.length,
     });
 
-    const changes: readonly AdoptChange[] = Object.freeze(
-      [
-        {
-          path: `${ADOPT_DIR}detection-summary.md`,
-          kind: 'detection-summary',
-          bytes: utf8Bytes(detectionMd),
-        },
-        {
-          path: `${ADOPT_DIR}injection-summary.md`,
-          kind: 'injection-summary',
-          bytes: utf8Bytes(injectionMd),
-        },
-        {
-          path: `${ADOPT_DIR}manifest-record.md`,
-          kind: 'manifest-record',
-          bytes: utf8Bytes(manifestMd),
-        },
-        {
-          path: `${ADOPT_DIR}plan-report.md`,
-          kind: 'plan-report',
-          bytes: utf8Bytes(reportMarkdown),
-        },
-      ].sort((a, b) => compareAsc(a.kind, b.kind) || compareAsc(a.path, b.path)),
+    const changeEntries: readonly AdoptChange[] = [
+      {
+        path: `${ADOPT_DIR}detection-summary.md`,
+        kind: 'detection-summary',
+        bytes: utf8Bytes(detectionMd),
+      },
+      {
+        path: `${ADOPT_DIR}injection-summary.md`,
+        kind: 'injection-summary',
+        bytes: utf8Bytes(injectionMd),
+      },
+      {
+        path: `${ADOPT_DIR}manifest-record.md`,
+        kind: 'manifest-record',
+        bytes: utf8Bytes(manifestMd),
+      },
+      {
+        path: `${ADOPT_DIR}plan-report.md`,
+        kind: 'plan-report',
+        bytes: utf8Bytes(reportMarkdown),
+      },
+    ];
+    const changes = Object.freeze(
+      changeEntries.slice().sort((a, b) => compareAsc(a.kind, b.kind) || compareAsc(a.path, b.path)),
     );
 
     return {

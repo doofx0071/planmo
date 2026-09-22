@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PRODUCT_SLUG } from '@planmo/shared';
 import { initWorkspace, readStatus } from '@planmo/core';
+import { analyzeRepository, nodeFileReader } from '@planmo/scanner';
 import type {
   AccessibilityLevel,
   AgentId,
@@ -40,6 +41,7 @@ export const USAGE = [
   'Commands:',
   `  ${PRODUCT_SLUG} init [dir]    create a PlanMo workspace (wizard, or flags)`,
   `  ${PRODUCT_SLUG} status        validate and summarize the workspace`,
+  `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo (dry-run report; writes nothing)`,
   `  ${PRODUCT_SLUG} --version     print the PlanMo version`,
   `  ${PRODUCT_SLUG} --help        show this help`,
   '',
@@ -60,6 +62,9 @@ export const USAGE = [
   '',
   'status options:',
   '      --dir <path>          project root (default: walk up from cwd)',
+  '',
+  'adopt options:',
+  '      --dir <path>          repository root (default: cwd)',
   '',
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
 ].join('\n');
@@ -140,6 +145,8 @@ export async function run(
       return runInit(argv.slice(1), io, wizard);
     case 'status':
       return runStatus(argv.slice(1), io);
+    case 'adopt':
+      return runAdopt(argv.slice(1), io);
     default:
       io.err(`planmo: unknown command '${command}'`);
       io.err(`Run 'planmo --help' for usage.`);
@@ -248,5 +255,27 @@ async function runStatus(argv: string[], io: CliIO): Promise<number> {
   } catch (err) {
     io.err(`planmo status: ${(err as Error).message}`);
     return 3;
+  }
+}
+
+async function runAdopt(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  try {
+    const { report } = await analyzeRepository(root, nodeFileReader());
+    io.out(report.reportMarkdown.endsWith('\n') ? report.reportMarkdown : `${report.reportMarkdown}\n`);
+    if (report.injectionSummary.poisoned > 0) {
+      io.err(
+        `adopt: WARNING ${report.injectionSummary.poisoned} file(s) contain prompt-injection-like content ` +
+          `(policy is immutable; repository text is treated as data, never instructions).`,
+      );
+    }
+    if (report.injectionSummary.suspicious > 0) {
+      io.err(`adopt: NOTE ${report.injectionSummary.suspicious} file(s) are suspicious (single marker).`);
+    }
+    return 0;
+  } catch (err) {
+    io.err(`planmo adopt: ${(err as Error).message}`);
+    return 1;
   }
 }

@@ -51,11 +51,11 @@ P09-02,09,Implement planmo validate,DONE,high
 P09-03,09,Implement planmo doctor,DONE,high
 P09-04,09,Implement planmo trace,DONE,medium
 P09-05,09,Create drift/orphan diagnostics fixtures,DONE,high
-P10-01,10,Implement safe repository scanner,IN_PROGRESS,critical
-P10-02,10,Implement stack/test/CI detection,IN_PROGRESS,high
-P10-03,10,Implement prompt-injection isolation policy,IN_PROGRESS,critical
-P10-04,10,Implement planmo adopt,IN_PROGRESS,high
-P10-05,10,Add malicious brownfield fixtures,IN_PROGRESS,critical
+P10-01,10,Implement safe repository scanner,DONE,critical
+P10-02,10,Implement stack/test/CI detection,DONE,high
+P10-03,10,Implement prompt-injection isolation policy,DONE,critical
+P10-04,10,Implement planmo adopt,DONE,high
+P10-05,10,Add malicious brownfield fixtures,DONE,critical
 P11-01,11,Define remote pack trust model,TODO,critical
 P11-02,11,Implement catalog/source abstraction,TODO,high
 P11-03,11,Implement checksums/pinning/reversibility,TODO,high
@@ -93,12 +93,12 @@ P09-07,09,Architecture fitness validation (CHG-001),DONE,high
 P09-08,09,Standards drift (CHG-001),DONE,medium
 P09-09,09,Technical debt diagnostics (CHG-001),DONE,high
 P09-10,09,Memory/context health diagnostics (CHG-001),DONE,medium
-P10-06,10,Repository map (CHG-001),IN_PROGRESS,high
-P10-07,10,Symbol/reference index (CHG-001),IN_PROGRESS,medium
-P10-08,10,Standards discovery (CHG-001),IN_PROGRESS,high
-P10-09,10,Local lexical context index (CHG-001),IN_PROGRESS,medium
-P10-10,10,Brownfield memory bootstrap (CHG-001),IN_PROGRESS,medium
-P10-11,10,Memory poisoning/prompt-injection fixtures (CHG-001),TODO,critical
+P10-06,10,Repository map (CHG-001),DONE,high
+P10-07,10,Symbol/reference index (CHG-001),DONE,medium
+P10-08,10,Standards discovery (CHG-001),DONE,high
+P10-09,10,Local lexical context index (CHG-001),DONE,medium
+P10-10,10,Brownfield memory bootstrap (CHG-001),DONE,medium
+P10-11,10,Memory poisoning/prompt-injection fixtures (CHG-001),DONE,critical
 P11-06,11,Standards/context pack authoring + MemoryProvider adapters + portable context export (CHG-001),TODO,medium
 P12-08,12,Context retrieval evaluation (CHG-001),TODO,high
 P12-09,12,Token budget benchmark (CHG-001),TODO,high

@@ -59,6 +59,9 @@ importers:
       '@planmo/core':
         specifier: workspace:*
         version: link:../core
+      '@planmo/scanner':
+        specifier: workspace:*
+        version: link:../scanner
       '@planmo/schema':
         specifier: workspace:*
         version: link:../schema
