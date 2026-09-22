@@ -29,6 +29,14 @@ export const PACK_CATEGORIES = [
 ] as const;
 export type PackCategory = (typeof PACK_CATEGORIES)[number];
 
+/**
+ * Pack trust levels (P11-01, docs/08-security/pack-trust.md).
+ * `verified-source` is reserved for a future signing/curation design and is
+ * NOT assignable to remote sources until that design exists.
+ */
+export const TRUST_LEVELS = ['builtin', 'local', 'verified-source', 'third-party'] as const;
+export type TrustLevel = (typeof TRUST_LEVELS)[number];
+
 /** A capability a pack provides or requires, e.g. "stack.nextjs", "design.minimal". */
 export const CapabilityRef = NonEmptyString;
 
@@ -42,6 +50,12 @@ export const PackProvenanceSchema = z.strictObject({
   license: NonEmptyString.optional(),
   /** Integrity of the resolved remote content. */
   integrity: Checksum.optional(),
+  /**
+   * Declared trust level (P11-01). Remote sources may only declare
+   * `third-party` until the verified-source signing design exists; the
+   * trust classifier enforces this, never the schema alone.
+   */
+  trustLevel: z.enum(TRUST_LEVELS).optional(),
 });
 export type PackProvenance = z.infer<typeof PackProvenanceSchema>;
 

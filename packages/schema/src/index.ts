@@ -93,6 +93,7 @@ export type {
 // Packs + design profiles
 export {
   PACK_CATEGORIES,
+  TRUST_LEVELS,
   CapabilityRef,
   PackProvenanceSchema,
   PackSchema,
@@ -101,6 +102,7 @@ export {
 } from './pack-design.js';
 export type {
   PackCategory,
+  TrustLevel,
   PackProvenance,
   PackDocument,
   DesignProfile,
