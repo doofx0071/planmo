@@ -1,6 +1,6 @@
 ---
-"@planmo/packs": patch
-"@planmo/agent-bridge": patch
+'@planmo/packs': patch
+'@planmo/agent-bridge': patch
 ---
 
 Phase 11 (ecosystem & integrations): remote pack trust model, catalog/source abstraction, checksums/pinning/reversibility, pack authoring docs, GitHub export prototype, portable context/memory export-import.
