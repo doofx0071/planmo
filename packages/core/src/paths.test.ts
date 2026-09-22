@@ -1,3 +1,4 @@
+import { realpathSync } from 'node:fs';
 import { symlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
@@ -77,7 +78,9 @@ describe('findProjectRoot', () => {
     await tempWrite(root, '.planmo/state.yml', 'x');
     await tempDir(root, 'a/b/c');
     const found = await findProjectRoot(join(root, 'a', 'b', 'c'));
-    expect(found).toBe(resolve(root));
+    // Canonicalize both sides: tmpdir paths differ per OS (macOS /var ->
+    // /private/var via realpath; Windows 8.3 short names vs long names).
+    expect(realpathSync(found)).toBe(realpathSync(resolve(root)));
   });
 
   it('throws ProjectNotFoundError when no .planmo exists above', async () => {
