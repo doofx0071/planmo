@@ -21,3 +21,5 @@ MANIFEST.md
 
 # Golden snapshot fixtures are byte-exact renderer output — never reformat
 packages/generator/src/golden/
+# Fixture trees are byte-exact test data (indexed by fixture maps).
+packages/scanner/src/fixtures/trees/**
