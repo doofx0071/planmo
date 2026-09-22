@@ -1,4 +1,4 @@
-import { symlink } from 'node:fs/promises';
+import { realpath, symlink } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PathTraversalError, UnsafeSymlinkError } from './errors.js';
@@ -213,7 +213,7 @@ describe('P-PATH-3 symlink escape negatives (real filesystem)', () => {
   });
 
   it('accepts a symlink that stays inside root (negative case for false positives)', async () => {
-    const root = await tempRoot('planmo-fuzz-');
+    const root = await realpath(await tempRoot('planmo-fuzz-'));
     await tempDir(root, 'real');
     const link = join(root, 'inner-link');
     if (!(await tryDirLink(resolve(join(root, 'real')), link))) {
@@ -238,7 +238,7 @@ describe('P-PATH-3 symlink escape negatives (real filesystem)', () => {
 describe('P-PATH-1b ensureNoSymlinkEscape on a real tree (seeded, bounded)', () => {
   it('60 seeded iterations over a real directory tree: inside result or a documented guard error', async () => {
     const rnd = mulberry32(0xa11c);
-    const root = await tempRoot('planmo-fuzz-tree-');
+    const root = await realpath(await tempRoot('planmo-fuzz-tree-'));
     await tempDir(root, 'a');
     await tempDir(root, 'a/b');
     await tempDir(root, 'c');
