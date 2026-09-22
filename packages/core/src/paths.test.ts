@@ -94,7 +94,8 @@ describe('ensureNoSymlinkEscape', () => {
     const root = await tempRoot();
     await tempDir(root, '.planmo');
     const out = await ensureNoSymlinkEscape(root, join(root, '.planmo'));
-    expect(out).toBe(resolve(join(root, '.planmo')));
+    // Engine output is canonical (realpath'd root); compare canonical forms.
+    expect(realpathSync(out)).toBe(realpathSync(resolve(join(root, '.planmo'))));
   });
 
   it('passes through a symlink that stays inside root', async () => {
