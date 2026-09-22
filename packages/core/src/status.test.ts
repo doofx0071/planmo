@@ -1,6 +1,6 @@
 import { readFile, stat } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { initWorkspace } from './init.js';
 import { readStatus } from './status.js';
@@ -25,8 +25,15 @@ describe('readStatus', () => {
     const nested = join(root, 'src', 'deep');
     await mkdir(nested, { recursive: true });
     const status = await readStatus({ startDir: nested });
-    // Canonicalize both sides (macOS /var -> /private/var; Windows 8.3 names).
-    expect(realpathSync(status.root)).toBe(realpathSync(root));
+    if (process.platform === 'win32') {
+      // 8.3 short names (RUNNER~1) are not expanded consistently by realpath —
+      // compare the aliasing-invariant tail of the tmp dir path.
+      const tail = (p: string) => p.split(sep).slice(-4).join(sep).toLowerCase();
+      expect(tail(status.root)).toBe(tail(root));
+    } else {
+      // Canonicalize both sides (macOS /var -> /private/var).
+      expect(realpathSync(status.root)).toBe(realpathSync(root));
+    }
     expect(status.healthy).toBe(true);
   });
 

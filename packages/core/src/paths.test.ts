@@ -102,8 +102,14 @@ describe('ensureNoSymlinkEscape', () => {
     const root = await tempRoot();
     await tempDir(root, '.planmo');
     const out = await ensureNoSymlinkEscape(root, join(root, '.planmo'));
-    // Engine output is canonical (realpath'd root); compare canonical forms.
-    expect(realpathSync(out)).toBe(realpathSync(resolve(join(root, '.planmo'))));
+    if (process.platform === 'win32') {
+      // Engine output is canonical; Windows realpath expands 8.3 names
+      // inconsistently — compare the aliasing-invariant tail instead.
+      const tail = (p: string) => p.split(sep).slice(-5).join(sep).toLowerCase();
+      expect(tail(out)).toBe(tail(resolve(join(root, '.planmo'))));
+    } else {
+      expect(realpathSync(out)).toBe(realpathSync(resolve(join(root, '.planmo'))));
+    }
   });
 
   it('passes through a symlink that stays inside root', async () => {
