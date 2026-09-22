@@ -61,7 +61,7 @@ validation + P12-11 corruption tests (trust classification re-exercised, no gap)
 - `node scripts/eval-token-budget.mjs` — **PASS** (full 4496 → repo-map+lexical 1328 = 30% w/ invariants; repo-map-only flagged unsafe)
 - All legacy E2E suites `scripts/e2e-phase05..11.mjs` — exit 0 each
 - `pnpm audit --prod` — no known vulnerabilities; secret-pattern grep over tracked files — clean
-- GitHub Actions PR #14 — ubuntu/macos/windows × node 24 **success** (1m31s)
+- GitHub Actions PR #14 — ubuntu/macos/windows × node 24 **success on final commits** (ubuntu 35s, macos 30s, windows 1m39s)
 
 ## Security / reliability findings
 
@@ -70,6 +70,7 @@ validation + P12-11 corruption tests (trust classification re-exercised, no gap)
 - P12-11 corruption semantics: validate path throws deterministic descriptive errors; doctor path never fabricates/crashes; corrupt store rebuilds from canonical bytes.
 - P12-10: memory poisoning fixtures assert no instruction-authority inversion; secret-like strings never become durable rows; stale/superseded rows excluded from retrieval.
 - Boundary graph enforced during integration: memory corruption tests moved from `@planmo/scanner` to `@planmo/agent-bridge` (scanner→agent-bridge edge is forbidden and was flagged by Worker B; no package.json or boundary-graph change was needed).
+- **Cross-platform bug found by the CI matrix**: `property-fuzz-paths.test.ts` compared against a non-canonical mkdtemp root — Windows runner 8.3 short names (`RUNNERAD~1`) and macOS `/var → /private/var` aliasing failed two in-root assertions on macos/windows only. Fixed by realpath-ing the temp root (ca83019) — exactly the class of bug the supported-OS matrix exists to catch.
 
 ## Decisions / traceability
 
@@ -80,7 +81,7 @@ validation + P12-11 corruption tests (trust classification re-exercised, no gap)
 
 ## Git
 
-- Branch `feat/phase-12-hardening-pilot-and-v1` from main (c1058d5); commits: prettier fix (8d0c71d) → contract freeze (187f7d4, tasks IN_PROGRESS + worker brief) → integration (this close-out). PR #14 open; worker worktrees at `C:/Users/Damascus/.hermes-worktrees/ws-{a,b,c}-phase12` on branches `worker-{a,b,c}/phase-12` (uncommitted by design; integrated by lead).
+- Branch `feat/phase-12-hardening-pilot-and-v1` from main (c1058d5); commits: prettier fix (8d0c71d) → contract freeze (187f7d4, tasks IN_PROGRESS + worker brief) → implementation + close-out (9e473b5) → cross-platform fuzz fix (ca83019). PR #14 open; worker-branches `worker-{a,b,c}/phase-12` deleted and worktrees removed after integration.
 - **Remember the harness quirk:** after spawning workers, the lead terminal CWD moves into a child worktree — always pass explicit `workdir`/`cd` on lead commands.
 
 ## Known debt / next steps
