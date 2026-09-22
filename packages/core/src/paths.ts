@@ -89,8 +89,24 @@ export async function realpathWithinRoot(root: string, absolutePath: string): Pr
  * target escapes root. Returns the deepest existing real directory.
  */
 export async function ensureNoSymlinkEscape(root: string, dirPath: string): Promise<string> {
-  const absoluteRoot = resolve(root);
-  const absoluteDir = isAbsolute(dirPath) ? resolve(dirPath) : resolve(absoluteRoot, dirPath);
+  const resolvedRoot = resolve(root);
+  // Canonicalize root: macOS symlinks /var -> /private/var and Windows may
+  // report 8.3 short names; symlink targets are realpath'd below, so the root
+  // must be canonical too or safe in-root links look like escapes.
+  let absoluteRoot = resolvedRoot;
+  try {
+    absoluteRoot = await realpath(resolvedRoot);
+  } catch {
+    // Root does not exist yet (fresh project) — keep the resolved form; the
+    // comparative checks below remain consistent for creation paths.
+  }
+  // Anchor dirPath on the (canonical) root so relative()/walk stay consistent
+  // even for paths that do not exist yet.
+  const relDir = relative(
+    resolvedRoot,
+    isAbsolute(dirPath) ? resolve(dirPath) : resolve(resolvedRoot, dirPath),
+  );
+  const absoluteDir = relDir === '' ? absoluteRoot : join(absoluteRoot, relDir);
   if (!isInsideRoot(absoluteRoot, absoluteDir)) {
     throw new PathTraversalError(dirPath, absoluteRoot);
   }

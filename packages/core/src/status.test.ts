@@ -1,4 +1,5 @@
 import { readFile, stat } from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { initWorkspace } from './init.js';
@@ -24,7 +25,8 @@ describe('readStatus', () => {
     const nested = join(root, 'src', 'deep');
     await mkdir(nested, { recursive: true });
     const status = await readStatus({ startDir: nested });
-    expect(status.root).toBe(root);
+    // Canonicalize both sides (macOS /var -> /private/var; Windows 8.3 names).
+    expect(realpathSync(status.root)).toBe(realpathSync(root));
     expect(status.healthy).toBe(true);
   });
 
