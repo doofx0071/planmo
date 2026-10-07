@@ -1,9 +1,9 @@
 {
   "name": "@planmo/agent-bridge",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "PlanMo agent bridge: capability registry, context bundle compiler, standards injector, provider interfaces, execution packets, proposal validation (Phase 06).",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

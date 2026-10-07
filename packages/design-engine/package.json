@@ -1,9 +1,9 @@
 {
   "name": "@planmo/design-engine",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "PlanMo frontend design engine: DTCG token generation, design packs, registry adapters, design docs, accessibility validation (Phase 07)",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

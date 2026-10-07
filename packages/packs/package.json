@@ -1,9 +1,9 @@
 {
   "name": "@planmo/packs",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "PlanMo declarative pack system: loader, deterministic resolution, lockfile, planning-depth profiles (Phase 04).",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
