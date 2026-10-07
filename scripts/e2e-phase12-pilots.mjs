@@ -1,8 +1,8 @@
 /**
  * Phase 12 E2E pilots — run: node scripts/e2e-phase12-pilots.mjs (from repo
- * root, AFTER `pnpm -r build` so packages/cli/dist is current).
+ * root, AFTER `pnpm -r build` so packages/planmo/dist is current).
  *
- * Drives the REAL built CLI (packages/cli/dist/bin.js) end-to-end exactly as
+ * Drives the REAL built CLI (packages/planmo/dist/bin.js) end-to-end exactly as
  * a user would:
  *   1. greenfield-init      planmo init <dir> --yes + planmo status --dir
  *   2. init-dry-run         planmo init <dir> --yes --dry-run writes nothing
@@ -36,7 +36,7 @@ import {
   nodeFileReader,
 } from '../packages/scanner/dist/index.js';
 
-const CLI = fileURLToPath(new URL('../packages/cli/dist/bin.js', import.meta.url));
+const CLI = fileURLToPath(new URL('../packages/planmo/dist/bin.js', import.meta.url));
 const BASE = mkdtempSync(join(tmpdir(), 'planmo-p12-pilot-'));
 const run = (args) => spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
 

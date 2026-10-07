@@ -1,4 +1,4 @@
-# @planmo/cli
+# planmo
 
 ## 1.0.0
 

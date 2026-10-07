@@ -1,5 +1,5 @@
 {
-  "name": "planmo",
+  "name": "planmo-monorepo",
   "version": "0.0.0",
   "private": true,
   "description": "PlanMo — CLI-first, agent-native project planning and execution workspace generator.",
@@ -19,7 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "boundary-check": "node scripts/check-boundaries.mjs",
-    "smoke": "node packages/cli/dist/bin.js --version",
+    "smoke": "node packages/planmo/dist/bin.js --version",
     "check": "pnpm build && pnpm typecheck && pnpm test && pnpm lint && pnpm format:check && pnpm boundary-check && pnpm smoke"
   },
   "devDependencies": {

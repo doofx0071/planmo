@@ -2,8 +2,10 @@
   "name": "@planmo/scanner",
   "version": "1.0.0",
   "license": "MIT",
-  "private": true,
-  "description": "PlanMo existing-repository adoption engine: safe untrusted scanning, stack/test/CI detection with evidence, prompt-injection isolation, adopt (dry-run) reports, repository context maps, symbol/reference index, standards discovery, lexical context index, brownfield memory bootstrap, brownfield/poisoning fixtures",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "PlanMo repository adoption engine: safe untrusted scanning, stack/test/CI detection, prompt-injection isolation, dry-run adopt.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

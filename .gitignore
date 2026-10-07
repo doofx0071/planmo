@@ -12,6 +12,9 @@ coverage/
 !.env.example
 *.local
 
+# npm credentials (never commit a token)
+.npmrc
+
 # Logs
 *.log
 npm-debug.log*

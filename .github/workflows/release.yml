@@ -1,0 +1,59 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# recommended: reset permissions and grant only what each job needs
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: version & publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # commit version changes, push git tags, create releases
+      pull-requests: write # open/update the "Version Packages" PR
+      id-token: write # npm trusted publishing (OIDC) — unused while NPM_TOKEN is set
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: pnpm
+          # Remove registry-url (and the NODE_AUTH_TOKEN env below) when switching
+          # to npm Trusted Publishing.
+          registry-url: https://registry.npmjs.org
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Full gate
+        run: pnpm check
+
+      # changesets/action@v2 (Changesets v3). No pending changesets => publishes;
+      # pending changesets => opens/updates the "Version Packages" PR.
+      - name: Create version PR or publish
+        uses: changesets/action@v2
+        with:
+          version-script: pnpm changeset version
+          publish-script: pnpm changeset publish
+          commit-message: 'chore(release): version packages'
+          pr-title: 'chore(release): version packages'
+          push-git-tags: true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
