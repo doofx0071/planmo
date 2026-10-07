@@ -1,9 +1,27 @@
 {
   "name": "@planmo/workflow",
-  "version": "0.0.3",
-  "license": "MIT",
-  "private": true,
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "PlanMo workflow/session engine: phase transitions, handoffs, planmo next, parallel work packets, human gates, task DAG, leases, session memory, change engine",
+  "license": "MIT",
+  "keywords": [
+    "planmo",
+    "workflow",
+    "phases",
+    "handoffs",
+    "task-graph"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/workflow"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

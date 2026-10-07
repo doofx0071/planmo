@@ -1,9 +1,27 @@
 {
   "name": "@planmo/agent-bridge",
-  "version": "0.0.3",
-  "private": true,
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "PlanMo agent bridge: capability registry, context bundle compiler, standards injector, provider interfaces, execution packets, proposal validation (Phase 06).",
   "license": "MIT",
+  "keywords": [
+    "planmo",
+    "agent",
+    "context-bundle",
+    "agent-native",
+    "orchestration"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/agent-bridge"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

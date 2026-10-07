@@ -1,9 +1,27 @@
 {
   "name": "@planmo/packs",
-  "version": "0.0.3",
-  "private": true,
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "PlanMo declarative pack system: loader, deterministic resolution, lockfile, planning-depth profiles (Phase 04).",
   "license": "MIT",
+  "keywords": [
+    "planmo",
+    "packs",
+    "plugins",
+    "declarative",
+    "standards"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/packs"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -108,20 +108,21 @@ exposed as CLI commands**. See [ROADMAP.md](ROADMAP.md).
 | Package                                  | Published | Role                                                             |
 | ---------------------------------------- | --------- | ---------------------------------------------------------------- |
 | [`planmo`](https://npmjs.com/package/planmo) | ✅        | the CLI                                                          |
-| `@planmo/shared`                         | ✅        | shared utilities (CLI runtime closure)                           |
+| `@planmo/shared`                         | ✅        | shared utilities                                                 |
 | `@planmo/schema`                         | ✅        | versioned, Zod-validated canonical project model                 |
 | `@planmo/core`                           | ✅        | deterministic core: safe writer, planning compiler               |
 | `@planmo/scanner`                        | ✅        | repository adoption: safe scanning, prompt-injection isolation   |
-| `@planmo/packs`                          | —         | declarative pack loading and deterministic resolution            |
-| `@planmo/generator`                      | —         | artifact generation with an ownership manifest                   |
-| `@planmo/design-engine`                  | —         | DTCG design tokens, styles, accessibility rules                  |
-| `@planmo/agent-bridge`                   | —         | agent adapters and token-budgeted context bundles                |
-| `@planmo/adapters`                       | —         | generic / OpenCode / Codex / Claude Code adapters                |
-| `@planmo/workflow`                       | —         | phases, task DAG, work packets, leases, gates, handoffs          |
-| `@planmo/trace`                          | —         | requirement trace graph, validate, doctor, drift                 |
+| `@planmo/packs`                          | ✅        | declarative pack loading and deterministic resolution            |
+| `@planmo/generator`                      | ✅        | artifact generation with an ownership manifest                   |
+| `@planmo/design-engine`                  | ✅        | DTCG design tokens, styles, accessibility rules                  |
+| `@planmo/agent-bridge`                   | ✅        | agent adapters and token-budgeted context bundles                |
+| `@planmo/adapters`                       | ✅        | generic / OpenCode / Codex / Claude Code adapters                |
+| `@planmo/workflow`                       | ✅        | phases, task DAG, work packets, leases, gates, handoffs          |
+| `@planmo/trace`                          | ✅        | requirement trace graph, validate, doctor, drift                 |
 
-The CLI runtime closure is published because the build is plain `tsc` with no
-bundler — `npm install planmo` must be able to resolve its dependencies.
+All twelve packages are published. The build is plain `tsc` with no bundler, so
+every package in the CLI's runtime closure must exist on the registry for
+`npm install planmo` to resolve — publishing a subset silently breaks the CLI.
 
 ## Design principles
 

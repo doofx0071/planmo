@@ -1,9 +1,28 @@
 {
   "name": "@planmo/adapters",
-  "version": "0.0.2",
-  "private": true,
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "PlanMo agent adapters: pure per-CLI invocation/prompt builders (generic, opencode, codex, claude-code) (Phase 06).",
   "license": "MIT",
+  "keywords": [
+    "planmo",
+    "adapters",
+    "opencode",
+    "codex",
+    "claude-code",
+    "agent"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/adapters"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
