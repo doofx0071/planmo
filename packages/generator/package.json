@@ -1,9 +1,27 @@
 {
   "name": "@planmo/generator",
-  "version": "0.0.3",
-  "private": true,
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "PlanMo planning compiler and artifact generator: canonical IR, renderers, generation manifest, synth preview (Phase 05).",
   "license": "MIT",
+  "keywords": [
+    "planmo",
+    "generator",
+    "planning-compiler",
+    "scaffolding",
+    "deterministic"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/generator"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
