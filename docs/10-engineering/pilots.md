@@ -106,6 +106,10 @@ reports HEALTHY.
    examples.md` documents only real commands. Follow-up: reconcile
    command-surface.md with the real surface (or land the commands) before
    RC.
+   **Resolved:** `planmo generate` is wired and `planmo init` compiles the
+   planning tree with it. `command-surface.md` and `examples.md` are
+   reconciled, and pilot 7 now asserts that `--help` lists exactly the
+   implemented commands (`plan` and `next` remain unwired).
 2. **adopt is a pure dry-run plan.** It never writes; `rewritesApplicationCode`
    is the literal `false`; all planned artifacts sit under `.planmo/adopt/`.
    Confirmed on a hostile tree with no side effects.

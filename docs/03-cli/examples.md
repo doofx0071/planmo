@@ -162,20 +162,22 @@ Notes on the report:
 
 ## 4. What is NOT in v1 (yet)
 
-`planmo plan`, `planmo generate`, `planmo next`, `planmo validate`,
-`planmo doctor`, `planmo diff`, `planmo pack`, `planmo agent` are **not
-wired in the v1 CLI**:
+`planmo plan`, `planmo next`, `planmo validate`, `planmo doctor`,
+`planmo diff`, `planmo pack`, `planmo agent` are **not wired in the CLI**:
 
 ```console
 $ planmo plan
 planmo: unknown command 'plan'
 Run 'planmo --help' for usage.
 ```
-exit code `1`. The deterministic planning/generation engines exist in
-`@planmo/core`/`@planmo/generator` (and are exercised by the test suite),
-but their CLI wiring is a post-v1 (or RC) surface. `docs/03-cli/
-command-surface.md` currently lists them as "Core" — treat that document as
-aspirational until the commands land.
+exit code `1`.
+
+`planmo generate` **is** wired: it recompiles the planning documents from
+`.planmo/project.yml`, and `planmo init` runs it automatically, so a fresh
+workspace arrives with `planning/` populated. The `validate`/`doctor`/`trace`
+engines live in `@planmo/trace` and `next`/`handoff` in `@planmo/workflow`;
+their CLI wiring is post-v1. `--help` lists exactly the implemented commands,
+and `scripts/e2e-phase12-pilots.mjs` asserts that.
 
 ## 5. Environment notes
 

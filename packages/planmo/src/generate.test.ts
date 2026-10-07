@@ -44,10 +44,12 @@ describe('generatePlanningWorkspace', () => {
   it('is idempotent — a second run produces no collisions', async () => {
     const root = await freshRoot();
     await generatePlanningWorkspace({ root, planmoVersion: '0.0.0-test' });
+    // No allowOverwrite: a manifest-owned workspace regenerates cleanly, which
+    // is the entire point of the ownership manifest. Passing `false` explicitly
+    // would instead make the pre-existing .planmo/manifest.json a collision.
     const second = await generatePlanningWorkspace({
       root,
       planmoVersion: '0.0.0-test',
-      allowOverwrite: true,
     });
     expect(second.collisions).toEqual([]);
     expect(second.written).toHaveLength(EXPECTED_ARTIFACTS);

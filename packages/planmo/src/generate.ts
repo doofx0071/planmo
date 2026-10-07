@@ -27,9 +27,7 @@ export interface GenerateOutcome {
   diagnostics: string[];
 }
 
-export async function generatePlanningWorkspace(
-  opts: GenerateOptions,
-): Promise<GenerateOutcome> {
+export async function generatePlanningWorkspace(opts: GenerateOptions): Promise<GenerateOutcome> {
   const status = await readStatus({ root: opts.root });
   if (status.project === null) {
     throw new Error(`no readable .planmo/project.yml in ${opts.root}`);

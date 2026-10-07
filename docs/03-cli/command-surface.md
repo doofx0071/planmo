@@ -1,10 +1,16 @@
 # CLI Command Surface
 
-Core:
-- `planmo init`
-- `planmo adopt`
-- `planmo generate`
-- `planmo status`
+Implemented:
+
+- `planmo init [dir]` — create a workspace; compiles the planning tree with it
+- `planmo generate` — recompile the planning documents from the project model
+- `planmo status` — validate and summarize the workspace
+- `planmo adopt [dir]` — read-only analysis of an existing repository
+- `planmo --version` / `planmo --help`
+
+Not yet wired (the engines exist in the packages; see `ROADMAP.md`):
+
+- `planmo plan`
 - `planmo next`
 - `planmo validate`
 - `planmo doctor`
@@ -15,7 +21,11 @@ Core:
 - `planmo agent ...`
 
 Later:
+
 - `planmo change`
 - `planmo upgrade`
 - `planmo export github`
 - direct AI provider commands
+
+`--help` is the source of truth: it lists exactly the implemented commands, and
+`scripts/e2e-phase12-pilots.mjs` (pilot 7) asserts that it does.

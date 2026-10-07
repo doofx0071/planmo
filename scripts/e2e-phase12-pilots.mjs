@@ -10,7 +10,7 @@
  *   4. status-no-project    planmo status --dir <empty> -> exit 3
  *   5. brownfield-adopt     planmo adopt --dry-run --dir <hostile fixture>
  *   6. high-assurance-init  planmo init --depth high-assurance + status
- *   7. v1-surface-honesty   plan/generate are NOT CLI-wired in v1 (asserted)
+ *   7. v1-surface-honesty   --help matches the real surface (generate wired, plan/next not)
  *   8. version-and-help     planmo --version / --help exit 0
  *
  * Everything is deterministic: no AI key, no network, no randomness in
@@ -435,25 +435,33 @@ pilot('high-assurance-init — planmo init <dir> --yes --depth high-assurance');
 }
 
 // ---------------------------------------------------------------- pilot 7
-pilot('v1-surface-honesty — plan/generate/next are NOT CLI-wired in v1');
+pilot('v1-surface-honesty — --help claims exactly the commands that exist');
 {
-  for (const cmd of ['plan', 'generate', 'next']) {
+  // `plan` and `next` are still not CLI-wired.
+  for (const cmd of ['plan', 'next']) {
     const r = run([cmd, '--yes']);
     check(
-      `planmo ${cmd} exits 1 (unknown command in v1)`,
+      `planmo ${cmd} exits 1 (unknown command)`,
       r.status === 1 && r.stderr.includes(`unknown command '${cmd}'`),
       `exit ${r.status}`,
     );
   }
+  // `generate` IS wired: it must behave like a real command (exit 3 with no
+  // workspace) and never fall through to "unknown command".
+  const gen = run(['generate', '--dir', join(BASE, 'no-such-workspace')]);
+  check(
+    'planmo generate is wired (exits 3, not "unknown command")',
+    gen.status === 3 && !gen.stderr.includes('unknown command'),
+    `exit ${gen.status}`,
+  );
   const help = run(['--help']);
   check('--help lists init', help.stdout.includes('planmo init'));
   check('--help lists status', help.stdout.includes('planmo status'));
   check('--help lists adopt', help.stdout.includes('planmo adopt'));
+  check('--help lists generate', help.stdout.includes('planmo generate'));
   check(
-    '--help does NOT claim plan/generate/next',
-    !help.stdout.includes('planmo plan') &&
-      !help.stdout.includes('planmo generate') &&
-      !help.stdout.includes('planmo next'),
+    '--help does NOT claim plan/next',
+    !help.stdout.includes('planmo plan') && !help.stdout.includes('planmo next'),
   );
   check(
     '--help documents exit codes',
