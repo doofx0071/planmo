@@ -50,3 +50,23 @@ jobs:
 
       - name: CLI smoke
         run: node packages/planmo/dist/bin.js --version
+
+  # A changeset on the entry package does not republish its dependencies, so a
+  # change to a dependency's source with no changeset of its own ships a stale
+  # dependency to the registry while the whole gate above still passes (it runs
+  # against workspace source). Catch that here.
+  changesets:
+    name: changeset coverage
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+
+      - name: Every changed publishable package needs a changeset
+        run: node scripts/check-changesets.mjs --base=origin/${{ github.base_ref }}
