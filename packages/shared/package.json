@@ -2,8 +2,7 @@
   "name": "@planmo/shared",
   "version": "1.0.2",
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "description": "PlanMo shared utilities, constants, and low-level helpers.",
   "license": "MIT",

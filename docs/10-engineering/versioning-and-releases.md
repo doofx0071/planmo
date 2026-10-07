@@ -48,6 +48,12 @@ Release mechanics:
 - a trusted-publisher configuration stays *pending validation* until npm sees one
   publish through it; the bootstrap publish does not count. Validate by landing a
   Changeset and letting the workflow publish once.
+- **provenance is blocked while the repository is private.** npm rejects a
+  provenance publish with `E422 ... Unsupported GitHub Actions source repository
+  visibility: "private"`. Add `"provenance": true` to each `publishConfig` (and
+  keep `id-token: write` in the workflow) only once `doofx0071/planmo` is public;
+  the `repository`/`homepage` metadata added to the packages also 404s for
+  anonymous visitors until then.
 - the release job runs the full `pnpm check` gate before publishing.
 - the `planmo` name and `@planmo` scope must be claimed on npm before the first
   publish (naming-and-availability.md, R-018).

@@ -2,8 +2,7 @@
   "name": "@planmo/schema",
   "version": "1.0.2",
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "description": "PlanMo canonical project model, state, and artifact schemas (versioned, Zod-validated).",
   "license": "MIT",
