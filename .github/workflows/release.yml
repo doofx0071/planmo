@@ -35,8 +35,10 @@ jobs:
         with:
           node-version: '24.x'
           cache: pnpm
-          # No registry-url / NODE_AUTH_TOKEN: publishing authenticates via npm
-          # Trusted Publishing (OIDC) using the id-token: write permission above.
+          # registry-url is required for NODE_AUTH_TOKEN to reach the npm CLI.
+          # It does not disable OIDC: the npm CLI prefers trusted publishing
+          # whenever the package has a trusted publisher configured.
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
@@ -46,8 +48,19 @@ jobs:
 
       # changesets/action@v2 (Changesets v3). No pending changesets => publishes;
       # pending changesets => opens/updates the "Version Packages" PR.
+      #
+      # NPM_TOKEN is a TRANSITIONAL fallback, not the primary path. A package that
+      # has never been published cannot have a trusted publisher yet — npm
+      # configures those on the package's own settings page — so the first publish
+      # of a new package has no OIDC identity to authenticate with. The npm CLI
+      # still prefers OIDC for every package that does have one.
+      #
+      # Remove this env and the NPM_TOKEN secret once all twelve packages have
+      # published once and have a trusted publisher configured.
       - name: Create version PR or publish
         uses: changesets/action@v2
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
           version-script: pnpm changeset version
           publish-script: pnpm changeset publish
