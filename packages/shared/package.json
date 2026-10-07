@@ -2,10 +2,25 @@
   "name": "@planmo/shared",
   "version": "1.0.1",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "description": "PlanMo shared utilities, constants, and low-level helpers.",
   "license": "MIT",
+  "keywords": [
+    "planmo",
+    "utilities",
+    "shared"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

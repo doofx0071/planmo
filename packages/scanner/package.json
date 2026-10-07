@@ -3,9 +3,26 @@
   "version": "1.0.1",
   "license": "MIT",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "description": "PlanMo repository adoption engine: safe untrusted scanning, stack/test/CI detection, prompt-injection isolation, dry-run adopt.",
+  "keywords": [
+    "planmo",
+    "scanner",
+    "code-analysis",
+    "brownfield",
+    "adoption"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/scanner"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

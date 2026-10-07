@@ -3,6 +3,28 @@
   "version": "1.0.1",
   "description": "PlanMo — CLI-first, agent-native project planning and execution workspace generator.",
   "license": "MIT",
+  "keywords": [
+    "planmo",
+    "cli",
+    "ai-agents",
+    "agent-native",
+    "project-planning",
+    "scaffolding",
+    "agents-md",
+    "developer-tools"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/planmo"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
+  "publishConfig": {
+    "provenance": true
+  },
   "type": "module",
   "bin": {
     "planmo": "./dist/bin.js"

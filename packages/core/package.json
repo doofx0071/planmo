@@ -2,10 +2,27 @@
   "name": "@planmo/core",
   "version": "1.0.1",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "description": "PlanMo deterministic core: canonical project model, safe filesystem writer, planning compiler.",
   "license": "MIT",
+  "keywords": [
+    "planmo",
+    "core",
+    "planning-compiler",
+    "scaffolding",
+    "deterministic"
+  ],
+  "homepage": "https://github.com/doofx0071/planmo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doofx0071/planmo.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/doofx0071/planmo/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
