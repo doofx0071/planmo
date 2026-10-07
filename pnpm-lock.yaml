@@ -110,6 +110,12 @@ importers:
       '@planmo/core':
         specifier: workspace:*
         version: link:../core
+      '@planmo/generator':
+        specifier: workspace:*
+        version: link:../generator
+      '@planmo/packs':
+        specifier: workspace:*
+        version: link:../packs
       '@planmo/scanner':
         specifier: workspace:*
         version: link:../scanner

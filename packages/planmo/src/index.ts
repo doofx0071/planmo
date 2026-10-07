@@ -1,9 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { stdin as nodeStdin, stdout as nodeStdout } from 'node:process';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { PRODUCT_SLUG } from '@planmo/shared';
+import { cliVersion } from './version.js';
 import { initWorkspace, readStatus } from '@planmo/core';
 import { analyzeRepository, nodeFileReader } from '@planmo/scanner';
 import type {
@@ -69,15 +68,6 @@ export const USAGE = [
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
 ].join('\n');
 
-function readVersion(): string {
-  // dist/bin.js -> ../package.json (also correct when executed from src/).
-  const here = dirname(fileURLToPath(import.meta.url));
-  const pkg = JSON.parse(readFileSync(resolve(here, '..', 'package.json'), 'utf8')) as {
-    version?: string;
-  };
-  return pkg.version ?? '0.0.0';
-}
-
 /** Minimal `--flag value` / `--flag=value` parser (no external dep). */
 function parseArgs(argv: string[]): { flags: Map<string, string>; positional: string[] } {
   const flags = new Map<string, string>();
@@ -132,7 +122,7 @@ export async function run(
   switch (command) {
     case '--version':
     case '-v':
-      io.out(`${PRODUCT_SLUG} ${readVersion()}`);
+      io.out(`${PRODUCT_SLUG} ${cliVersion()}`);
       return 0;
     case '--help':
     case '-h':

@@ -23,7 +23,7 @@ const ALLOWED = {
   shared: [],
   schema: ['shared'],
   core: ['shared', 'schema'],
-  planmo: ['shared', 'schema', 'core', 'trace', 'scanner'],
+  planmo: ['shared', 'schema', 'core', 'trace', 'scanner', 'packs', 'generator'],
   packs: ['core', 'shared', 'schema'],
   generator: ['core', 'shared', 'schema', 'packs'],
   scanner: ['core', 'shared', 'schema'],

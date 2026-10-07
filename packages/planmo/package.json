@@ -43,6 +43,8 @@
   },
   "dependencies": {
     "@planmo/core": "workspace:*",
+    "@planmo/generator": "workspace:*",
+    "@planmo/packs": "workspace:*",
     "@planmo/scanner": "workspace:*",
     "@planmo/schema": "workspace:*",
     "@planmo/shared": "workspace:*"
