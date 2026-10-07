@@ -160,10 +160,25 @@ Notes on the report:
   (NUL-byte) files are skipped fail-closed, so hostile or noisy trees
   cannot hang or poison the run.
 
-## 4. What is NOT in v1 (yet)
+## 4. Validating a workspace
 
-`planmo plan`, `planmo next`, `planmo validate`, `planmo doctor`,
-`planmo diff`, `planmo pack`, `planmo agent` are **not wired in the CLI**:
+```console
+$ planmo validate
+validate: OK (0 error(s), 0 warning(s), 0 info)
+```
+exit code `0`.
+
+`validate` is the CI gate: it checks the canonical documents and their
+cross-document invariants — phase gaps, blocked tasks with no row, schema
+presence — and exits `1` when the report contains an error. A freshly generated
+workspace validates clean. Every diagnostic carries a stable code (`VLD-001`
+phase gap, `VLD-002` blocked task with no row, `VLD-003` handoff next-phase,
+`VLD-004` document fails schema parse) plus an actionable remediation line.
+
+## 5. What is NOT in v1 (yet)
+
+`planmo plan`, `planmo next`, `planmo doctor`, `planmo diff`, `planmo pack`,
+`planmo agent` are **not wired in the CLI**:
 
 ```console
 $ planmo plan
@@ -174,12 +189,12 @@ exit code `1`.
 
 `planmo generate` **is** wired: it recompiles the planning documents from
 `.planmo/project.yml`, and `planmo init` runs it automatically, so a fresh
-workspace arrives with `planning/` populated. The `validate`/`doctor`/`trace`
-engines live in `@planmo/trace` and `next`/`handoff` in `@planmo/workflow`;
-their CLI wiring is post-v1. `--help` lists exactly the implemented commands,
-and `scripts/e2e-phase12-pilots.mjs` asserts that.
+workspace arrives with `planning/` populated. The `doctor`/`trace` engines live
+in `@planmo/trace` and `next`/`handoff` in `@planmo/workflow`; their CLI wiring
+is post-v1. `--help` lists exactly the implemented commands, and
+`scripts/e2e-phase12-pilots.mjs` asserts that.
 
-## 5. Environment notes
+## 6. Environment notes
 
 - Git-bash on Windows: pass **native Windows paths** (e.g. `C:\repo`) to
   the CLI. A `/tmp/...` style path resolves to `C:\tmp\...`, which silently

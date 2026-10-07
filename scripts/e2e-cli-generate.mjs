@@ -100,6 +100,20 @@ check(
 
 check('help documents the generate command', run(['--help']).stdout.includes('generate'));
 
+// validate — the CI gate. A generated workspace must pass its own validator.
+const validated = run(['validate', '--dir', target]);
+check(
+  'validate exits 0 on a generated workspace',
+  validated.status === 0,
+  `exit ${validated.status}`,
+);
+check('validate reports OK', validated.stdout.includes('validate: OK'), validated.stderr.trim());
+check(
+  'validate exits 3 without a workspace',
+  run(['validate', '--dir', join(base, 'empty')]).status === 3,
+);
+check('help documents the validate command', run(['--help']).stdout.includes('validate'));
+
 console.log(
   `\nCLI generate E2E: ${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURE(S)`}`,
 );

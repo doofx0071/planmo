@@ -78,6 +78,7 @@ never executes project scripts.
 | --------------------- | --------------------------------------------------------- |
 | `planmo init [dir]`   | Create a workspace, compiling the planning tree with it   |
 | `planmo generate`     | Recompile the planning documents from the project model   |
+| `planmo validate`     | Validate the workspace documents and invariants (CI gate) |
 | `planmo status`       | Validate and summarize the workspace                      |
 | `planmo adopt [dir]`  | Analyze an existing repo (dry-run report; writes nothing) |
 | `planmo --version`    | Print the version                                         |
@@ -99,7 +100,7 @@ never executes project scripts.
 | `--dry-run`           | Print the plan and write nothing                                                                    |
 | `--force`             | Overwrite existing unmanaged files                                                                  |
 
-`status`, `adopt` and `generate` take `--dir <path>` (default: walk up from cwd).
+`status`, `adopt`, `generate` and `validate` take `--dir <path>` (default: walk up from cwd).
 
 ### generate options
 
@@ -108,6 +109,15 @@ never executes project scripts.
 | `--dir <path>`| Project root (default: walk up from cwd)                                      |
 | `--dry-run`   | Print the plan and write nothing                                              |
 | `--force`     | Overwrite files the manifest already owns, and unmanaged files it collides with |
+
+### validate options
+
+| Option        | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `--dir <path>`| Project root (default: walk up from cwd)       |
+
+`validate` exits `0` when the report has no errors (warnings are allowed) and `1`
+when it does, so it can gate CI. A freshly generated workspace validates clean.
 
 ## Exit codes
 
@@ -133,11 +143,13 @@ equivalent output. The core needs no API key and no network access.
 
 ## Status (v1)
 
-The CLI surface is `init`, `generate`, `status` and `adopt`. `init` compiles the
-planning tree as part of creating the workspace, and `generate` recompiles it.
-The remaining engines (workflow, trace, agent-bridge, design-engine) ship inside
-the published packages but are not yet exposed as CLI commands; they arrive in a
-later release. `--help` always lists exactly the implemented commands.
+The CLI surface is `init`, `generate`, `validate`, `status` and `adopt`. `init`
+compiles the planning tree as part of creating the workspace, `generate`
+recompiles it, and `validate` checks the canonical documents and their
+cross-document invariants. The remaining engines (workflow, trace, agent-bridge,
+design-engine) ship inside the published packages but are not yet exposed as CLI
+commands; they arrive in a later release. `--help` always lists exactly the
+implemented commands.
 
 ## Links
 

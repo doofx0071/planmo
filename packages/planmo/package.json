@@ -47,6 +47,7 @@
     "@planmo/packs": "workspace:*",
     "@planmo/scanner": "workspace:*",
     "@planmo/schema": "workspace:*",
-    "@planmo/shared": "workspace:*"
+    "@planmo/shared": "workspace:*",
+    "@planmo/trace": "workspace:*"
   }
 }
