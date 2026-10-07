@@ -1,5 +1,15 @@
 # @planmo/trace
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies [15dcca6]
+  - @planmo/shared@1.0.1
+  - @planmo/schema@1.0.1
+  - @planmo/core@1.0.1
+  - @planmo/workflow@0.0.2
+
 ## 0.0.1
 
 ### Patch Changes
