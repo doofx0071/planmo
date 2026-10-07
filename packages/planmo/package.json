@@ -1,6 +1,6 @@
 {
   "name": "planmo",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "PlanMo — CLI-first, agent-native project planning and execution workspace generator.",
   "license": "MIT",
   "keywords": [
