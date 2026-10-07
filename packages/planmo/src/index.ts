@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { stdin as nodeStdin, stdout as nodeStdout } from 'node:process';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { PRODUCT_SLUG } from '@planmo/shared';
+import { cliVersion } from './version.js';
+import { generatePlanningWorkspace } from './generate.js';
 import { initWorkspace, readStatus } from '@planmo/core';
 import { analyzeRepository, nodeFileReader } from '@planmo/scanner';
 import type {
@@ -42,6 +42,7 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} init [dir]    create a PlanMo workspace (wizard, or flags)`,
   `  ${PRODUCT_SLUG} status        validate and summarize the workspace`,
   `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo (dry-run report; writes nothing)`,
+  `  ${PRODUCT_SLUG} generate      generate/refresh the planning workspace`,
   `  ${PRODUCT_SLUG} --version     print the PlanMo version`,
   `  ${PRODUCT_SLUG} --help        show this help`,
   '',
@@ -66,17 +67,13 @@ export const USAGE = [
   'adopt options:',
   '      --dir <path>          repository root (default: cwd)',
   '',
+  'generate options:',
+  '      --dir <path>          project root (default: cwd)',
+  '      --dry-run             print the plan and write nothing',
+  '      --force               overwrite files the manifest already owns',
+  '',
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
 ].join('\n');
-
-function readVersion(): string {
-  // dist/bin.js -> ../package.json (also correct when executed from src/).
-  const here = dirname(fileURLToPath(import.meta.url));
-  const pkg = JSON.parse(readFileSync(resolve(here, '..', 'package.json'), 'utf8')) as {
-    version?: string;
-  };
-  return pkg.version ?? '0.0.0';
-}
 
 /** Minimal `--flag value` / `--flag=value` parser (no external dep). */
 function parseArgs(argv: string[]): { flags: Map<string, string>; positional: string[] } {
@@ -132,7 +129,7 @@ export async function run(
   switch (command) {
     case '--version':
     case '-v':
-      io.out(`${PRODUCT_SLUG} ${readVersion()}`);
+      io.out(`${PRODUCT_SLUG} ${cliVersion()}`);
       return 0;
     case '--help':
     case '-h':
@@ -147,10 +144,38 @@ export async function run(
       return runStatus(argv.slice(1), io);
     case 'adopt':
       return runAdopt(argv.slice(1), io);
+    case 'generate':
+      return runGenerate(argv.slice(1), io);
     default:
       io.err(`planmo: unknown command '${command}'`);
       io.err(`Run 'planmo --help' for usage.`);
       return 1;
+  }
+}
+
+async function runGenerate(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  const dryRun = flags.has('dry-run');
+  try {
+    const result = await generatePlanningWorkspace({
+      root,
+      planmoVersion: cliVersion(),
+      ...(flags.has('force') ? { allowOverwrite: true } : {}),
+      dryRun,
+    });
+    for (const w of result.written) {
+      io.out(`${dryRun ? '[dry-run] would write' : '✓ wrote'} ${w}`);
+    }
+    for (const c of result.collisions) {
+      io.err(`✗ collision  ${c} (existing, refused — use --force to overwrite)`);
+    }
+    for (const d of result.diagnostics) io.err(`note: ${d}`);
+    if (dryRun) io.out(`[dry-run] ${result.written.length} artifact(s) planned in ${root}`);
+    return result.collisions.length > 0 ? 2 : 0;
+  } catch (err) {
+    io.err(`planmo generate: ${(err as Error).message}`);
+    return 3;
   }
 }
 
@@ -220,6 +245,25 @@ async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
     for (const c of result.collisions)
       io.err(`✗ collision  ${c} (existing, refused — use --force to overwrite)`);
     io.out(`PlanMo workspace initialized in ${result.root}`);
+
+    // A fresh workspace is useless without its planning documents: compile them
+    // in the same run. `.planmo/` collisions abort above, so this only runs for
+    // a workspace we just wrote (or were explicitly allowed to overwrite).
+    if (result.collisions.length === 0) {
+      try {
+        const generated = await generatePlanningWorkspace({
+          root: result.root,
+          planmoVersion: cliVersion(),
+          ...(flags.has('force') ? { allowOverwrite: true } : {}),
+        });
+        for (const w of generated.written) io.out(`✓ wrote ${w}`);
+        for (const d of generated.diagnostics) io.err(`note: ${d}`);
+      } catch (err) {
+        io.err(`planmo init: planning generation failed — ${(err as Error).message}`);
+        return 1;
+      }
+    }
+
     return result.collisions.length > 0 ? 2 : 0;
   } catch (err) {
     io.err(`planmo init: ${(err as Error).message}`);

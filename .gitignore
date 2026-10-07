@@ -27,3 +27,6 @@ Thumbs.db
 # Test artifacts
 .playwright/
 .nyc_output/
+
+# Local agent planning artifacts
+.hermes/

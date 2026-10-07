@@ -214,4 +214,62 @@ describe('USAGE', () => {
     expect(USAGE).toContain('--dry-run');
     expect(USAGE).toContain('--force');
   });
+
+  it('documents the generate command', () => {
+    expect(USAGE).toContain('generate');
+  });
+});
+
+describe('planmo generate', () => {
+  const wizard = { prompt: async () => 'x', out: () => {} };
+
+  it('writes the planning tree for an initialized workspace and exits 0', async () => {
+    const root = await tempRoot();
+    await run(['init', root, '--yes'], capture().io, wizard);
+    const { io, out } = capture();
+    expect(await run(['generate', '--dir', root], io)).toBe(0);
+    expect(out.join('\n')).toContain('planning/ROADMAP.md');
+  });
+
+  it('exits 3 without a workspace', async () => {
+    const root = await tempRoot();
+    const { io, err } = capture();
+    expect(await run(['generate', '--dir', root], io)).toBe(3);
+    expect(err.join('\n')).toContain('planmo generate:');
+  });
+
+  it('--dry-run plans without writing anything', async () => {
+    const root = await tempRoot();
+    await run(['init', root, '--yes'], capture().io, wizard);
+    const { rm } = await import('node:fs/promises');
+    await rm(join(root, 'planning'), { recursive: true, force: true });
+    const { io, out } = capture();
+    expect(await run(['generate', '--dir', root, '--dry-run'], io)).toBe(0);
+    expect(out.join('\n')).toContain('[dry-run]');
+    await expect(readdir(join(root, 'planning'))).rejects.toThrow();
+  });
+});
+
+describe('planmo init — planning workspace', () => {
+  const wizard = { prompt: async () => 'x', out: () => {} };
+
+  it('generates the planning tree alongside .planmo', async () => {
+    const root = await tempRoot();
+    expect(await run(['init', root, '--yes'], capture().io, wizard)).toBe(0);
+    const planning = await readdir(join(root, 'planning'));
+    expect(planning).toContain('ROADMAP.md');
+    expect(planning).toContain('TRACKER.md');
+    expect(planning).toContain('phases');
+    expect(planning).toContain('handoffs');
+  });
+
+  it('still writes exactly the three .planmo documents', async () => {
+    const root = await tempRoot();
+    await run(['init', root, '--yes'], capture().io, wizard);
+    expect((await readdir(join(root, '.planmo'))).sort()).toEqual([
+      'manifest.json',
+      'project.yml',
+      'state.yml',
+    ]);
+  });
 });

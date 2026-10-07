@@ -25,6 +25,7 @@ prints a one-line verdict.
 | `e2e-phase10.mjs`        | Scanner: standards ranking, symlink refusal                           |
 | `e2e-phase11.mjs`        | Ecosystem: portable export, provider honesty                          |
 | `e2e-phase12-pilots.mjs` | Real-CLI pilots: init, dry-run, collision, adopt, exit codes          |
+| `e2e-cli-generate.mjs`   | Real-CLI: `init` writes the planning tree; `generate` regeneration    |
 
 The names record the roadmap phase that introduced each suite; they are the
 regression suite, not per-phase scratch work.
