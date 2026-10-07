@@ -1,5 +1,18 @@
 # @planmo/schema
 
+## 1.0.2
+
+### Patch Changes
+
+- 5473462: Add a README to every published package and fill in npm metadata (repository,
+  homepage, bugs, keywords), and enable npm provenance attestation.
+  
+  The published tarballs previously contained only `dist/`, `package.json` and
+  `LICENSE`, so the npm pages rendered empty with no usage information. No runtime
+  change.
+- Updated dependencies [5473462]
+  - @planmo/shared@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@planmo/adapters",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "PlanMo agent adapters: pure per-CLI invocation/prompt builders (generic, opencode, codex, claude-code) (Phase 06).",
   "license": "MIT",
