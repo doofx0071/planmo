@@ -10,15 +10,29 @@ import { generatePlanningWorkspace } from './generate.js';
  *   4 planning root docs (CONTEXT/ROADMAP/STANDARDS/TRACKER)
  * + 1 handoff template
  * + 7 phase docs (phase-00..06)
- * + 1 generation manifest
- * = 13.
+ * + 18 full-workspace documents (README, MASTER-PLAN, DECISIONS,
+ *   OPEN-QUESTIONS, RISKS, REQUIREMENTS-TRACEABILITY, tasks.csv,
+ *   architecture/{ARCHITECTURE,DOMAIN-MODEL,SECURITY-PRIVACY,STATE-MACHINES},
+ *   compliance/POLICY-REGISTER, design/{DESIGN-BRIEF,DESIGN-SYSTEM},
+ *   prompts/{README,phase-prompt}, requirements/PRODUCT-REQUIREMENTS,
+ *   testing/TEST-STRATEGY)
+ * = 30 artifacts.
+ *
+ * The first run also writes `.planmo/manifest.json`, so it reports 31 writes
+ * while the manifest records the 30 artifacts. Six of the 30 are `seeded` —
+ * created once, then owned by the user — so a second run writes 25.
  *
  * Policy documents are pack-derived, so a project declaring `packs: []` has
- * none. The golden fixtures declare packs and therefore emit 16 — that
+ * none. The golden fixtures declare packs and therefore emit more — that
  * difference is expected, not a regression.
  */
-const EXPECTED_ARTIFACTS = 13;
-const EXPECTED_MANIFEST_ENTRIES = 12;
+const EXPECTED_ARTIFACTS = 30;
+/** The first run also writes `.planmo/manifest.json` itself. */
+const EXPECTED_FIRST_RUN_WRITES = EXPECTED_ARTIFACTS + 1;
+const EXPECTED_MANIFEST_ENTRIES = EXPECTED_ARTIFACTS;
+/** Seeded documents are created once and never rewritten afterwards. */
+const EXPECTED_SEEDED = 6;
+const EXPECTED_SECOND_RUN_WRITES = EXPECTED_FIRST_RUN_WRITES - EXPECTED_SEEDED;
 
 async function freshRoot(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'planmo-gen-'));
@@ -37,8 +51,11 @@ describe('generatePlanningWorkspace', () => {
     expect(result.written).toContain('planning/handoffs/TEMPLATE.md');
     expect(result.written).toContain('planning/phases/phase-00.md');
     expect(result.written).toContain('.planmo/manifest.json');
-    // Baseline artifact count; the Milestone 2 artifact set raises this.
-    expect(result.written).toHaveLength(EXPECTED_ARTIFACTS);
+    expect(result.written).toContain('planning/MASTER-PLAN.md');
+    expect(result.written).toContain('planning/tasks.csv');
+    expect(result.written).toContain('planning/architecture/ARCHITECTURE.md');
+    expect(result.written).toContain('planning/testing/TEST-STRATEGY.md');
+    expect(result.written).toHaveLength(EXPECTED_FIRST_RUN_WRITES);
   });
 
   it('is idempotent — a second run produces no collisions', async () => {
@@ -52,7 +69,12 @@ describe('generatePlanningWorkspace', () => {
       planmoVersion: '0.0.0-test',
     });
     expect(second.collisions).toEqual([]);
-    expect(second.written).toHaveLength(EXPECTED_ARTIFACTS);
+    // Seeded documents are already on disk and belong to the user, so they are
+    // skipped — everything else is refreshed.
+    expect(second.written).toHaveLength(EXPECTED_SECOND_RUN_WRITES);
+    expect(second.written).not.toContain('planning/DECISIONS.md');
+    expect(second.written).not.toContain('planning/RISKS.md');
+    expect(second.written).toContain('planning/MASTER-PLAN.md');
   });
 
   it('dry-run writes nothing', async () => {
@@ -62,7 +84,7 @@ describe('generatePlanningWorkspace', () => {
       planmoVersion: '0.0.0-test',
       dryRun: true,
     });
-    expect(result.written).toHaveLength(EXPECTED_ARTIFACTS);
+    expect(result.written).toHaveLength(EXPECTED_FIRST_RUN_WRITES);
     // Dry-run must not even create the directory.
     await expect(readdir(join(root, 'planning'))).rejects.toThrow();
   });
