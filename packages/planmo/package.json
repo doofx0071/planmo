@@ -1,7 +1,7 @@
 {
   "name": "planmo",
   "version": "1.0.0",
-  "description": "PlanMo CLI entry point (smoke commands only until Phase 03 CLI foundation).",
+  "description": "PlanMo — CLI-first, agent-native project planning and execution workspace generator.",
   "license": "MIT",
   "type": "module",
   "bin": {

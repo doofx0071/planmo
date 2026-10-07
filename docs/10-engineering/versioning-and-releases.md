@@ -31,10 +31,19 @@ sets `access: public`. The boundary checker allows the single unscoped CLI name
 
 Release mechanics:
 - feature PRs add a Changeset (`pnpm changeset`).
-- `.github/workflows/release.yml` runs on `main`: it opens/updates a
-  "Version Packages" PR; merging that PR runs `pnpm changeset publish`.
-- required repository secret: `NPM_TOKEN` — an npm automation token with publish
-  rights for the `planmo` name and the `@planmo` scope (claim both at first publish).
+- `.github/workflows/release.yml` runs on `main` with `changesets/action@v2`
+  (Changesets v3). With pending changesets it opens/updates a "Version Packages"
+  PR; with none it publishes immediately.
+- credentials: `NPM_TOKEN` repository secret (npm Granular Access Token with
+  read+write). Set it before merging a publishable change — otherwise the release
+  job runs `changeset publish` with no auth and fails.
+- **Preferred: npm Trusted Publishing (OIDC).** Granular tokens expire (max 90
+  days) and 2FA-bypass tokens will no longer publish directly after Jan 2027.
+  Trusted Publishing needs no secret. It can only be configured on a package that
+  already exists, so bootstrap the first publish with the token, then per package
+  on npmjs.com → Package → Settings → Trusted Publisher → GitHub Actions
+  (repo `doofx0071/planmo`, workflow `release.yml`), and remove `registry-url`
+  plus the `NODE_AUTH_TOKEN` env from the workflow (`id-token: write` stays).
 - the release job runs the full `pnpm check` gate before publishing.
 - the `planmo` name and `@planmo` scope must be claimed on npm before the first
   publish (naming-and-availability.md, R-018).

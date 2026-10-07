@@ -4,7 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "description": "PlanMo canonical project model, state, and artifact schemas (implemented in Phase 02).",
+  "description": "PlanMo canonical project model, state, and artifact schemas (versioned, Zod-validated).",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
