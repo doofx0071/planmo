@@ -19,7 +19,7 @@ jobs:
     permissions:
       contents: write # commit version changes, push git tags, create releases
       pull-requests: write # open/update the "Version Packages" PR
-      id-token: write # npm trusted publishing (OIDC) — unused while NPM_TOKEN is set
+      id-token: write # npm trusted publishing (OIDC)
     steps:
       - name: Check out repo
         uses: actions/checkout@v7
@@ -35,9 +35,8 @@ jobs:
         with:
           node-version: '24.x'
           cache: pnpm
-          # Remove registry-url (and the NODE_AUTH_TOKEN env below) when switching
-          # to npm Trusted Publishing.
-          registry-url: https://registry.npmjs.org
+          # No registry-url / NODE_AUTH_TOKEN: publishing authenticates via npm
+          # Trusted Publishing (OIDC) using the id-token: write permission above.
 
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
@@ -55,5 +54,3 @@ jobs:
           commit-message: 'chore(release): version packages'
           pr-title: 'chore(release): version packages'
           push-git-tags: true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
