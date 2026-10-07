@@ -27,7 +27,13 @@ function git(args) {
 
 let changed;
 try {
-  changed = git(['diff', '--name-only', `${base}...HEAD`]).split('\n').filter(Boolean);
+  // Committed changes since the merge base (the PR's changes in CI), plus
+  // anything still in the working tree so the check is usable before a commit.
+  changed = [
+    ...git(['diff', '--name-only', `${base}...HEAD`]).split('\n'),
+    ...git(['diff', '--name-only', 'HEAD']).split('\n'),
+    ...git(['ls-files', '--others', '--exclude-standard']).split('\n'),
+  ].filter(Boolean);
 } catch {
   console.log(`changeset check: cannot diff against '${base}' — skipping`);
   process.exit(0);
@@ -37,12 +43,6 @@ try {
 function readPkg(dir) {
   return JSON.parse(readFileSync(join('packages', dir, 'package.json'), 'utf8'));
 }
-
-const packageDirs = existsSync('packages')
-  ? readdirSync('packages', { withFileTypes: true })
-      .filter((e) => e.isDirectory() && existsSync(join('packages', e.name, 'package.json')))
-      .map((e) => e.name)
-  : [];
 
 // A change to a test file alone does not change shipped behaviour.
 const changedPackages = new Set();
@@ -59,7 +59,9 @@ const changesetFiles = existsSync('.changeset')
 
 const covered = new Set();
 for (const file of changesetFiles) {
-  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(readFileSync(join('.changeset', file), 'utf8'));
+  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(
+    readFileSync(join('.changeset', file), 'utf8'),
+  );
   if (frontmatter === null) continue;
   for (const match of frontmatter[1].matchAll(/['"]([^'"]+)['"]\s*:/g)) {
     covered.add(match[1]);
