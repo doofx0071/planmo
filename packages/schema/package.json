@@ -1,7 +1,9 @@
 {
   "name": "@planmo/schema",
   "version": "1.0.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "PlanMo canonical project model, state, and artifact schemas (implemented in Phase 02).",
   "license": "MIT",
   "type": "module",

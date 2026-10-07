@@ -4,7 +4,9 @@ Enforced by `scripts/check-boundaries.mjs` (run via `pnpm boundary-check`, wired
 
 ## Rules
 
-1. **Naming** — every package under `packages/` must be named `@planmo/<dirname>`.
+1. **Naming** — every package under `packages/` must be named `@planmo/<dirname>`,
+   with one exception: the published CLI is unscoped **`planmo`**
+   (`packages/planmo/package.json`, ADR-0007).
 2. **No escaping relative imports** — cross-package code must import the package
    specifier (`@planmo/core`), never a relative path that leaves the package
    directory (e.g. `../../core/src`). Relative imports may only reach files
@@ -21,7 +23,7 @@ Enforced by `scripts/check-boundaries.mjs` (run via `pnpm boundary-check`, wired
 | `@planmo/shared` | — (leaf) |
 | `@planmo/schema` | shared |
 | `@planmo/core` | shared, schema |
-| `@planmo/cli` | shared, schema, core |
+| `planmo` (unscoped, published) | shared, schema, core |
 | `@planmo/packs` *(future, P04)* | core, shared, schema |
 | `@planmo/generator` *(future, P05)* | core, shared, schema, packs |
 | `@planmo/scanner` *(future, P10)* | core, shared, schema |

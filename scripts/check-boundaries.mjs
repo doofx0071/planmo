@@ -1,7 +1,8 @@
 // Package boundary enforcement for the PlanMo monorepo.
 //
 // Rules (see docs/10-engineering/package-boundaries.md):
-// 1. Every package under packages/ must be named @planmo/<dirname>.
+// 1. Every package under packages/ must be named @planmo/<dirname>, except the
+//    published CLI (packages/planmo) which is unscoped `planmo` (ADR-0007).
 // 2. Cross-package imports must use the @planmo/* package specifier —
 //    never relative imports that escape the package directory.
 // 3. An import of @planmo/<pkg> is only allowed if the edge is declared
@@ -22,7 +23,7 @@ const ALLOWED = {
   shared: [],
   schema: ['shared'],
   core: ['shared', 'schema'],
-  cli: ['shared', 'schema', 'core', 'trace', 'scanner'],
+  planmo: ['shared', 'schema', 'core', 'trace', 'scanner'],
   packs: ['core', 'shared', 'schema'],
   generator: ['core', 'shared', 'schema', 'packs'],
   scanner: ['core', 'shared', 'schema'],
@@ -62,7 +63,8 @@ for (const pkgDir of readdirSync(packagesDir)) {
   }
 
   const pkgJson = JSON.parse(readFileSync(join(pkgPath, 'package.json'), 'utf8'));
-  const expectedName = `@planmo/${pkgDir}`;
+  // The published CLI is unscoped (`planmo`); all other packages match @planmo/<dirname>.
+  const expectedName = pkgDir === 'planmo' ? 'planmo' : `@planmo/${pkgDir}`;
   if (pkgJson.name !== expectedName) {
     err(`packages/${pkgDir}: package name is "${pkgJson.name}", expected "${expectedName}"`);
     violations++;

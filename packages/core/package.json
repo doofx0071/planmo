@@ -1,7 +1,9 @@
 {
   "name": "@planmo/core",
   "version": "1.0.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "PlanMo deterministic core engine (CLI foundation work starts in Phase 03).",
   "license": "MIT",
   "type": "module",

@@ -1,7 +1,6 @@
 {
-  "name": "@planmo/cli",
+  "name": "planmo",
   "version": "1.0.0",
-  "private": true,
   "description": "PlanMo CLI entry point (smoke commands only until Phase 03 CLI foundation).",
   "license": "MIT",
   "type": "module",

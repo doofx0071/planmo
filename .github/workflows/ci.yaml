@@ -49,4 +49,4 @@ jobs:
         run: pnpm boundary-check
 
       - name: CLI smoke
-        run: node packages/cli/dist/bin.js --version
+        run: node packages/planmo/dist/bin.js --version
