@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { PRODUCT_SLUG } from '@planmo/shared';
 import { cliVersion } from './version.js';
 import { generatePlanningWorkspace } from './generate.js';
+import { validateWorkspace } from './validate.js';
 import { initWorkspace, readStatus } from '@planmo/core';
 import { analyzeRepository, nodeFileReader } from '@planmo/scanner';
 import type {
@@ -43,6 +44,7 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} status        validate and summarize the workspace`,
   `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo (dry-run report; writes nothing)`,
   `  ${PRODUCT_SLUG} generate      generate/refresh the planning workspace`,
+  `  ${PRODUCT_SLUG} validate      validate the workspace documents and invariants`,
   `  ${PRODUCT_SLUG} --version     print the PlanMo version`,
   `  ${PRODUCT_SLUG} --help        show this help`,
   '',
@@ -71,6 +73,9 @@ export const USAGE = [
   '      --dir <path>          project root (default: cwd)',
   '      --dry-run             print the plan and write nothing',
   '      --force               overwrite files the manifest already owns',
+  '',
+  'validate options:',
+  '      --dir <path>          project root (default: walk up from cwd)',
   '',
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
 ].join('\n');
@@ -146,6 +151,8 @@ export async function run(
       return runAdopt(argv.slice(1), io);
     case 'generate':
       return runGenerate(argv.slice(1), io);
+    case 'validate':
+      return runValidate(argv.slice(1), io);
     default:
       io.err(`planmo: unknown command '${command}'`);
       io.err(`Run 'planmo --help' for usage.`);
@@ -175,6 +182,30 @@ async function runGenerate(argv: string[], io: CliIO): Promise<number> {
     return result.collisions.length > 0 ? 2 : 0;
   } catch (err) {
     io.err(`planmo generate: ${(err as Error).message}`);
+    return 3;
+  }
+}
+
+async function runValidate(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const startDir = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  try {
+    const result = await validateWorkspace({ root: startDir });
+    for (const d of result.diagnostics) {
+      const line = `${d.severity} ${d.code} ${d.target} — ${d.message}`;
+      if (d.severity === 'error') io.err(line);
+      else io.out(line);
+      if (d.remediation !== undefined) io.out(`  fix: ${d.remediation}`);
+    }
+    const { error, warning, info } = result.counts;
+    if (result.ok) {
+      io.out(`validate: OK (${error} error(s), ${warning} warning(s), ${info} info)`);
+      return 0;
+    }
+    io.err(`validate: FAILED (${error} error(s), ${warning} warning(s), ${info} info)`);
+    return 1;
+  } catch (err) {
+    io.err(`planmo validate: ${(err as Error).message}`);
     return 3;
   }
 }

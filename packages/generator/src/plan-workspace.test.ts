@@ -91,14 +91,16 @@ describe('renderPlanWorkspace', () => {
     }
   });
 
-  it('renders tasks.csv as a valid task list, one row per phase', () => {
+  it('renders tasks.csv in the canonical five-column shape', () => {
     const csv = renderPlanWorkspace(ir).find((a) => a.path === 'planning/tasks.csv')?.content;
     expect(csv).toBeDefined();
     const lines = (csv ?? '').trimEnd().split('\n');
-    expect(lines[0]).toBe('id,phase,title,status,depends_on,acceptance');
+    // The shape is fixed by @planmo/trace's validator, which rejects any row
+    // that does not have exactly five comma-separated fields.
+    expect(lines[0]).toBe('id,phase,title,status,priority');
     expect(lines).toHaveLength(ir.phases.length + 1);
     for (const line of lines.slice(1)) {
-      expect(line.split(',').length).toBeGreaterThanOrEqual(6);
+      expect(line.split(','), line).toHaveLength(5);
       expect(line).toContain('TODO');
     }
   });

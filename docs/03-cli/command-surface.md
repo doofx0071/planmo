@@ -4,6 +4,7 @@ Implemented:
 
 - `planmo init [dir]` — create a workspace; compiles the planning tree with it
 - `planmo generate` — recompile the planning documents from the project model
+- `planmo validate` — validate the workspace documents and invariants (the CI gate)
 - `planmo status` — validate and summarize the workspace
 - `planmo adopt [dir]` — read-only analysis of an existing repository
 - `planmo --version` / `planmo --help`
@@ -12,7 +13,6 @@ Not yet wired (the engines exist in the packages; see `ROADMAP.md`):
 
 - `planmo plan`
 - `planmo next`
-- `planmo validate`
 - `planmo doctor`
 - `planmo trace <id>`
 - `planmo handoff`

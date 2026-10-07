@@ -385,8 +385,18 @@ function csvField(value: string): string {
   return /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
 }
 
+/**
+ * planning/tasks.csv — the canonical task list.
+ *
+ * Exactly five columns: `id,phase,title,status,priority`. The shape is fixed by
+ * the validator in `@planmo/trace`: it parses every non-blank, non-header line
+ * and requires exactly five comma-separated fields, so extra columns make a
+ * freshly generated workspace fail `planmo validate`. Dependencies and
+ * acceptance criteria live in `REQUIREMENTS-TRACEABILITY.md` and the phase
+ * documents instead.
+ */
 function renderTasksCsv(ir: PlanningIR): string {
-  const rows: string[] = ['id,phase,title,status,depends_on,acceptance'];
+  const rows: string[] = ['id,phase,title,status,priority'];
   for (const phase of ir.phases) {
     rows.push(
       [
@@ -394,8 +404,7 @@ function renderTasksCsv(ir: PlanningIR): string {
         phase.id,
         `Define and implement ${phase.title.toLowerCase()}`,
         'TODO',
-        phase.id === '00' ? '' : `P${String(Number(phase.id) - 1).padStart(2, '0')}-01`,
-        `Phase ${phase.id} exit gates pass and evidence is recorded`,
+        'P1',
       ]
         .map(csvField)
         .join(','),
