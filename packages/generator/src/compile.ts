@@ -2,6 +2,7 @@ import { writeManaged, type PlannedWrite } from '@planmo/core';
 import type { PlanningIR } from './ir.js';
 import type { GeneratedArtifact, GenerationManifestDocument, SynthPreview } from './contracts.js';
 import { renderPlanningDocuments } from './render.js';
+import { renderPlanWorkspace } from './plan-workspace.js';
 import { renderStandardsAndContext } from './standards-context.js';
 import { buildGenerationManifest, toPersistableManifest } from './manifest.js';
 import { previewSynth } from './synth.js';
@@ -106,7 +107,11 @@ export async function compileWorkspace(
 ): Promise<CompileResult> {
   const root = opts.root.replace(/[\\/]+$/, '');
 
-  const artifacts = [...renderPlanningDocuments(ir), ...renderStandardsAndContext(ir)];
+  const artifacts = [
+    ...renderPlanningDocuments(ir),
+    ...renderStandardsAndContext(ir),
+    ...renderPlanWorkspace(ir),
+  ];
   const { document } = buildGenerationManifest(artifacts, ir);
 
   const existingManifest = await readExistingManifest(root);
@@ -133,7 +138,15 @@ export async function compileWorkspace(
     };
   }
 
-  const writes: PlannedWrite[] = artifacts.map((a) => ({ path: a.path, content: a.content }));
+  // Only write what the preview says is writable. `skip` means the artifact is
+  // seeded-and-already-on-disk or user-owned, and ADR-0016 says PlanMo does not
+  // touch either — handing them to writeManaged would clobber the user's edits
+  // on the next `generate`. The preview is the authority; the writer only knows
+  // a single allowOverwrite flag and cannot express per-artifact ownership.
+  const skipped = new Set(preview.changes.filter((c) => c.action === 'skip').map((c) => c.path));
+  const writes: PlannedWrite[] = artifacts
+    .filter((a) => !skipped.has(a.path))
+    .map((a) => ({ path: a.path, content: a.content }));
   // The manifest itself is a generated artifact record (never user-owned);
   // persist it in the schema-validated .planmo/manifest.json shape.
   writes.push({

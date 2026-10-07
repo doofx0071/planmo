@@ -41,7 +41,19 @@ describe('idempotent regeneration (P05-05)', () => {
       const second = await compileWorkspace(ir, { root, allowOverwrite: true });
       expect(second.collisions).toEqual([]);
       expect(second.diff).toBe(''); // no unintended diff
-      expect(second.written).toEqual(first.written);
+
+      // Seeded artifacts are created once and then belong to the user, so the
+      // second run deliberately does not rewrite them (ADR-0016). Everything it
+      // does write must be byte-identical to the first run.
+      const seededPaths = new Set(
+        second.preview.changes.filter((c) => c.ownership === 'seeded').map((c) => c.path),
+      );
+      expect(seededPaths.size).toBeGreaterThan(0);
+      for (const path of seededPaths) {
+        expect(second.written, `seeded file rewritten: ${path}`).not.toContain(path);
+        expect(await readFile(join(root, path), 'utf8')).toBe(firstFiles.get(path));
+      }
+      expect(second.written).toEqual(first.written.filter((p) => !seededPaths.has(p)));
 
       for (const path of second.written) {
         expect(await readFile(join(root, path), 'utf8'), `file changed: ${path}`).toBe(
@@ -107,6 +119,29 @@ describe('idempotent regeneration (P05-05)', () => {
       expect(result.written).toEqual([]);
       // User content intact.
       expect(await readFile(join(root, 'planning/ROADMAP.md'), 'utf8')).toBe('# user roadmap\n');
+    } finally {
+      await cleanup();
+    }
+  });
+
+  it('seeded documents survive user edits across regeneration', async () => {
+    const { root, cleanup } = await scratchProject();
+    try {
+      const ir = buildIr(mediumAssuranceInput());
+      await compileWorkspace(ir, { root });
+
+      // The user edits a seeded document: PlanMo wrote the starting point, the
+      // user owns the file from then on.
+      const edited = '# Decision Log\n\n## D-100 — a decision the user recorded\n';
+      await writeFile(join(root, 'planning/DECISIONS.md'), edited, 'utf8');
+
+      const again = await compileWorkspace(ir, { root, allowOverwrite: true });
+      expect(again.collisions).toEqual([]);
+      expect(again.written).not.toContain('planning/DECISIONS.md');
+      expect(await readFile(join(root, 'planning/DECISIONS.md'), 'utf8')).toBe(edited);
+
+      // Generated documents are still refreshed in the same run.
+      expect(again.written).toContain('planning/MASTER-PLAN.md');
     } finally {
       await cleanup();
     }

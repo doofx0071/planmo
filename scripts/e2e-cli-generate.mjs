@@ -7,7 +7,7 @@
  * build or a missing export cannot hide behind the test runner.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,14 +37,31 @@ for (const rel of [
   ['planning', 'handoffs', 'TEMPLATE.md'],
   ['planning', 'phases', 'phase-00.md'],
   ['planning', 'phases', 'phase-06.md'],
+  ['planning', 'MASTER-PLAN.md'],
+  ['planning', 'DECISIONS.md'],
+  ['planning', 'OPEN-QUESTIONS.md'],
+  ['planning', 'RISKS.md'],
+  ['planning', 'REQUIREMENTS-TRACEABILITY.md'],
+  ['planning', 'tasks.csv'],
+  ['planning', 'architecture', 'ARCHITECTURE.md'],
+  ['planning', 'architecture', 'DOMAIN-MODEL.md'],
+  ['planning', 'architecture', 'SECURITY-PRIVACY.md'],
+  ['planning', 'architecture', 'STATE-MACHINES.md'],
+  ['planning', 'compliance', 'POLICY-REGISTER.md'],
+  ['planning', 'design', 'DESIGN-BRIEF.md'],
+  ['planning', 'design', 'DESIGN-SYSTEM.md'],
+  ['planning', 'prompts', 'README.md'],
+  ['planning', 'prompts', 'phase-prompt.md'],
+  ['planning', 'requirements', 'PRODUCT-REQUIREMENTS.md'],
+  ['planning', 'testing', 'TEST-STRATEGY.md'],
 ]) {
   check(`init writes ${rel.join('/')}`, existsSync(join(target, ...rel)));
 }
 
 const manifest = JSON.parse(readFileSync(join(target, '.planmo', 'manifest.json'), 'utf8'));
 check(
-  'manifest records 12 generated entries',
-  manifest.entries.length === 12,
+  'manifest records 30 generated entries',
+  manifest.entries.length === 30,
   `${manifest.entries.length}`,
 );
 
@@ -53,6 +70,22 @@ check('status is HEALTHY', run(['status', '--dir', target]).stdout.includes('HEA
 const again = run(['generate', '--dir', target]);
 check('regenerate without --force exits 0', again.status === 0, `exit ${again.status}`);
 check('regenerate reports no collision', !again.stderr.includes('collision'), again.stderr.trim());
+
+// Seeded documents belong to the user after first creation: editing one and
+// regenerating must not lose the edit.
+const decisions = join(target, 'planning', 'DECISIONS.md');
+const edited = '# Decision Log\n\n## D-100 — a decision the user recorded\n';
+writeFileSync(decisions, edited);
+const afterEdit = run(['generate', '--dir', target]);
+check('regenerate after a user edit exits 0', afterEdit.status === 0, `exit ${afterEdit.status}`);
+check(
+  'user-edited seeded document survives regeneration',
+  readFileSync(decisions, 'utf8') === edited,
+);
+check(
+  'generated documents are still refreshed',
+  readFileSync(join(target, 'planning', 'MASTER-PLAN.md'), 'utf8').includes('# Master Plan'),
+);
 
 const dry = run(['generate', '--dir', target, '--dry-run']);
 check('generate --dry-run exits 0', dry.status === 0, `exit ${dry.status}`);
