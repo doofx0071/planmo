@@ -1,146 +1,173 @@
 # PlanMo
 
-**PlanMo** is a CLI-first, agent-native planning system that turns a software idea or an existing codebase into an execution-ready workspace for AI coding agents and human engineers.
+**PlanMo** is a CLI-first, agent-native planning system that turns a software idea
+or an existing codebase into an execution-ready workspace for AI coding agents and
+human engineers.
 
-PlanMo is inspired by the strengths of spec-driven tools such as GitHub Spec Kit, but its product center is broader: **project planning, design-system planning, risk/security planning, agent-session orchestration, traceability, handoffs, and validation across the full project lifecycle**.
+It is inspired by spec-driven tools such as GitHub Spec Kit, but its scope is
+broader: project planning, design-system planning, risk and security planning,
+agent-session orchestration, traceability and validation across the project
+lifecycle.
 
-## Product thesis
+- **CLI-first** — the deterministic core runs with no LLM API key and no network.
+- **Agent-native** — the repository carries durable project memory; agent
+  integrations are adapters over agent-neutral canonical state.
+- **Safe by default** — existing repositories are untrusted input, and user-owned
+  files are never silently overwritten.
 
-AI coding agents work best when the repository itself carries durable project memory. PlanMo therefore makes the repository the source of truth for requirements, architecture, roadmap, risks, design direction, agent rules, testing, handoffs, and traceability.
+## Install
 
-```text
-Idea / Existing Repository
-        |
-        v
-Discovery + Clarification
-        |
-        v
-Normalized Project Model
-        |
-        +--> Stack / Domain / Risk / Design / Agent Packs
-        |
-        v
-Planning Compiler
-        |
-        +--> AGENTS.md
-        +--> docs/
-        +--> planning/
-        +--> prompts/
-        +--> design/
-        +--> .github/
-        +--> .planmo/
-        |
-        v
-AI Agent Implementation Sessions
-        |
-        v
-Handoff -> Fresh Session -> Next Phase
+```bash
+npx planmo --version
+# or as a project dependency
+npm install -D planmo
 ```
 
-## CLI-first + agent-native
+Requires Node.js **>= 24**.
 
-The CLI owns deterministic operations:
+## Quick start
 
-- `planmo init`
-- `planmo adopt`
-- `planmo generate`
-- `planmo status`
-- `planmo next`
-- `planmo validate`
-- `planmo doctor`
-- `planmo trace`
-- `planmo handoff`
-- `planmo diff`
-- `planmo pack ...`
-- `planmo agent ...`
-
-AI-agent commands/skills own reasoning-heavy work:
-
-- `planmo.discover`
-- `planmo.clarify`
-- `planmo.architect`
-- `planmo.design`
-- `planmo.risk`
-- `planmo.roadmap`
-- `planmo.tasks`
-- `planmo.review`
-- `planmo.generate`
-- `planmo.next`
-
-Invocation syntax is adapter-specific.
-
-## Core architectural rule
-
-```text
-AI reasoning
-   |
-   v
-Structured project model / proposed patch
-   |
-   v
-Schema validation
-   |
-   v
-Deterministic PlanMo generator
-   |
-   v
-Files + manifest + diff
+```bash
+npx planmo init my-project --yes
+npx planmo status --dir my-project
 ```
 
-AI does not get unrestricted ownership of the generated filesystem.
+`init` writes a canonical workspace:
 
-## Frontend/design planning
+```text
+my-project/.planmo/
+├── project.yml     # canonical project model
+├── state.yml       # phase/status state
+└── manifest.json   # ownership + lineage for every generated file
+```
 
-PlanMo separates:
-- frontend framework;
-- component foundation;
-- component source/registry;
-- visual style;
-- design tokens;
-- typography;
-- icon system;
-- interface density;
-- motion profile;
-- accessibility target;
-- responsive rules.
+`status` validates that model and summarizes it:
 
-Initial styles:
-- Minimal
-- Editorial
-- Neobrutalism
-- Soft Product
-- Dense Dashboard
-- Developer Tool
-- Luxury
-- Playful
+```text
+PlanMo workspace: /path/to/my-project
+project: my-project (web-application, greenfield, risk=medium)
+state: phase=00 status=planned completed=[]
+status: HEALTHY
+```
 
-DTCG-compatible design tokens are canonical; Tailwind/shadcn/CSS are adapters.
+## Adopting an existing repository
 
-## Start implementation
+```bash
+npx planmo adopt --dir ./existing-repo
+```
 
-Read:
-1. `AGENTS.md`
-2. `planning/MASTER-PLAN.md`
-3. `planning/ROADMAP.md`
-4. `planning/TRACKER.md`
-5. `prompts/01-phase-00-product-and-research-foundation.md`
+`adopt` scans a repository read-only and prints a report. It writes nothing and
+never executes project scripts.
 
-Each implementation phase hard-stops and hands off to a fresh AI-agent session.
+## Commands
 
-## Implementation phases
+| Command              | Description                                                 |
+| -------------------- | ----------------------------------------------------------- |
+| `planmo init [dir]`  | Create a workspace (interactive wizard, or flags + `--yes`) |
+| `planmo status`      | Validate and summarize the workspace                        |
+| `planmo adopt [dir]` | Analyze an existing repo (dry-run report; writes nothing)   |
+| `planmo --version`   | Print the version                                           |
+| `planmo --help`      | Show help                                                   |
 
-1. Phase 00 — Product & research foundation: `prompts/01-phase-00-product-and-research-foundation.md`
-2. Phase 01 — Repository & engineering foundation: `prompts/02-phase-01-repository-and-engineering-foundation.md`
-3. Phase 02 — Canonical project model & schemas: `prompts/03-phase-02-canonical-project-model-and-schemas.md`
-4. Phase 03 — CLI foundation: `prompts/04-phase-03-cli-foundation.md`
-5. Phase 04 — Pack & profile system: `prompts/05-phase-04-pack-and-profile-system.md`
-6. Phase 05 — Planning compiler & artifact generator: `prompts/06-phase-05-planning-compiler-and-artifact-generator.md`
-7. Phase 06 — Agent bridge: `prompts/07-phase-06-agent-bridge.md`
-8. Phase 07 — Frontend design engine: `prompts/08-phase-07-frontend-design-engine.md`
-9. Phase 08 — Workflow/session engine: `prompts/09-phase-08-workflow-session-engine.md`
-10. Phase 09 — Trace, validate, doctor & drift: `prompts/10-phase-09-trace-validate-doctor-and-drift.md`
-11. Phase 10 — Existing repository adoption: `prompts/11-phase-10-existing-repository-adoption.md`
-12. Phase 11 — Ecosystem & integrations: `prompts/12-phase-11-ecosystem-and-integrations.md`
-13. Phase 12 — Hardening, pilot & v1: `prompts/13-phase-12-hardening-pilot-and-v1.md`
+### `init` options
 
-Each phase hard-stops and produces a handoff under `planning/handoffs/`.
+| Option            | Values                                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `--name <name>`   | Project display name (default: directory name)                                                            |
+| `--type <type>`   | `web-application` · `cli` · `library` · `service` · `mobile-application` · `desktop-application` · `other` |
+| `--lifecycle <v>` | `greenfield` · `brownfield`                                                                               |
+| `--risk <v>`      | `low` · `medium` · `high`                                                                                 |
+| `--agent <v>`     | `opencode` · `claude-code` · `generic`                                                                    |
+| `--style <v>`     | `minimal` · `editorial` · `neobrutalism` · `soft-product` · `dense-dashboard` · `developer-tool` · `luxury` · `playful` |
+| `--depth <v>`     | `lean` · `standard` · `production` · `high-assurance` · `custom`                                          |
+| `--phase-mode <v>`| `gated` · `continuous`                                                                                    |
+| `--yes`           | Accept defaults for anything not provided                                                                 |
+| `--dry-run`       | Print the plan and write nothing                                                                          |
+| `--force`         | Overwrite existing unmanaged files                                                                        |
+
+`status` and `adopt` take `--dir <path>` (default: walk up from cwd).
+
+### Exit codes
+
+| Code | Meaning                                                |
+| ---- | ------------------------------------------------------ |
+| 0    | ok                                                     |
+| 1    | error                                                  |
+| 2    | collision refused — existing files kept; use `--force` |
+| 3    | no project found                                       |
+
+## What v1 ships
+
+The v1 CLI surface is `init`, `status` and `adopt` (plus `--version` / `--help`).
+The planning-compiler, generator, workflow, trace, design-engine and agent-bridge
+engines are implemented and tested inside the published packages but are **not yet
+exposed as CLI commands**. See [ROADMAP.md](ROADMAP.md).
+
+## Packages
+
+| Package                                  | Published | Role                                                             |
+| ---------------------------------------- | --------- | ---------------------------------------------------------------- |
+| [`planmo`](https://npmjs.com/package/planmo) | ✅        | the CLI                                                          |
+| `@planmo/shared`                         | ✅        | shared utilities (CLI runtime closure)                           |
+| `@planmo/schema`                         | ✅        | versioned, Zod-validated canonical project model                 |
+| `@planmo/core`                           | ✅        | deterministic core: safe writer, planning compiler               |
+| `@planmo/scanner`                        | ✅        | repository adoption: safe scanning, prompt-injection isolation   |
+| `@planmo/packs`                          | —         | declarative pack loading and deterministic resolution            |
+| `@planmo/generator`                      | —         | artifact generation with an ownership manifest                   |
+| `@planmo/design-engine`                  | —         | DTCG design tokens, styles, accessibility rules                  |
+| `@planmo/agent-bridge`                   | —         | agent adapters and token-budgeted context bundles                |
+| `@planmo/adapters`                       | —         | generic / OpenCode / Codex / Claude Code adapters                |
+| `@planmo/workflow`                       | —         | phases, task DAG, work packets, leases, gates, handoffs          |
+| `@planmo/trace`                          | —         | requirement trace graph, validate, doctor, drift                 |
+
+The CLI runtime closure is published because the build is plain `tsc` with no
+bundler — `npm install planmo` must be able to resolve its dependencies.
+
+## Design principles
+
+- AI proposes structured model changes; schema validation gates artifact
+  generation. AI never gets unrestricted ownership of the filesystem.
+- Generated artifacts are traceable through `.planmo/manifest.json`, with
+  ownership classes and lineage.
+- Generation supports dry-run and diff before any destructive change.
+- Frontend design choices are structured profiles and DTCG tokens, not prose;
+  accessibility outranks visual style.
+- Canonical project state is agent-neutral; agent integrations are adapters.
+- Context and memory are local-first, provenance-bearing and token-budgeted.
+
+## Security
+
+PlanMo reads developer repositories and writes files that influence AI coding
+agents, so repository content, AI output, remote packs, paths and Git text are all
+treated as untrusted. See [SECURITY.md](SECURITY.md) and
+[docs/08-security/](docs/08-security/).
+
+## Repository layout
+
+```text
+packages/     12 workspace packages (see the table above)
+docs/         product documentation (architecture, CLI, packs, security, ADRs, …)
+specs/        example spec files
+scripts/      build, boundary and end-to-end verification scripts
+.changeset/   release metadata (Changesets)
+.github/      CI and release workflows
+```
+
+## Documentation
+
+- [`docs/`](docs/) — architecture, CLI, packs, design engine, agent engine,
+  workflows, security, testing, engineering, research, ADRs.
+- [`docs/12-adrs/`](docs/12-adrs/) — the decision record (ADR-0001 … ADR-0025).
+- [`ROADMAP.md`](ROADMAP.md) — what comes after v1.
+- [`AGENTS.md`](AGENTS.md) — the contract for contributors and coding agents.
+- [`CHANGELOG.md`](CHANGELOG.md) — release history.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). GitHub Flow, Conventional Commits, squash
+merge, Changesets for releases.
+
+## License
+
+MIT — see [LICENSE](LICENSE). "PlanMo" is a trademark of the PlanMo maintainers;
+the MIT license grants copyright permission only, not trademark rights.
