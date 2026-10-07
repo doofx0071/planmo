@@ -2,8 +2,7 @@
   "name": "@planmo/core",
   "version": "1.0.2",
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "description": "PlanMo deterministic core: canonical project model, safe filesystem writer, planning compiler.",
   "license": "MIT",

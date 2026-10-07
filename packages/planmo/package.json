@@ -22,9 +22,6 @@
   "bugs": {
     "url": "https://github.com/doofx0071/planmo/issues"
   },
-  "publishConfig": {
-    "provenance": true
-  },
   "type": "module",
   "bin": {
     "planmo": "./dist/bin.js"
