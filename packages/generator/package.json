@@ -1,6 +1,6 @@
 {
   "name": "@planmo/generator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "PlanMo planning compiler and artifact generator: canonical IR, renderers, generation manifest, synth preview (Phase 05).",
   "license": "MIT",

@@ -1,5 +1,13 @@
 # @planmo/packs
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies [15dcca6]
+  - @planmo/shared@1.0.1
+  - @planmo/schema@1.0.1
+
 ## 0.0.1
 
 ### Patch Changes
