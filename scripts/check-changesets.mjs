@@ -68,11 +68,23 @@ for (const file of changesetFiles) {
   }
 }
 
+// Explicit opt-out. A pure refactor needs no release, and "forgot a changeset"
+// must stay distinguishable from "deliberately no release". One package name per
+// line; `#` starts a comment. A dotfile, so changesets itself never reads it.
+const skipFile = '.changeset/.no-release';
+const skipped = new Set(
+  (existsSync(skipFile) ? readFileSync(skipFile, 'utf8') : '')
+    .split('\n')
+    .map((line) => line.split('#')[0].trim())
+    .filter(Boolean),
+);
+
 const missing = [];
 for (const dir of [...changedPackages].sort()) {
   const pkg = readPkg(dir);
   if (pkg.private === true) continue; // never published, no changeset needed
   if (covered.has(pkg.name)) continue;
+  if (skipped.has(pkg.name)) continue; // deliberate: no release for this change
   missing.push(`${pkg.name} (packages/${dir})`);
 }
 
@@ -86,5 +98,5 @@ if (missing.length > 0) {
 }
 
 console.log(
-  `changeset check: OK (${changedPackages.size} changed package(s), all covered by a changeset)`,
+  `changeset check: OK (${changedPackages.size} changed package(s), each covered by a changeset or listed in .changeset/.no-release)`,
 );
