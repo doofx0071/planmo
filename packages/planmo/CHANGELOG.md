@@ -1,5 +1,18 @@
 # planmo
 
+## 1.3.2
+
+### Patch Changes
+
+- Updated dependencies [47d5859]
+  - @planmo/shared@1.1.0
+  - @planmo/generator@1.1.0
+  - @planmo/trace@1.1.0
+  - @planmo/core@1.0.3
+  - @planmo/packs@1.0.1
+  - @planmo/scanner@1.0.3
+  - @planmo/schema@1.0.3
+
 ## 1.3.1
 
 ### Patch Changes
