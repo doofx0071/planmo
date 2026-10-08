@@ -1,0 +1,53 @@
+id,phase,title,status,priority
+P00-01,00,"Implement Lock product boundaries, naming, licensing criteria, and non-goals.",TODO,MUST
+P00-02,00,Tests & evidence for the phase exit gates,TODO,SHOULD
+P00-03,00,Docs & traceability for Product & research foundation,TODO,SHOULD
+P00-04,00,Record the phase handoff,TODO,SHOULD
+P01-01,01,"Implement Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.",TODO,MUST
+P01-02,01,Tests & evidence for the phase exit gates,TODO,SHOULD
+P01-03,01,Docs & traceability for Repository & engineering foundation,TODO,SHOULD
+P01-04,01,Record the phase handoff,TODO,SHOULD
+P02-01,02,Implement Schema-version every persisted PlanMo document and add migration tests.,TODO,MUST
+P02-02,02,Tests & evidence for the phase exit gates,TODO,SHOULD
+P02-03,02,Docs & traceability for Canonical project model & schemas,TODO,SHOULD
+P02-04,02,Record the phase handoff,TODO,SHOULD
+P03-01,03,"Implement Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.",TODO,MUST
+P03-02,03,Tests & evidence for the phase exit gates,TODO,SHOULD
+P03-03,03,Docs & traceability for CLI foundation,TODO,SHOULD
+P03-04,03,Record the phase handoff,TODO,SHOULD
+P04-01,04,"Implement Implement declarative packs, deterministic resolution, lockfile, profiles.",TODO,MUST
+P04-02,04,Tests & evidence for the phase exit gates,TODO,SHOULD
+P04-03,04,Docs & traceability for Pack & profile system,TODO,SHOULD
+P04-04,04,Record the phase handoff,TODO,SHOULD
+P05-01,05,Implement Generate plan documents with an ownership manifest and reproducible regeneration.,TODO,MUST
+P05-02,05,Tests & evidence for the phase exit gates,TODO,SHOULD
+P05-03,05,Docs & traceability for Planning compiler & artifact generator,TODO,SHOULD
+P05-04,05,Record the phase handoff,TODO,SHOULD
+P06-01,06,Implement Implement generic and per-agent adapters with a structured AI proposal contract.,TODO,MUST
+P06-02,06,Tests & evidence for the phase exit gates,TODO,SHOULD
+P06-03,06,Docs & traceability for Agent bridge,TODO,SHOULD
+P06-04,06,Record the phase handoff,TODO,SHOULD
+P07-01,07,"Implement Implement design profiles, design tokens, eight styles, frontend docs.",TODO,MUST
+P07-02,07,Tests & evidence for the phase exit gates,TODO,SHOULD
+P07-03,07,Docs & traceability for Frontend design engine,TODO,SHOULD
+P07-04,07,Record the phase handoff,TODO,SHOULD
+P08-01,08,"Implement Implement phases, handoffs, work packets, gates, planmo next.",TODO,MUST
+P08-02,08,Tests & evidence for the phase exit gates,TODO,SHOULD
+P08-03,08,Docs & traceability for Workflow/session engine,TODO,SHOULD
+P08-04,08,Record the phase handoff,TODO,SHOULD
+P09-01,09,"Implement Implement trace graph, validation, drift detection, doctor command.",TODO,MUST
+P09-02,09,Tests & evidence for the phase exit gates,TODO,SHOULD
+P09-03,09,"Docs & traceability for Trace, validate, doctor & drift",TODO,SHOULD
+P09-04,09,Record the phase handoff,TODO,SHOULD
+P10-01,10,Implement Support adopting an existing repository incrementally.,TODO,MUST
+P10-02,10,Tests & evidence for the phase exit gates,TODO,SHOULD
+P10-03,10,Docs & traceability for Existing repository adoption,TODO,SHOULD
+P10-04,10,Record the phase handoff,TODO,SHOULD
+P11-01,11,"Implement Packs registry, templates, agent ecosystem integrations.",TODO,MUST
+P11-02,11,Tests & evidence for the phase exit gates,TODO,SHOULD
+P11-03,11,Docs & traceability for Ecosystem & integrations,TODO,SHOULD
+P11-04,11,Record the phase handoff,TODO,SHOULD
+P12-01,12,"Implement Hardening, security review, pilot, and v1 release.",TODO,MUST
+P12-02,12,Tests & evidence for the phase exit gates,TODO,SHOULD
+P12-03,12,"Docs & traceability for Hardening, pilot & v1",TODO,SHOULD
+P12-04,12,Record the phase handoff,TODO,SHOULD

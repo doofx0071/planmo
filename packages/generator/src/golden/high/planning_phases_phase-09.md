@@ -3,6 +3,14 @@
 ## Objective
 Implement trace graph, validation, drift detection, doctor command..
 
+## Tasks
+| Task | Title | Status |
+|---|---|---|
+| P09-01 | Implement Implement trace graph, validation, drift detection, doctor command. | TODO |
+| P09-02 | Tests & evidence for the phase exit gates | TODO |
+| P09-03 | Docs & traceability for Trace, validate, doctor & drift | TODO |
+| P09-04 | Record the phase handoff | TODO |
+
 ## Phase mode
 Phases are gated: each phase finishes with a recorded handoff before the next begins.
 

@@ -322,4 +322,36 @@ describe('shared diagnostic contract (P09-02/03)', () => {
       expect(d.code).toMatch(/^DOC-00[1-6]$/);
     }
   });
+
+  it('rejects a non-canonical task id (VLD-005)', () => {
+    const report = validatorEngine().validate({
+      documents: { tasks: 'id,phase,title,status,priority\nT01,00,x,TODO,MUST\n' },
+    });
+    expect(report.diagnostics.map((d) => d.code)).toContain('VLD-005');
+    expect(report.counts.error).toBe(1);
+  });
+
+  it('rejects a task id whose phase disagrees with its phase column (VLD-006)', () => {
+    const report = validatorEngine().validate({
+      documents: { tasks: 'id,phase,title,status,priority\nP07-01,03,x,TODO,MUST\n' },
+    });
+    expect(report.diagnostics.map((d) => d.code)).toContain('VLD-006');
+  });
+
+  it('accepts canonical task ids', () => {
+    const report = validatorEngine().validate({
+      documents: { tasks: 'id,phase,title,status,priority\nP03-01,03,x,TODO,MUST\n' },
+    });
+    expect(report.diagnostics).toEqual([]);
+  });
+
+  it('accepts a quoted title containing a comma', () => {
+    const report = validatorEngine().validate({
+      documents: {
+        tasks:
+          'id,phase,title,status,priority\nP03-01,03,"Define scope, users and risks",TODO,MUST\n',
+      },
+    });
+    expect(report.diagnostics).toEqual([]);
+  });
 });

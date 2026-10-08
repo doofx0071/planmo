@@ -1,4 +1,5 @@
 import type { OwnershipMode } from '@planmo/schema';
+import { taskId } from '@planmo/shared';
 import type { GeneratedArtifact, Renderer } from './contracts.js';
 import type { PhaseNode, PlanningIR } from './ir.js';
 
@@ -49,6 +50,25 @@ function planningDocument(
   };
 }
 
+/**
+ * The seeded task rows for one phase, in id order.
+ *
+ * The generator cannot know the work a project needs, so it emits the four
+ * workstreams the product's own definition of done names — implement,
+ * test/evidence, docs/traceability, handoff. Every surface that lists tasks
+ * (`tasks.csv`, the phase document, the tracker, the traceability matrix)
+ * derives from this one function, so they cannot disagree. Ids follow
+ * `P<NN>-<NN>` (docs/02-architecture/identifier-scheme.md).
+ */
+export function phaseTasks(phase: PhaseNode): Array<[string, string]> {
+  return [
+    [taskId(phase.id, 1), `Implement ${phase.objective}`],
+    [taskId(phase.id, 2), 'Tests & evidence for the phase exit gates'],
+    [taskId(phase.id, 3), `Docs & traceability for ${phase.title}`],
+    [taskId(phase.id, 4), 'Record the phase handoff'],
+  ];
+}
+
 /** ROADMAP.md — the full depth-pruned phase spine with objectives. */
 function renderRoadmap(ir: PlanningIR): string {
   const lines: string[] = ['# Detailed Roadmap', ''];
@@ -69,11 +89,14 @@ function renderTracker(ir: PlanningIR): string {
     '',
     `Phase mode: ${ir.phaseMode}.`,
     '',
-    '| Phase | Title | Status |',
-    '|---|---|---|',
+    '| Phase | Title | Tasks | Status |',
+    '|---|---|---|---|',
   ];
   for (const phase of ir.phases) {
-    lines.push(`| ${phase.id} | ${phase.title} | TODO |`);
+    const tasks = phaseTasks(phase);
+    const first = tasks[0]?.[0] ?? '';
+    const last = tasks[tasks.length - 1]?.[0] ?? '';
+    lines.push(`| ${phase.id} | ${phase.title} | ${first}–${last} (${tasks.length}) | TODO |`);
   }
   lines.push(
     '',
@@ -94,6 +117,11 @@ function renderPhaseDoc(phase: PhaseNode, ir: PlanningIR): string {
     '',
     '## Objective',
     `${phase.objective}.`,
+    '',
+    '## Tasks',
+    '| Task | Title | Status |',
+    '|---|---|---|',
+    ...phaseTasks(phase).map(([id, title]) => `| ${id} | ${title} | TODO |`),
     '',
     '## Phase mode',
     ir.phaseMode === 'gated'

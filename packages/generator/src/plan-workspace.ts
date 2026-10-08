@@ -1,6 +1,7 @@
+import { csvField } from '@planmo/shared';
 import type { GeneratedArtifact, Renderer } from './contracts.js';
 import type { PlanningIR } from './ir.js';
-import { artifactSources } from './render.js';
+import { artifactSources, phaseTasks } from './render.js';
 
 /**
  * Full planning-workspace renderer (P05-02 extension).
@@ -359,11 +360,16 @@ function renderTraceability(ir: PlanningIR): string {
     'backward to the phase that delivers it. A requirement with no test is not',
     'implemented; a test with no requirement is scope creep.',
     '',
-    '| Requirement | Phase | Design | Task | Test | Status |',
+    '| Requirement | Phase | Tasks | Design | Test | Status |',
     '|---|---|---|---|---|---|',
   ];
   ir.phases.forEach((phase, index) => {
-    lines.push(`| REQ-${String(index + 1).padStart(3, '0')} | ${phase.id} | — | — | — | TODO |`);
+    const tasks = phaseTasks(phase);
+    const first = tasks[0]?.[0] ?? '';
+    const last = tasks[tasks.length - 1]?.[0] ?? '';
+    lines.push(
+      `| REQ-${String(index + 1).padStart(3, '0')} | ${phase.id} | ${first}–${last} | — | — | TODO |`,
+    );
   });
   lines.push(
     '',
@@ -380,35 +386,26 @@ function renderTraceability(ir: PlanningIR): string {
 // planning/tasks.csv
 // ---------------------------------------------------------------------------
 
-/** RFC-4180 style quoting for a CSV field. */
-function csvField(value: string): string {
-  return /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
-}
-
 /**
  * planning/tasks.csv — the canonical task list.
  *
- * Exactly five columns: `id,phase,title,status,priority`. The shape is fixed by
- * the validator in `@planmo/trace`: it parses every non-blank, non-header line
- * and requires exactly five comma-separated fields, so extra columns make a
- * freshly generated workspace fail `planmo validate`. Dependencies and
- * acceptance criteria live in `REQUIREMENTS-TRACEABILITY.md` and the phase
- * documents instead.
+ * Exactly five columns: `id,phase,title,status,priority`, fixed by the
+ * validator in `@planmo/trace` (it requires exactly five comma-separated fields
+ * per row, and since the identifier scheme landed it also checks that each id is
+ * `P<NN>-<NN>` and matches its phase column). Dependencies and acceptance
+ * criteria live in `REQUIREMENTS-TRACEABILITY.md` and the phase documents.
+ *
+ * Rows come from `phaseTasks`, the single definition of the seed shared with the
+ * phase documents and the tracker, so the surfaces cannot disagree.
  */
 function renderTasksCsv(ir: PlanningIR): string {
   const rows: string[] = ['id,phase,title,status,priority'];
   for (const phase of ir.phases) {
-    rows.push(
-      [
-        `P${phase.id}-01`,
-        phase.id,
-        `Define and implement ${phase.title.toLowerCase()}`,
-        'TODO',
-        'P1',
-      ]
-        .map(csvField)
-        .join(','),
-    );
+    phaseTasks(phase).forEach(([id, title], index) => {
+      rows.push(
+        [id, phase.id, title, 'TODO', index === 0 ? 'MUST' : 'SHOULD'].map(csvField).join(','),
+      );
+    });
   }
   return `${rows.join('\n')}\n`;
 }

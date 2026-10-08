@@ -6,14 +6,14 @@ Statuses: TODO / IN_PROGRESS / BLOCKED / REVIEW / DONE.
 
 Phase mode: gated.
 
-| Phase | Title | Status |
-|---|---|---|
-| 00 | Product & research foundation | TODO |
-| 01 | Repository & engineering foundation | TODO |
-| 02 | Canonical project model & schemas | TODO |
-| 03 | CLI foundation | TODO |
-| 04 | Pack & profile system | TODO |
-| 05 | Planning compiler & artifact generator | TODO |
-| 06 | Agent bridge | TODO |
+| Phase | Title | Tasks | Status |
+|---|---|---|---|
+| 00 | Product & research foundation | P00-01–P00-04 (4) | TODO |
+| 01 | Repository & engineering foundation | P01-01–P01-04 (4) | TODO |
+| 02 | Canonical project model & schemas | P02-01–P02-04 (4) | TODO |
+| 03 | CLI foundation | P03-01–P03-04 (4) | TODO |
+| 04 | Pack & profile system | P04-01–P04-04 (4) | TODO |
+| 05 | Planning compiler & artifact generator | P05-01–P05-04 (4) | TODO |
+| 06 | Agent bridge | P06-01–P06-04 (4) | TODO |
 
 A task is DONE only after acceptance criteria, tests/evidence, docs, and traceability are satisfied.

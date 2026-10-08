@@ -1,5 +1,6 @@
 import type { StateDocument } from '@planmo/schema';
 import { HandoffSchema, ManifestSchema, StateSchema } from '@planmo/schema';
+import { splitCsvLine, TASK_ID_PATTERN, taskPhase } from '@planmo/shared';
 import type { Diagnostic, DiagnosticReport } from './contracts.js';
 import { countsOf, sortDiagnostics } from './contracts.js';
 
@@ -11,7 +12,7 @@ import { countsOf, sortDiagnostics } from './contracts.js';
  * absent strings are NOT inspected) plus, optionally, the already-parsed
  * canonical state and task rows as a fallback when the raw text is absent.
  *
- * Checks (deterministic, stable CI codes — no codes beyond VLD-001..004):
+ * Checks (deterministic, stable CI codes — no codes beyond VLD-001..006):
  * - VLD-001 error: state.currentPhase is not the zero-padded next phase after
  *   the last completed phase (phase gap / skipping ahead). Exempt when
  *   state.status is 'complete'.
@@ -22,6 +23,10 @@ import { countsOf, sortDiagnostics } from './contracts.js';
  * - VLD-004 error: an inspected document fails to parse against its canonical
  *   schema (StateSchema, 5-field tasks CSV lines, ManifestSchema,
  *   HandoffSchema). The parse error message is included in the diagnostic.
+ * - VLD-005 error: a task row's id is not the canonical `P<NN>-<NN>` form
+ *   (docs/02-architecture/identifier-scheme.md).
+ * - VLD-006 error: a task id's embedded phase disagrees with the row's phase
+ *   column, e.g. `P07-01` listed under phase `03`.
  *
  * PURE: no filesystem access, no clock, no randomness. Diagnostics are
  * sorted (severity rank, then code); every emitted array is sorted.
@@ -80,7 +85,10 @@ function parseTasksCsv(
     const line = lineRaw.trim();
     if (line === '') continue;
     lineNo += 1;
-    const fields = line.split(',');
+    // Quote-aware: a title containing a comma is quoted by the generator and
+    // must not split. Splitting on a bare ',' would turn a valid five-column
+    // row into six and reject a workspace the generator itself produced.
+    const fields = splitCsvLine(line);
     if (fields.length === 5 && fields[0]?.trim() === 'id') continue; // header
     if (fields.length !== 5) {
       return {
@@ -178,6 +186,39 @@ function nextPhaseDiagnostics(state: StateDocument, handoff: { nextPhase: string
   ];
 }
 
+/** VLD-005: every task row must carry a canonical `P<NN>-<NN>` id. */
+function taskIdFormatDiagnostics(rows: readonly ValidateTaskRow[]): Diagnostic[] {
+  const out: Diagnostic[] = [];
+  for (const row of rows) {
+    if (TASK_ID_PATTERN.test(row.id)) continue;
+    out.push({
+      code: 'VLD-005',
+      severity: 'error',
+      target: row.id,
+      message: `task id "${row.id}" is not the canonical P<NN>-<NN> form`,
+      remediation: `Rename it to P<phase>-<task> with two digits each, e.g. P${row.phase || '03'}-01.`,
+    });
+  }
+  return out;
+}
+
+/** VLD-006: a task id's embedded phase must match the row's phase column. */
+function taskPhaseMatchDiagnostics(rows: readonly ValidateTaskRow[]): Diagnostic[] {
+  const out: Diagnostic[] = [];
+  for (const row of rows) {
+    const embedded = taskPhase(row.id);
+    if (embedded === undefined || embedded === row.phase) continue;
+    out.push({
+      code: 'VLD-006',
+      severity: 'error',
+      target: row.id,
+      message: `task "${row.id}" is listed under phase "${row.phase}" but its id names phase "${embedded}"`,
+      remediation: `Set the phase column to "${embedded}" or renumber the id to P${row.phase}-<task>.`,
+    });
+  }
+  return out;
+}
+
 export function validatorEngine(): ValidatorEngine {
   return {
     validate(input: ValidationInput): ValidationResult {
@@ -203,10 +244,12 @@ export function validatorEngine(): ValidatorEngine {
       }
 
       const statuses = new Map<string, string>();
+      let taskRows: readonly ValidateTaskRow[] = input.tasks ?? [];
       const rawTasks = input.documents.tasks?.trim() ?? '';
       if (rawTasks !== '') {
         const csv = parseTasksCsv(rawTasks);
         if (csv.ok) {
+          taskRows = csv.rows;
           for (const row of csv.rows) statuses.set(row.id, row.status);
         } else {
           diagnostics.push(docParseError('tasks', csv.message));
@@ -215,6 +258,8 @@ export function validatorEngine(): ValidatorEngine {
       } else {
         for (const row of input.tasks ?? []) statuses.set(row.id, row.status);
       }
+      diagnostics.push(...taskIdFormatDiagnostics(taskRows));
+      diagnostics.push(...taskPhaseMatchDiagnostics(taskRows));
 
       let handoff: { nextPhase: string } | undefined;
       const rawManifest = input.documents.manifest?.trim() ?? '';

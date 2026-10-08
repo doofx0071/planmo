@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildIr } from '../dist/ir.js';
 import { renderPlanningDocuments } from '../dist/render.js';
+import { renderPlanWorkspace } from '../dist/plan-workspace.js';
 import { renderStandardsAndContext } from '../dist/standards-context.js';
 import { GOLDEN_LEVELS, inputForLevel } from '../dist/fixtures.js';
 
@@ -19,7 +20,11 @@ const goldenRoot = join(here, '..', 'src', 'golden');
 
 for (const level of GOLDEN_LEVELS) {
   const ir = buildIr(inputForLevel(level));
-  const artifacts = [...renderPlanningDocuments(ir), ...renderStandardsAndContext(ir)];
+  const artifacts = [
+    ...renderPlanningDocuments(ir),
+    ...renderStandardsAndContext(ir),
+    ...renderPlanWorkspace(ir),
+  ];
   const outDir = join(goldenRoot, level);
   await mkdir(outDir, { recursive: true });
   for (const artifact of artifacts) {

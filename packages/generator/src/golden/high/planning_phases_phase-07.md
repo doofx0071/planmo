@@ -3,6 +3,14 @@
 ## Objective
 Implement design profiles, design tokens, eight styles, frontend docs..
 
+## Tasks
+| Task | Title | Status |
+|---|---|---|
+| P07-01 | Implement Implement design profiles, design tokens, eight styles, frontend docs. | TODO |
+| P07-02 | Tests & evidence for the phase exit gates | TODO |
+| P07-03 | Docs & traceability for Frontend design engine | TODO |
+| P07-04 | Record the phase handoff | TODO |
+
 ## Phase mode
 Phases are gated: each phase finishes with a recorded handoff before the next begins.
 
