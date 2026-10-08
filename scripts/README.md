@@ -8,7 +8,7 @@ and dependencies installed (`pnpm install`).
 | Script                  | Purpose                                                                     |
 | ----------------------- | --------------------------------------------------------------------------- |
 | `check-boundaries.mjs`  | Enforces the package dependency graph and package naming. Wired into `pnpm boundary-check` and CI. |
-| `check-changesets.mjs`  | Fails when a changed publishable package has no changeset of its own. Wired into CI on pull requests (`--base=origin/<base-ref>`). |
+| `check-changesets.mjs`  | Fails when a changed publishable package has no changeset of its own. Wired into CI on pull requests (`--base=origin/<base-ref>`). A package listed in `.changeset/.no-release` is exempt — use that for pure refactors, where a release would be churn. |
 
 ## End-to-end suites
 

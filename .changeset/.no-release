@@ -1,0 +1,6 @@
+# Packages that changed without a release. One package name per line; `#` starts
+# a comment. Use ONLY for changes with no user-visible effect (pure refactors,
+# internal renames). Anything that changes behaviour needs a real changeset.
+#
+# Read by scripts/check-changesets.mjs (CI job "changeset coverage").
+@planmo/generator  # plan-workspace.ts split into workspace/*.ts — pure move, goldens byte-identical
