@@ -84,8 +84,8 @@ export const USAGE = [
   '      --dir <path>          project root (default: walk up from cwd)',
   '',
   'agent options:',
-  '      --agent <id>          opencode | claude-code | codex | copilot | generic',
-  '                            (comma-separated; omit it to choose interactively)',
+  '      --agent <id>          any id from `planmo agent list` (comma-separated)',
+  '                            omit it to detect and choose interactively',
   '      --dir <path>          project root (default: cwd)',
   '      --global              allow a target that installs outside the project',
   '      --yes                 never prompt: use detection, or --agent',
@@ -287,9 +287,10 @@ async function runAgent(argv: string[], io: CliIO, wizard: WizardIO): Promise<nu
   const root = resolve(flags.get('dir') ?? process.cwd());
 
   if (sub === undefined || sub === 'list') {
-    io.out('Supported agents (id, directory, layout):');
+    io.out(`${AGENT_TARGETS.length} supported agents (id, directory, format):`);
     for (const target of AGENT_TARGETS) {
-      io.out(`  ${target.id.padEnd(12)} ${target.commandDir}  (${target.layout})`);
+      const format = target.layout === 'skills' ? 'skills' : target.format;
+      io.out(`  ${target.id.padEnd(14)} ${target.commandDir.padEnd(28)} ${format}`);
     }
     return 0;
   }
@@ -392,9 +393,14 @@ async function runAgent(argv: string[], io: CliIO, wizard: WizardIO): Promise<nu
         io.err(`✗ collision  ${path} (yours, kept — use --force to replace)`);
         collisions += 1;
       }
-      io.out(`Installed for ${result.target}. Invoke in your agent with:`);
-      for (const file of result.files) {
-        io.out(`  ${target.invocation(file.commandName)}`);
+      io.out(`Installed for ${target.label}.`);
+      if (target.howToRun !== undefined) {
+        io.out(`  ${target.howToRun}`);
+      } else {
+        io.out('  Invoke in your agent with:');
+        for (const file of result.files) {
+          io.out(`  ${target.invocation(file.commandName)}`);
+        }
       }
     } catch (err) {
       io.err(`planmo agent: ${(err as Error).message}`);
@@ -427,7 +433,7 @@ async function askWhichAgents(
 
   const choices = AGENT_TARGETS.map((target) => ({
     value: target.id,
-    label: target.id,
+    label: target.label,
     hint: target.global === true ? `${target.commandDir} (global)` : target.commandDir,
   }));
 

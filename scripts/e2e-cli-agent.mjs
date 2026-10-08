@@ -44,9 +44,39 @@ const list = run(['agent', 'list']);
 check('agent list exits 0', list.status === 0, `exit ${list.status}`);
 check(
   'agent list names every supported agent',
-  ['opencode', 'claude-code', 'codex', 'copilot', 'generic'].every((id) =>
-    list.stdout.includes(id),
-  ),
+  [
+    'opencode',
+    'claude-code',
+    'codex',
+    'commandcode',
+    'copilot',
+    'cursor',
+    'gemini-cli',
+    'kimi',
+    'grok',
+    'kiro',
+    'kilo-code',
+    'windsurf',
+    'cline',
+    'roo-code',
+    'qwen-code',
+    'junie',
+    'trae',
+    'augment',
+    'tabnine',
+    'zed',
+    'amazon-q',
+    'openhands',
+    'amp',
+    'goose',
+    'continue',
+    'codebuddy',
+    'iflow',
+    'factory-droid',
+    'crush',
+    'hermes',
+    'generic',
+  ].every((id) => list.stdout.includes(id)),
 );
 
 // opencode: flat markdown commands.
@@ -74,6 +104,29 @@ check(
   'the skill name matches its directory',
   readFileSync(skill, 'utf8').includes('name: planmo-next'),
 );
+
+// Gemini CLI commands are TOML, not markdown.
+const gemini = run(['agent', 'init', '--dir', target, '--agent', 'gemini-cli']);
+check('agent init gemini-cli exits 0', gemini.status === 0, `exit ${gemini.status}`);
+const toml = join(target, '.gemini', 'commands', 'planmo-next.toml');
+check('gemini-cli gets <name>.toml', existsSync(toml));
+check('the TOML declares a prompt', readFileSync(toml, 'utf8').includes("prompt = '''"));
+
+// A skills agent that does not share the cross-client directory.
+const kiro = run(['agent', 'init', '--dir', target, '--agent', 'kiro']);
+check('agent init kiro exits 0', kiro.status === 0, `exit ${kiro.status}`);
+check(
+  'kiro gets .kiro/skills/<name>/SKILL.md',
+  existsSync(join(target, '.kiro', 'skills', 'planmo-next', 'SKILL.md')),
+);
+
+// Cline keeps the extension as part of the command name.
+const cline = run(['agent', 'init', '--dir', target, '--agent', 'cline']);
+check(
+  'cline gets .clinerules/workflows/<name>.md',
+  existsSync(join(target, '.clinerules', 'workflows', 'planmo-next.md')),
+);
+check('cline shows the extension in the invocation', cline.stdout.includes('/planmo-next.md'));
 
 // Idempotent: a second run is a clean no-op.
 const again = run(['agent', 'init', '--dir', target, '--agent', 'opencode']);

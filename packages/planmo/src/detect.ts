@@ -1,7 +1,7 @@
 import { access } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { AGENT_COMMANDS, AGENT_TARGETS, renderAgentFiles } from '@planmo/agent-bridge';
+import { AGENT_COMMANDS, DETECTABLE_TARGETS, renderAgentFiles } from '@planmo/agent-bridge';
 
 /**
  * Work out which coding agents this project already uses.
@@ -22,15 +22,6 @@ export interface AgentDetection {
   /** `installed` when PlanMo's own command files are already present. */
   state: 'installed' | 'present';
 }
-
-/** Filesystem markers per agent, most specific first. A trailing `/` is a dir. */
-const MARKERS: Record<string, readonly string[]> = {
-  opencode: ['.opencode/', '.opencode/commands/'],
-  'claude-code': ['.claude/', 'CLAUDE.md'],
-  codex: ['.codex/', 'AGENTS.md'],
-  copilot: ['.github/copilot-instructions.md', '.github/skills/', '.github/prompts/'],
-  hermes: ['~/.hermes/'],
-};
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -55,8 +46,8 @@ export async function detectAgents(
   const home = opts.home ?? process.env.PLANMO_HOME ?? homedir();
   const found: AgentDetection[] = [];
 
-  for (const target of AGENT_TARGETS) {
-    const markers = MARKERS[target.id] ?? [];
+  for (const target of DETECTABLE_TARGETS) {
+    const markers = target.markers;
     const evidence: string[] = [];
     let installed = false;
 
