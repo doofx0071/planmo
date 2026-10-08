@@ -27,6 +27,7 @@ prints a one-line verdict.
 | `e2e-phase11.mjs`        | Ecosystem: portable export, provider honesty                          |
 | `e2e-phase12-pilots.mjs` | Real-CLI pilots: init, dry-run, collision, adopt, exit codes          |
 | `e2e-cli-generate.mjs`   | Real-CLI: `init` writes the planning tree; `generate` regeneration; `validate` |
+| `e2e-cli-agent.mjs`      | Real-CLI: `agent init` installs per-agent command files; idempotent; refusals |
 
 The names record the roadmap phase that introduced each suite; they are the
 regression suite, not per-phase scratch work.

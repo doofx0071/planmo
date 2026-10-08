@@ -5,6 +5,8 @@ import { PRODUCT_SLUG } from '@planmo/shared';
 import { cliVersion } from './version.js';
 import { generatePlanningWorkspace } from './generate.js';
 import { validateWorkspace } from './validate.js';
+import { installAgentCommands } from './agent.js';
+import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
 import { initWorkspace, readStatus } from '@planmo/core';
 import { analyzeRepository, nodeFileReader } from '@planmo/scanner';
 import type {
@@ -45,6 +47,7 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo (dry-run report; writes nothing)`,
   `  ${PRODUCT_SLUG} generate      generate/refresh the planning workspace`,
   `  ${PRODUCT_SLUG} validate      validate the workspace documents and invariants`,
+  `  ${PRODUCT_SLUG} agent init  install command files for your coding agent`,
   `  ${PRODUCT_SLUG} --version     print the PlanMo version`,
   `  ${PRODUCT_SLUG} --help        show this help`,
   '',
@@ -76,6 +79,12 @@ export const USAGE = [
   '',
   'validate options:',
   '      --dir <path>          project root (default: walk up from cwd)',
+  '',
+  'agent options:',
+  '      --agent <id>          opencode | claude-code | codex | copilot | generic',
+  '      --dir <path>          project root (default: cwd)',
+  '      --force               overwrite existing unmanaged files',
+  '      --dry-run             print the plan and write nothing',
   '',
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
 ].join('\n');
@@ -153,6 +162,8 @@ export async function run(
       return runGenerate(argv.slice(1), io);
     case 'validate':
       return runValidate(argv.slice(1), io);
+    case 'agent':
+      return runAgent(argv.slice(1), io);
     default:
       io.err(`planmo: unknown command '${command}'`);
       io.err(`Run 'planmo --help' for usage.`);
@@ -207,6 +218,48 @@ async function runValidate(argv: string[], io: CliIO): Promise<number> {
   } catch (err) {
     io.err(`planmo validate: ${(err as Error).message}`);
     return 3;
+  }
+}
+
+async function runAgent(argv: string[], io: CliIO): Promise<number> {
+  const [sub] = argv;
+  const { flags } = parseArgs(argv.slice(1));
+  const root = resolve(flags.get('dir') ?? process.cwd());
+
+  if (sub === undefined || sub === 'list') {
+    io.out('Supported agents (id, directory, layout):');
+    for (const target of AGENT_TARGETS) {
+      io.out(`  ${target.id.padEnd(12)} ${target.commandDir}  (${target.layout})`);
+    }
+    return 0;
+  }
+
+  if (sub !== 'init') {
+    io.err(`planmo agent: unknown subcommand '${sub}'`);
+    io.err(`Run 'planmo --help' for usage.`);
+    return 1;
+  }
+
+  try {
+    const result = await installAgentCommands({
+      root,
+      agent: flags.get('agent') ?? 'opencode',
+      ...(flags.has('force') ? { allowOverwrite: true } : {}),
+      ...(flags.has('dry-run') ? { dryRun: true } : {}),
+    });
+    for (const path of result.written) io.out(`✓ wrote ${path}`);
+    for (const path of result.collisions) {
+      io.err(`✗ collision  ${path} (existing, refused — use --force)`);
+    }
+    const target = agentTarget(result.target);
+    io.out(`Installed for ${result.target}. Invoke in your agent with:`);
+    for (const file of result.files) {
+      io.out(`  ${target?.invocation(file.commandName) ?? file.commandName}`);
+    }
+    return result.collisions.length > 0 ? 2 : 0;
+  } catch (err) {
+    io.err(`planmo agent: ${(err as Error).message}`);
+    return 1;
   }
 }
 

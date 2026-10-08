@@ -7,6 +7,9 @@
  */
 export * from './providers.js';
 export * from './registry.js';
+export * from './agent-targets.js';
+export * from './agent-templates.js';
+export * from './agent-files.js';
 export * from './proposal.js';
 export * from './context-bundle.js';
 export * from './standards-injector.js';
