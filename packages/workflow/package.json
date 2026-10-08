@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@planmo/schema": "workspace:*",
+    "@planmo/shared": "workspace:*",
     "@planmo/agent-bridge": "workspace:*"
   },
   "devDependencies": {

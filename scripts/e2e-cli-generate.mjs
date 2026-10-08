@@ -143,6 +143,30 @@ check(
 );
 check('help documents the validate command', run(['--help']).stdout.includes('validate'));
 
+// next — the session brief that the command file PlanMo installs into every
+// agent tells the agent to run. If this breaks, that instruction is a lie.
+const brief = run(['next', '--print', '--dir', target]);
+check('next exits 0 on a generated workspace', brief.status === 0, `exit ${brief.status}`);
+check('next names the first task', brief.stdout.includes('P00-01'));
+check(
+  'next names the phase document to read',
+  brief.stdout.includes('planning/phases/phase-00.md'),
+);
+check('next reports progress', /Progress\s+0 of \d+ tasks done/.test(brief.stdout));
+check('next tells the agent to validate when done', brief.stdout.includes('planmo validate'));
+check('next exits 3 without a workspace', run(['next', '--dir', join(base, 'empty')]).status === 3);
+check('help documents the next command', run(['--help']).stdout.includes('planmo next'));
+
+const asJson = run(['next', '--json', '--dir', target]);
+let parsedBrief;
+try {
+  parsedBrief = JSON.parse(asJson.stdout);
+} catch {
+  parsedBrief = undefined;
+}
+check('next --json emits parseable JSON', parsedBrief?.task?.id === 'P00-01');
+check('next --json reports the phase', parsedBrief?.phase === '00');
+
 console.log(
   `\nCLI generate E2E: ${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURE(S)`}`,
 );

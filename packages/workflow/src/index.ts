@@ -10,6 +10,7 @@ export * from './contracts.js';
 export * from './transition.js';
 export * from './handoff.js';
 export * from './next.js';
+export * from './next-task.js';
 export * from './change.js';
 export * from './task-dag.js';
 export * from './packets.js';

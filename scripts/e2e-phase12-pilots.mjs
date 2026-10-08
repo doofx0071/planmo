@@ -10,7 +10,7 @@
  *   4. status-no-project    planmo status --dir <empty> -> exit 3
  *   5. brownfield-adopt     planmo adopt --dry-run --dir <hostile fixture>
  *   6. high-assurance-init  planmo init --depth high-assurance + status
- *   7. v1-surface-honesty   --help matches the real surface (generate wired, plan/next not)
+ *   7. v1-surface-honesty   --help matches the real surface (generate/next wired, plan not)
  *   8. version-and-help     planmo --version / --help exit 0
  *
  * Everything is deterministic: no AI key, no network, no randomness in
@@ -437,8 +437,8 @@ pilot('high-assurance-init — planmo init <dir> --yes --depth high-assurance');
 // ---------------------------------------------------------------- pilot 7
 pilot('v1-surface-honesty — --help claims exactly the commands that exist');
 {
-  // `plan` and `next` are still not CLI-wired.
-  for (const cmd of ['plan', 'next']) {
+  // `plan` is still not CLI-wired.
+  for (const cmd of ['plan']) {
     const r = run([cmd, '--yes']);
     check(
       `planmo ${cmd} exits 1 (unknown command)`,
@@ -446,23 +446,23 @@ pilot('v1-surface-honesty — --help claims exactly the commands that exist');
       `exit ${r.status}`,
     );
   }
-  // `generate` IS wired: it must behave like a real command (exit 3 with no
-  // workspace) and never fall through to "unknown command".
-  const gen = run(['generate', '--dir', join(BASE, 'no-such-workspace')]);
-  check(
-    'planmo generate is wired (exits 3, not "unknown command")',
-    gen.status === 3 && !gen.stderr.includes('unknown command'),
-    `exit ${gen.status}`,
-  );
+  // `generate` and `next` ARE wired: they must behave like real commands (exit 3
+  // with no workspace) and never fall through to "unknown command".
+  for (const cmd of ['generate', 'next']) {
+    const r = run([cmd, '--dir', join(BASE, 'no-such-workspace')]);
+    check(
+      `planmo ${cmd} is wired (exits 3, not "unknown command")`,
+      r.status === 3 && !r.stderr.includes('unknown command'),
+      `exit ${r.status}`,
+    );
+  }
   const help = run(['--help']);
   check('--help lists init', help.stdout.includes('planmo init'));
   check('--help lists status', help.stdout.includes('planmo status'));
   check('--help lists adopt', help.stdout.includes('planmo adopt'));
   check('--help lists generate', help.stdout.includes('planmo generate'));
-  check(
-    '--help does NOT claim plan/next',
-    !help.stdout.includes('planmo plan') && !help.stdout.includes('planmo next'),
-  );
+  check('--help lists next', help.stdout.includes('planmo next'));
+  check('--help does NOT claim plan', !help.stdout.includes('planmo plan'));
   check(
     '--help documents exit codes',
     help.stdout.includes('Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found'),

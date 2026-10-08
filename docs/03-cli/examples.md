@@ -177,10 +177,39 @@ phase gap, `VLD-002` blocked task with no row, `VLD-003` handoff next-phase,
 `VLD-006` task id phase disagrees with its phase column) plus an actionable
 remediation line.
 
-## 5. What is NOT in v1 (yet)
+## 5. The session brief: `planmo next`
 
-`planmo plan`, `planmo next`, `planmo doctor`, `planmo diff`, `planmo pack`,
-`planmo agent` are **not wired in the CLI**:
+This is the command PlanMo installs into your coding agent, so it is the one you
+will see most often.
+
+```console
+$ planmo next --print
+Phase 00 — Product & research foundation
+
+Next task  P00-01   MUST   TODO
+  Lock product boundaries, naming, licensing criteria, and non-goals.
+
+Read before you start:
+  planning/phases/phase-00.md
+  planning/CONTEXT.md
+  planning/STANDARDS.md
+  planning/TRACKER.md
+
+Progress  0 of 28 tasks done · 28 ready
+
+Change only what this task requires, and add no adjacent edits.
+When you are done, run `npx planmo validate`.
+```
+
+It reads `planning/tasks.csv` and reports the first task that is not DONE, in
+canonical id order — so it never starts a later phase before the current one is
+finished. A `BLOCKED` task is stepped over and then listed under `Blocked (n):`,
+never silently skipped. `--json` emits the same brief for an agent or CI.
+
+## 6. What is NOT in v1 (yet)
+
+`planmo plan`, `planmo doctor`, `planmo diff`, `planmo pack` are **not wired in
+the CLI**:
 
 ```console
 $ planmo plan
@@ -191,12 +220,14 @@ exit code `1`.
 
 `planmo generate` **is** wired: it recompiles the planning documents from
 `.planmo/project.yml`, and `planmo init` runs it automatically, so a fresh
-workspace arrives with `planning/` populated. The `doctor`/`trace` engines live
-in `@planmo/trace` and `next`/`handoff` in `@planmo/workflow`; their CLI wiring
-is post-v1. `--help` lists exactly the implemented commands, and
+workspace arrives with `planning/` populated. `planmo next` **is** wired: it
+prints the session brief, and it is what the command files PlanMo installs into
+your coding agent call. The `doctor`/`trace` engines live in `@planmo/trace` and
+`handoff` in `@planmo/workflow`; their CLI wiring is post-v1. `--help` lists
+exactly the implemented commands, and
 `scripts/e2e-phase12-pilots.mjs` asserts that.
 
-## 6. Environment notes
+## 7. Environment notes
 
 - Git-bash on Windows: pass **native Windows paths** (e.g. `C:\repo`) to
   the CLI. A `/tmp/...` style path resolves to `C:\tmp\...`, which silently
