@@ -1,5 +1,12 @@
 # planmo
 
+## 1.3.3
+
+### Patch Changes
+
+- Updated dependencies [2cef618]
+  - @planmo/generator@1.1.1
+
 ## 1.3.2
 
 ### Patch Changes
