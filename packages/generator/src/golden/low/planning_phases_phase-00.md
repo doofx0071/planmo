@@ -3,6 +3,14 @@
 ## Objective
 Lock product boundaries, naming, licensing criteria, and non-goals..
 
+## Tasks
+| Task | Title | Status |
+|---|---|---|
+| P00-01 | Implement Lock product boundaries, naming, licensing criteria, and non-goals. | TODO |
+| P00-02 | Tests & evidence for the phase exit gates | TODO |
+| P00-03 | Docs & traceability for Product & research foundation | TODO |
+| P00-04 | Record the phase handoff | TODO |
+
 ## Phase mode
 Phases run continuously; a handoff is still recorded at every phase boundary.
 

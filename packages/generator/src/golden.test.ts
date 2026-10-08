@@ -3,6 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { buildIr } from './ir.js';
 import { renderPlanningDocuments } from './render.js';
+import { renderPlanWorkspace } from './plan-workspace.js';
 import { renderStandardsAndContext } from './standards-context.js';
 import { GOLDEN_LEVELS, inputForLevel } from './fixtures.js';
 
@@ -31,7 +32,11 @@ describe('golden generated-repository fixtures (P05-04)', () => {
   for (const level of GOLDEN_LEVELS) {
     it(`renders the ${level} assurance project byte-identically to its golden snapshot`, async () => {
       const ir = buildIr(inputForLevel(level));
-      const artifacts = [...renderPlanningDocuments(ir), ...renderStandardsAndContext(ir)];
+      const artifacts = [
+        ...renderPlanningDocuments(ir),
+        ...renderStandardsAndContext(ir),
+        ...renderPlanWorkspace(ir),
+      ];
 
       // Guard: the committed golden must actually exist (non-empty snapshot).
       const goldenDir = join(goldenRoot, level);

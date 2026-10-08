@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { isTaskId, splitCsvLine, taskId, taskPhase } from '@planmo/shared';
 import { buildIr } from './ir.js';
 import { mediumAssuranceInput } from './fixtures.js';
 import { PLAN_WORKSPACE_PATHS, renderPlanWorkspace } from './plan-workspace.js';
+import { phaseTasks, renderPlanningDocuments } from './render.js';
 
 /**
  * Full planning-workspace renderer. These tests pin the properties the
@@ -95,13 +97,71 @@ describe('renderPlanWorkspace', () => {
     const csv = renderPlanWorkspace(ir).find((a) => a.path === 'planning/tasks.csv')?.content;
     expect(csv).toBeDefined();
     const lines = (csv ?? '').trimEnd().split('\n');
-    // The shape is fixed by @planmo/trace's validator, which rejects any row
-    // that does not have exactly five comma-separated fields.
+    // The shape is fixed by @planmo/trace's validator, which requires exactly
+    // five fields per row (quote-aware, so a title may contain a comma).
     expect(lines[0]).toBe('id,phase,title,status,priority');
-    expect(lines).toHaveLength(ir.phases.length + 1);
+    expect(lines).toHaveLength(ir.phases.length * 4 + 1);
     for (const line of lines.slice(1)) {
-      expect(line.split(','), line).toHaveLength(5);
+      expect(splitCsvLine(line), line).toHaveLength(5);
       expect(line).toContain('TODO');
+    }
+  });
+
+  it('seeds four canonical tasks per phase, numbered per phase', () => {
+    const csv = renderPlanWorkspace(ir).find((a) => a.path === 'planning/tasks.csv')?.content;
+    const rows = (csv ?? '')
+      .trimEnd()
+      .split('\n')
+      .slice(1)
+      .map((line) => splitCsvLine(line));
+
+    expect(rows).toHaveLength(ir.phases.length * 4);
+    for (const phase of ir.phases) {
+      const ids = rows.filter((r) => r[1] === phase.id).map((r) => r[0]);
+      expect(ids).toEqual([
+        `P${phase.id}-01`,
+        `P${phase.id}-02`,
+        `P${phase.id}-03`,
+        `P${phase.id}-04`,
+      ]);
+    }
+    // Every row carries a canonical id whose embedded phase matches its column.
+    for (const row of rows) {
+      expect(isTaskId(row[0] ?? ''), row[0]).toBe(true);
+      expect(taskPhase(row[0] ?? '')).toBe(row[1]);
+      expect(['MUST', 'SHOULD', 'MAY']).toContain(row[4]);
+    }
+  });
+
+  it('lists each phase its own tasks', () => {
+    for (const phase of ir.phases) {
+      const doc = renderPlanningDocuments(ir).find(
+        (a) => a.path === `planning/phases/phase-${phase.id}.md`,
+      )?.content;
+      expect(doc, `phase ${phase.id}`).toContain('## Tasks');
+      for (const [id] of phaseTasks(phase)) {
+        expect(doc, `${id} in phase ${phase.id}`).toContain(`| ${id} |`);
+      }
+    }
+  });
+
+  it('the tracker names each phase task range', () => {
+    const tracker = renderPlanningDocuments(ir).find(
+      (a) => a.path === 'planning/TRACKER.md',
+    )?.content;
+    for (const phase of ir.phases) {
+      expect(tracker, `phase ${phase.id}`).toContain(`P${phase.id}-01–P${phase.id}-04 (4)`);
+    }
+  });
+
+  it('traceability links each requirement to its phase tasks', () => {
+    const doc = renderPlanWorkspace(ir).find(
+      (a) => a.path === 'planning/REQUIREMENTS-TRACEABILITY.md',
+    )?.content;
+    for (const phase of ir.phases) {
+      expect(doc, `phase ${phase.id}`).toContain(
+        `| ${phase.id} | ${taskId(phase.id, 1)}–${taskId(phase.id, 4)} |`,
+      );
     }
   });
 

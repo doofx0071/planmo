@@ -3,6 +3,14 @@
 ## Objective
 Support adopting an existing repository incrementally..
 
+## Tasks
+| Task | Title | Status |
+|---|---|---|
+| P10-01 | Implement Support adopting an existing repository incrementally. | TODO |
+| P10-02 | Tests & evidence for the phase exit gates | TODO |
+| P10-03 | Docs & traceability for Existing repository adoption | TODO |
+| P10-04 | Record the phase handoff | TODO |
+
 ## Phase mode
 Phases are gated: each phase finishes with a recorded handoff before the next begins.
 

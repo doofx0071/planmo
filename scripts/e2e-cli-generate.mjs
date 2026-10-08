@@ -87,6 +87,35 @@ check(
   readFileSync(join(target, 'planning', 'MASTER-PLAN.md'), 'utf8').includes('# Master Plan'),
 );
 
+// The canonical identifier scheme holds end to end (docs/02-architecture/identifier-scheme.md).
+const csv = readFileSync(join(target, 'planning', 'tasks.csv'), 'utf8')
+  .trimEnd()
+  .split('\n');
+check(
+  'tasks.csv has a header plus four tasks per phase',
+  csv.length === 7 * 4 + 1,
+  `${csv.length}`,
+);
+check(
+  'every task id is P<NN>-<NN>',
+  csv.slice(1).every((line) => /^P\d{2}-\d{2},/.test(line)),
+);
+check(
+  'every task id phase matches its phase column',
+  csv.slice(1).every((line) => {
+    const [id, phase] = line.split(',');
+    return id.slice(1, 3) === phase;
+  }),
+);
+check(
+  'a phase document lists its tasks',
+  readFileSync(join(target, 'planning', 'phases', 'phase-03.md'), 'utf8').includes('| P03-01 |'),
+);
+check(
+  'the tracker names the phase task range',
+  readFileSync(join(target, 'planning', 'TRACKER.md'), 'utf8').includes('P03-01–P03-04 (4)'),
+);
+
 const dry = run(['generate', '--dir', target, '--dry-run']);
 check('generate --dry-run exits 0', dry.status === 0, `exit ${dry.status}`);
 

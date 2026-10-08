@@ -3,6 +3,14 @@
 ## Objective
 Implement phases, handoffs, work packets, gates, planmo next..
 
+## Tasks
+| Task | Title | Status |
+|---|---|---|
+| P08-01 | Implement Implement phases, handoffs, work packets, gates, planmo next. | TODO |
+| P08-02 | Tests & evidence for the phase exit gates | TODO |
+| P08-03 | Docs & traceability for Workflow/session engine | TODO |
+| P08-04 | Record the phase handoff | TODO |
+
 ## Phase mode
 Phases are gated: each phase finishes with a recorded handoff before the next begins.
 

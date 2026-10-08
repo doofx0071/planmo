@@ -104,12 +104,15 @@ describe('renderPlanningDocuments (P05-02)', () => {
     }
   });
 
-  it('renders TRACKER.md with a TODO row per phase and the phase mode', () => {
+  it('renders TRACKER.md with a TODO row per phase, its task range, and the phase mode', () => {
     const ir = buildIr(irInput());
     const tracker = renderPlanningDocuments(ir).find((a) => a.path === 'planning/TRACKER.md');
     expect(tracker?.content).toContain('Canonical task list: `planning/tasks.csv`.');
     expect(tracker?.content).toContain('Phase mode: gated.');
-    expect(tracker?.content).toContain(`| 00 | ${ir.phases[0]?.title} | TODO |`);
+    const first = ir.phases[0]!;
+    expect(tracker?.content).toContain(
+      `| ${first.id} | ${first.title} | P${first.id}-01–P${first.id}-04 (4) | TODO |`,
+    );
     expect(tracker?.content.match(/\| TODO \|/g)).toHaveLength(ir.phases.length);
   });
 
@@ -121,6 +124,8 @@ describe('renderPlanningDocuments (P05-02)', () => {
     expect(phaseDoc).toBeDefined();
     expect(phaseDoc?.content).toContain('# Phase 05 — Planning compiler & artifact generator');
     expect(phaseDoc?.content).toContain('## Objective');
+    expect(phaseDoc?.content).toContain('## Tasks');
+    expect(phaseDoc?.content).toContain('| P05-01 |');
     expect(phaseDoc?.content).toContain('## Test & evidence gate');
     expect(phaseDoc?.content).toContain('- unit tests');
     expect(phaseDoc?.content).toContain('## Exit gates');
