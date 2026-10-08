@@ -21,6 +21,7 @@ describe('agent targets', () => {
       'cline',
       'codebuddy',
       'codex',
+      'commandcode',
       'continue',
       'copilot',
       'crush',
@@ -63,6 +64,11 @@ describe('agent targets', () => {
     expect(agentTarget('augment')).toMatchObject({ commandDir: '.augment/commands' });
     expect(agentTarget('factory-droid')).toMatchObject({ commandDir: '.factory/commands' });
     expect(agentTarget('codebuddy')).toMatchObject({ commandDir: '.codebuddy/commands' });
+    expect(agentTarget('commandcode')).toMatchObject({
+      commandDir: '.commandcode/commands',
+      layout: 'commands',
+      format: 'md',
+    });
     expect(agentTarget('qwen-code')).toMatchObject({ commandDir: '.qwen/commands' });
     expect(agentTarget('crush')).toMatchObject({ commandDir: '.crush/commands' });
     expect(agentTarget('continue')).toMatchObject({ commandDir: '.continue/prompts' });

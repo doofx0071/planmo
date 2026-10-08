@@ -58,6 +58,7 @@ describe('detectAgents', () => {
     expect(await detect(['.tabnine/'])).toEqual(['tabnine']);
     expect(await detect(['.iflow/'])).toEqual(['iflow']);
     expect(await detect(['.codebuddy/'])).toEqual(['codebuddy']);
+    expect(await detect(['.commandcode/'])).toEqual(['commandcode']);
     expect(await detect(['.qwen/'])).toEqual(['qwen-code']);
     expect(await detect(['.crush/'])).toEqual(['crush']);
     expect(await detect(['.continue/'])).toEqual(['continue']);

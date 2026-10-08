@@ -148,6 +148,17 @@ export const AGENT_TARGETS: readonly AgentTarget[] = [
     docs: 'https://agentskills.io/client-implementation/adding-skills-support',
   },
   {
+    id: 'commandcode',
+    label: 'Command Code',
+    commandDir: '.commandcode/commands',
+    layout: 'commands',
+    format: 'md',
+    prefix: 'planmo',
+    invocation: slash,
+    markers: ['.commandcode/'],
+    docs: 'https://commandcode.ai/docs/reference/slash-commands',
+  },
+  {
     id: 'continue',
     label: 'Continue',
     commandDir: '.continue/prompts',

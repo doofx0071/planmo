@@ -36,6 +36,7 @@ documentation URL it was verified against.
 | `cline` | Cline | `.clinerules/workflows` | commands | md | `/name.md` |
 | `codebuddy` | CodeBuddy (Tencent) | `.codebuddy/commands` | commands | md | `/name` |
 | `codex` | Codex (OpenAI) | `.agents/skills` | skills | md | `$name` |
+| `commandcode` | Command Code | `.commandcode/commands` | commands | md | `/name` |
 | `continue` | Continue | `.continue/prompts` | commands | md | `/name` |
 | `copilot` | GitHub Copilot | `.github/skills` | skills | md | `/name` |
 | `crush` | Crush (Charm) | `.crush/commands` | commands | md | palette → User Commands |

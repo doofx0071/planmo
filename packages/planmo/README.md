@@ -158,10 +158,10 @@ is deterministic, and the evidence is printed so a wrong guess is visible and ca
 be unticked. For scripts and CI: `--agent <id>` skips detection and every prompt,
 and `--yes` never prompts.
 
-Supported agents, each with its own documented layout — 30 in all, including
+Supported agents, each with its own documented layout — 31 in all, including
 Claude Code, Codex, Copilot, Cursor, Gemini CLI, Kiro, Kimi, Grok, Kilo Code,
-Windsurf, Cline, Roo Code, Qwen Code, Junie, Trae, Tabnine, Zed, Goose, Crush and
-a `generic` fallback:
+Command Code, Windsurf, Cline, Roo Code, Qwen Code, Junie, Trae, Tabnine, Zed,
+Goose, Crush and a `generic` fallback:
 
 ```bash
 npx planmo agent list

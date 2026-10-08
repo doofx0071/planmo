@@ -48,6 +48,7 @@ check(
     'opencode',
     'claude-code',
     'codex',
+    'commandcode',
     'copilot',
     'cursor',
     'gemini-cli',

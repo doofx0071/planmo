@@ -3,14 +3,14 @@
 'planmo': minor
 ---
 
-Support 30 coding agents, up from 6 — and support the two formats and two layouts
+Support 31 coding agents, up from 6 — and support the two formats and two layouts
 they actually use.
 
 `planmo agent list` now covers Amazon Q Developer, Amp, Augment, Claude Code,
-Cline, CodeBuddy, Codex, Continue, Copilot, Crush, Cursor, Factory Droid, Gemini
-CLI, Goose, Grok CLI, iFlow, Junie, Kilo Code, Kimi Code CLI, Kiro, opencode,
-OpenHands, Qwen Code, Roo Code, Tabnine, Trae, Windsurf, Zed, Hermes and a
-`generic` fallback.
+Cline, CodeBuddy, Codex, Command Code, Continue, Copilot, Crush, Cursor, Factory
+Droid, Gemini CLI, Goose, Grok CLI, iFlow, Junie, Kilo Code, Kimi Code CLI, Kiro,
+opencode, OpenHands, Qwen Code, Roo Code, Tabnine, Trae, Windsurf, Zed, Hermes and
+a `generic` fallback.
 
 Every row records the official documentation URL it was read from, so a format can
 be re-checked against the source rather than a memory of it. The full table is in
