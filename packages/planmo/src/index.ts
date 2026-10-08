@@ -8,8 +8,9 @@ import { generatePlanningWorkspace } from './generate.js';
 import { validateWorkspace } from './validate.js';
 import { installAgentCommands } from './agent.js';
 import { detectAgents, type AgentDetection } from './detect.js';
+import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
-import { initWorkspace, readStatus } from '@planmo/core';
+import { initWorkspace, ProjectNotFoundError, readStatus } from '@planmo/core';
 import { analyzeRepository, nodeFileReader } from '@planmo/scanner';
 import type {
   AccessibilityLevel,
@@ -49,6 +50,7 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo (dry-run report; writes nothing)`,
   `  ${PRODUCT_SLUG} generate      generate/refresh the planning workspace`,
   `  ${PRODUCT_SLUG} validate      validate the workspace documents and invariants`,
+  `  ${PRODUCT_SLUG} next          print the task to work next, and what to read`,
   `  ${PRODUCT_SLUG} agent init    install command files for your coding agent`,
   `  ${PRODUCT_SLUG} agent list    list the supported agents and their layouts`,
   `  ${PRODUCT_SLUG} --version     print the PlanMo version`,
@@ -82,6 +84,11 @@ export const USAGE = [
   '',
   'validate options:',
   '      --dir <path>          project root (default: walk up from cwd)',
+  '',
+  'next options:',
+  '      --dir <path>          project root (default: cwd)',
+  '      --print               print the brief to stdout and write nothing (the default)',
+  '      --json                emit the brief as machine-readable JSON',
   '',
   'agent options:',
   '      --agent <id>          any id from `planmo agent list` (comma-separated)',
@@ -222,6 +229,8 @@ export async function run(
       return runGenerate(argv.slice(1), io);
     case 'validate':
       return runValidate(argv.slice(1), io);
+    case 'next':
+      return runNext(argv.slice(1), io);
     case 'agent':
       return runAgent(argv.slice(1), io, wizard);
     default:
@@ -278,6 +287,25 @@ async function runValidate(argv: string[], io: CliIO): Promise<number> {
   } catch (err) {
     io.err(`planmo validate: ${(err as Error).message}`);
     return 3;
+  }
+}
+
+async function runNext(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  try {
+    const result = await nextBrief({ root });
+    // `--print` is the documented default: print the brief, write nothing. The
+    // flag exists because the command file PlanMo installs into every agent
+    // passes it, so the instruction in that file is literally true.
+    if (flags.has('json')) io.out(JSON.stringify(result.brief, null, 2));
+    else io.out(result.text);
+    return 0;
+  } catch (err) {
+    io.err(`planmo next: ${(err as Error).message}`);
+    // 3 = there is no workspace here at all. 1 = a workspace that exists but is
+    // not ready to be read (the planning tree was never generated).
+    return err instanceof ProjectNotFoundError ? 3 : 1;
   }
 }
 
