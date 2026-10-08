@@ -1,7 +1,7 @@
 # Phase 02 — Canonical project model & schemas
 
 ## Objective
-Schema-version every persisted PlanMo document and add migration tests..
+Schema-version every persisted PlanMo document and add migration tests.
 
 ## Tasks
 | Task | Title | Status |

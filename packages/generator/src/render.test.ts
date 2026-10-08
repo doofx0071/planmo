@@ -100,8 +100,10 @@ describe('renderPlanningDocuments (P05-02)', () => {
     expect(roadmap?.content).toContain('# Detailed Roadmap');
     for (const phase of ir.phases) {
       expect(roadmap?.content).toContain(`## Phase ${phase.id} — ${phase.title}`);
-      expect(roadmap?.content).toContain(`${phase.objective}.`);
+      expect(roadmap?.content).toContain(phase.objective);
     }
+    // Exactly one full stop — the objective already carries one.
+    expect(roadmap?.content).not.toContain('..');
   });
 
   it('renders TRACKER.md with a TODO row per phase, its task range, and the phase mode', () => {
@@ -114,6 +116,20 @@ describe('renderPlanningDocuments (P05-02)', () => {
       `| ${first.id} | ${first.title} | P${first.id}-01–P${first.id}-04 (4) | TODO |`,
     );
     expect(tracker?.content.match(/\| TODO \|/g)).toHaveLength(ir.phases.length);
+  });
+
+  it('ends each objective line with exactly one full stop', () => {
+    const ir = buildIr(irInput());
+    for (const phase of ir.phases) {
+      const doc = renderPlanningDocuments(ir).find(
+        (a) => a.path === `planning/phases/phase-${phase.id}.md`,
+      )?.content;
+      const lines = (doc ?? '').split('\n');
+      const objective = lines[lines.indexOf('## Objective') + 1];
+      expect(objective, `phase ${phase.id}`).toBeDefined();
+      expect(objective?.endsWith('..'), `phase ${phase.id}: ${objective}`).toBe(false);
+      expect(objective?.endsWith('.'), `phase ${phase.id}: ${objective}`).toBe(true);
+    }
   });
 
   it('renders one phase document per IR phase with objective, gates, handoff, stop rule', () => {

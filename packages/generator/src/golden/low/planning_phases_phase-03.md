@@ -1,7 +1,7 @@
 # Phase 03 — CLI foundation
 
 ## Objective
-Implement init, safe filesystem writer, dry-run/diff, ownership rules, status..
+Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.
 
 ## Tasks
 | Task | Title | Status |

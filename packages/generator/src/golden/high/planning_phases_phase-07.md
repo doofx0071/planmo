@@ -1,7 +1,7 @@
 # Phase 07 — Frontend design engine
 
 ## Objective
-Implement design profiles, design tokens, eight styles, frontend docs..
+Implement design profiles, design tokens, eight styles, frontend docs.
 
 ## Tasks
 | Task | Title | Status |

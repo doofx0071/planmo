@@ -1,7 +1,7 @@
 # Phase 06 — Agent bridge
 
 ## Objective
-Implement generic and per-agent adapters with a structured AI proposal contract..
+Implement generic and per-agent adapters with a structured AI proposal contract.
 
 ## Tasks
 | Task | Title | Status |

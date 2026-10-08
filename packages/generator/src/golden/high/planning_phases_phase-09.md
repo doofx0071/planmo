@@ -1,7 +1,7 @@
 # Phase 09 — Trace, validate, doctor & drift
 
 ## Objective
-Implement trace graph, validation, drift detection, doctor command..
+Implement trace graph, validation, drift detection, doctor command.
 
 ## Tasks
 | Task | Title | Status |

@@ -1,7 +1,7 @@
 # Phase 10 — Existing repository adoption
 
 ## Objective
-Support adopting an existing repository incrementally..
+Support adopting an existing repository incrementally.
 
 ## Tasks
 | Task | Title | Status |

@@ -1,7 +1,7 @@
 # Phase 04 — Pack & profile system
 
 ## Objective
-Implement declarative packs, deterministic resolution, lockfile, profiles..
+Implement declarative packs, deterministic resolution, lockfile, profiles.
 
 ## Tasks
 | Task | Title | Status |

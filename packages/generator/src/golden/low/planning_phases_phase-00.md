@@ -1,7 +1,7 @@
 # Phase 00 — Product & research foundation
 
 ## Objective
-Lock product boundaries, naming, licensing criteria, and non-goals..
+Lock product boundaries, naming, licensing criteria, and non-goals.
 
 ## Tasks
 | Task | Title | Status |

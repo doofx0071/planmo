@@ -1,7 +1,7 @@
 # Phase 11 — Ecosystem & integrations
 
 ## Objective
-Packs registry, templates, agent ecosystem integrations..
+Packs registry, templates, agent ecosystem integrations.
 
 ## Tasks
 | Task | Title | Status |
