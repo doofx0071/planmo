@@ -206,7 +206,35 @@ canonical id order — so it never starts a later phase before the current one i
 finished. A `BLOCKED` task is stepped over and then listed under `Blocked (n):`,
 never silently skipped. `--json` emits the same brief for an agent or CI.
 
-## 6. What is NOT in v1 (yet)
+## 6. The agent loop: propose → apply
+
+`planmo agent init` installs a `planmo-propose` command into your agent. It asks
+the agent for one JSON document describing what it thinks should change; PlanMo
+validates that strictly and records it:
+
+```console
+$ planmo agent apply proposal.json
+✓ wrote .planmo/proposals/add-planmo-next-to-the-command-surface.json
+Recorded proposal "Add planmo next to the command surface" from cursor
+  .planmo/proposals/add-planmo-next-to-the-command-surface.json
+
+2 item(s):
+  cli-next  proposed  Wire the next command.
+      ref: REQ-001
+  docs  proposed  Document it in the README.
+      why: Users cannot find it.
+
+Plan documents were NOT rewritten. An item states what should change, not a
+mechanical edit, so changing the plan stays a human decision — that is the
+invariant that keeps agent output out of canonical state.
+```
+
+`apply` **validates and records**; it does not edit the plan (ADR-0026). An
+invalid proposal writes nothing at all — not even the proposals directory — and a
+proposal that is already recorded is refused with exit `2` rather than silently
+replaced. `--force` replaces it; `--dry-run` reports without writing.
+
+## 7. What is NOT in v1 (yet)
 
 `planmo plan`, `planmo doctor`, `planmo diff`, `planmo pack` are **not wired in
 the CLI**:
@@ -227,7 +255,7 @@ your coding agent call. The `doctor`/`trace` engines live in `@planmo/trace` and
 exactly the implemented commands, and
 `scripts/e2e-phase12-pilots.mjs` asserts that.
 
-## 7. Environment notes
+## 8. Environment notes
 
 - Git-bash on Windows: pass **native Windows paths** (e.g. `C:\repo`) to
   the CLI. A `/tmp/...` style path resolves to `C:\tmp\...`, which silently

@@ -7,6 +7,7 @@ import { cliVersion } from './version.js';
 import { generatePlanningWorkspace } from './generate.js';
 import { validateWorkspace } from './validate.js';
 import { installAgentCommands } from './agent.js';
+import { applyProposal, renderApplyOutcome } from './apply.js';
 import { detectAgents, type AgentDetection } from './detect.js';
 import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
@@ -53,6 +54,7 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} next          print the task to work next, and what to read`,
   `  ${PRODUCT_SLUG} agent init    install command files for your coding agent`,
   `  ${PRODUCT_SLUG} agent list    list the supported agents and their layouts`,
+  `  ${PRODUCT_SLUG} agent apply   validate and record a proposal from an agent`,
   `  ${PRODUCT_SLUG} --version     print the PlanMo version`,
   `  ${PRODUCT_SLUG} --help        show this help`,
   '',
@@ -98,6 +100,9 @@ export const USAGE = [
   '      --yes                 never prompt: use detection, or --agent',
   '      --force               overwrite files you have edited',
   '      --dry-run             print the plan and write nothing',
+  '',
+  '  agent apply <proposal.json>  validate a proposal and record it under .planmo/proposals/',
+  '                               (plan documents are never rewritten by this command)',
   '',
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
 ].join('\n');
@@ -323,6 +328,10 @@ async function runAgent(argv: string[], io: CliIO, wizard: WizardIO): Promise<nu
     return 0;
   }
 
+  if (sub === 'apply') {
+    return runAgentApply(argv.slice(1), io);
+  }
+
   if (sub !== 'init') {
     io.err(`planmo agent: unknown subcommand '${sub}'`);
     io.err(`Run 'planmo --help' for usage.`);
@@ -438,6 +447,47 @@ async function runAgent(argv: string[], io: CliIO, wizard: WizardIO): Promise<nu
   // 1 = a usage error (unknown agent, no workspace, a refused global write);
   // 2 = refused because a file is yours. Keeps the documented exit contract.
   return errors > 0 ? 1 : collisions > 0 ? 2 : 0;
+}
+
+async function runAgentApply(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? process.cwd());
+  const file = positional[0];
+
+  if (file === undefined) {
+    io.err('planmo agent apply: a proposal file is required');
+    io.err('  usage: planmo agent apply <proposal.json> [--dir <path>] [--force] [--dry-run]');
+    return 1;
+  }
+
+  const dryRun = flags.has('dry-run');
+  try {
+    const outcome = await applyProposal({
+      root,
+      file,
+      ...(flags.has('force') ? { allowOverwrite: true } : {}),
+      dryRun,
+    });
+
+    // A collision means the proposal is already recorded. Say that plainly rather
+    // than printing "Recorded" over a write that did not happen.
+    if (outcome.collisions.length > 0) {
+      for (const path of outcome.collisions) {
+        io.err(`✗ collision  ${path} (already recorded — use --force to replace)`);
+      }
+      io.err('planmo agent apply: nothing changed.');
+      return 2;
+    }
+
+    for (const path of outcome.written) {
+      io.out(`${dryRun ? '[dry-run] would write' : '✓ wrote'} ${path}`);
+    }
+    io.out(renderApplyOutcome(outcome, dryRun));
+    return 0;
+  } catch (err) {
+    io.err(`planmo agent apply: ${(err as Error).message}`);
+    return err instanceof ProjectNotFoundError ? 3 : 1;
+  }
 }
 
 /**
