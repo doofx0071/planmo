@@ -6,7 +6,7 @@ Implement init, safe filesystem writer, dry-run/diff, ownership rules, status..
 ## Tasks
 | Task | Title | Status |
 |---|---|---|
-| P03-01 | Implement Implement init, safe filesystem writer, dry-run/diff, ownership rules, status. | TODO |
+| P03-01 | Implement init, safe filesystem writer, dry-run/diff, ownership rules, status. | TODO |
 | P03-02 | Tests & evidence for the phase exit gates | TODO |
 | P03-03 | Docs & traceability for CLI foundation | TODO |
 | P03-04 | Record the phase handoff | TODO |

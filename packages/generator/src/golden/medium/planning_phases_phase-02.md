@@ -6,7 +6,7 @@ Schema-version every persisted PlanMo document and add migration tests..
 ## Tasks
 | Task | Title | Status |
 |---|---|---|
-| P02-01 | Implement Schema-version every persisted PlanMo document and add migration tests. | TODO |
+| P02-01 | Schema-version every persisted PlanMo document and add migration tests. | TODO |
 | P02-02 | Tests & evidence for the phase exit gates | TODO |
 | P02-03 | Docs & traceability for Canonical project model & schemas | TODO |
 | P02-04 | Record the phase handoff | TODO |

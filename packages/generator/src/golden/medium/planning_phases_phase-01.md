@@ -6,7 +6,7 @@ Create monorepo toolchain, strict types, lint/format/test, CI, boundaries..
 ## Tasks
 | Task | Title | Status |
 |---|---|---|
-| P01-01 | Implement Create monorepo toolchain, strict types, lint/format/test, CI, boundaries. | TODO |
+| P01-01 | Create monorepo toolchain, strict types, lint/format/test, CI, boundaries. | TODO |
 | P01-02 | Tests & evidence for the phase exit gates | TODO |
 | P01-03 | Docs & traceability for Repository & engineering foundation | TODO |
 | P01-04 | Record the phase handoff | TODO |

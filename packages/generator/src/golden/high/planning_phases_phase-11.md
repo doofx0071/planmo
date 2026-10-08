@@ -6,7 +6,7 @@ Packs registry, templates, agent ecosystem integrations..
 ## Tasks
 | Task | Title | Status |
 |---|---|---|
-| P11-01 | Implement Packs registry, templates, agent ecosystem integrations. | TODO |
+| P11-01 | Packs registry, templates, agent ecosystem integrations. | TODO |
 | P11-02 | Tests & evidence for the phase exit gates | TODO |
 | P11-03 | Docs & traceability for Ecosystem & integrations | TODO |
 | P11-04 | Record the phase handoff | TODO |

@@ -6,7 +6,7 @@ Generate plan documents with an ownership manifest and reproducible regeneration
 ## Tasks
 | Task | Title | Status |
 |---|---|---|
-| P05-01 | Implement Generate plan documents with an ownership manifest and reproducible regeneration. | TODO |
+| P05-01 | Generate plan documents with an ownership manifest and reproducible regeneration. | TODO |
 | P05-02 | Tests & evidence for the phase exit gates | TODO |
 | P05-03 | Docs & traceability for Planning compiler & artifact generator | TODO |
 | P05-04 | Record the phase handoff | TODO |

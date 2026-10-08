@@ -6,7 +6,7 @@ Implement generic and per-agent adapters with a structured AI proposal contract.
 ## Tasks
 | Task | Title | Status |
 |---|---|---|
-| P06-01 | Implement Implement generic and per-agent adapters with a structured AI proposal contract. | TODO |
+| P06-01 | Implement generic and per-agent adapters with a structured AI proposal contract. | TODO |
 | P06-02 | Tests & evidence for the phase exit gates | TODO |
 | P06-03 | Docs & traceability for Agent bridge | TODO |
 | P06-04 | Record the phase handoff | TODO |

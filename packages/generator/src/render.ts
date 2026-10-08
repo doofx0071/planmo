@@ -62,7 +62,10 @@ function planningDocument(
  */
 export function phaseTasks(phase: PhaseNode): Array<[string, string]> {
   return [
-    [taskId(phase.id, 1), `Implement ${phase.objective}`],
+    // The objective is already an imperative sentence ("Implement init, safe
+    // filesystem writer…"), so it is used verbatim — prefixing it produced
+    // "Implement Implement init…".
+    [taskId(phase.id, 1), phase.objective],
     [taskId(phase.id, 2), 'Tests & evidence for the phase exit gates'],
     [taskId(phase.id, 3), `Docs & traceability for ${phase.title}`],
     [taskId(phase.id, 4), 'Record the phase handoff'],
