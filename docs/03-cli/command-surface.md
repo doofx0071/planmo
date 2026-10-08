@@ -5,7 +5,7 @@ Implemented:
 - `planmo init [dir]` — create a workspace; compiles the planning tree with it
 - `planmo generate` — recompile the planning documents from the project model
 - `planmo validate` — validate the workspace documents and invariants (the CI gate)
-- `planmo agent init` — install PlanMo command files into your coding agent
+- `planmo agent init` — detect your coding agent and install command files (guided)
 - `planmo status` — validate and summarize the workspace
 - `planmo adopt [dir]` — read-only analysis of an existing repository
 - `planmo --version` / `planmo --help`

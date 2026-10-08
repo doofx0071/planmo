@@ -1,11 +1,13 @@
 import { createInterface } from 'node:readline/promises';
 import { stdin as nodeStdin, stdout as nodeStdout } from 'node:process';
+import * as clack from '@clack/prompts';
 import { resolve } from 'node:path';
 import { PRODUCT_SLUG } from '@planmo/shared';
 import { cliVersion } from './version.js';
 import { generatePlanningWorkspace } from './generate.js';
 import { validateWorkspace } from './validate.js';
 import { installAgentCommands } from './agent.js';
+import { detectAgents, type AgentDetection } from './detect.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
 import { initWorkspace, readStatus } from '@planmo/core';
 import { analyzeRepository, nodeFileReader } from '@planmo/scanner';
@@ -47,7 +49,8 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo (dry-run report; writes nothing)`,
   `  ${PRODUCT_SLUG} generate      generate/refresh the planning workspace`,
   `  ${PRODUCT_SLUG} validate      validate the workspace documents and invariants`,
-  `  ${PRODUCT_SLUG} agent init  install command files for your coding agent`,
+  `  ${PRODUCT_SLUG} agent init    install command files for your coding agent`,
+  `  ${PRODUCT_SLUG} agent list    list the supported agents and their layouts`,
   `  ${PRODUCT_SLUG} --version     print the PlanMo version`,
   `  ${PRODUCT_SLUG} --help        show this help`,
   '',
@@ -82,8 +85,11 @@ export const USAGE = [
   '',
   'agent options:',
   '      --agent <id>          opencode | claude-code | codex | copilot | generic',
+  '                            (comma-separated; omit it to choose interactively)',
   '      --dir <path>          project root (default: cwd)',
-  '      --force               overwrite existing unmanaged files',
+  '      --global              allow a target that installs outside the project',
+  '      --yes                 never prompt: use detection, or --agent',
+  '      --force               overwrite files you have edited',
   '      --dry-run             print the plan and write nothing',
   '',
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
@@ -115,8 +121,31 @@ function parseArgs(argv: string[]): { flags: Map<string, string>; positional: st
   return { flags, positional };
 }
 
+/** Prompt values must be primitives — that is all a terminal prompt can render. */
+type WizardValue = string | boolean | number;
+
+/** One choice in a select or multi-select prompt. */
+interface WizardChoice<T extends WizardValue> {
+  value: T;
+  label: string;
+  hint?: string;
+}
+
 interface WizardIO {
   prompt: (question: string, dflt?: string) => Promise<string>;
+  /** Arrow-key single select. `undefined` means the user cancelled. */
+  select: <T extends WizardValue>(
+    question: string,
+    choices: WizardChoice<T>[],
+  ) => Promise<T | undefined>;
+  /** Arrow-key multi select, with `initial` pre-checked. `undefined` = cancelled. */
+  multiSelect: <T extends WizardValue>(
+    question: string,
+    choices: WizardChoice<T>[],
+    initial: readonly T[],
+  ) => Promise<T[] | undefined>;
+  /** Yes/no confirmation. `undefined` means the user cancelled. */
+  confirm: (question: string, dflt: boolean) => Promise<boolean | undefined>;
   out: (line: string) => void;
 }
 
@@ -130,6 +159,37 @@ const terminalWizard: WizardIO = {
     } finally {
       rl.close();
     }
+  },
+  select: async <T extends WizardValue>(
+    question: string,
+    choices: WizardChoice<T>[],
+  ): Promise<T | undefined> => {
+    // clack types its options as `Option<Value>`, a conditional type over `Value`
+    // that TypeScript cannot reduce while `Value` is still a type parameter. The
+    // shapes are identical, so the list passes through unchanged.
+    const opts = { message: question, options: choices } as unknown as Parameters<
+      typeof clack.select<T>
+    >[0];
+    const answer = await clack.select<T>(opts);
+    return clack.isCancel(answer) ? undefined : answer;
+  },
+  multiSelect: async <T extends WizardValue>(
+    question: string,
+    choices: WizardChoice<T>[],
+    initial: readonly T[],
+  ): Promise<T[] | undefined> => {
+    const opts = {
+      message: question,
+      options: choices,
+      initialValues: [...initial],
+      required: false,
+    } as unknown as Parameters<typeof clack.multiselect<T>>[0];
+    const answer = await clack.multiselect<T>(opts);
+    return clack.isCancel(answer) ? undefined : answer;
+  },
+  confirm: async (question: string, dflt: boolean): Promise<boolean | undefined> => {
+    const answer = await clack.confirm({ message: question, initialValue: dflt });
+    return clack.isCancel(answer) ? undefined : answer;
   },
   out: (line) => console.log(line),
 };
@@ -163,7 +223,7 @@ export async function run(
     case 'validate':
       return runValidate(argv.slice(1), io);
     case 'agent':
-      return runAgent(argv.slice(1), io);
+      return runAgent(argv.slice(1), io, wizard);
     default:
       io.err(`planmo: unknown command '${command}'`);
       io.err(`Run 'planmo --help' for usage.`);
@@ -221,7 +281,7 @@ async function runValidate(argv: string[], io: CliIO): Promise<number> {
   }
 }
 
-async function runAgent(argv: string[], io: CliIO): Promise<number> {
+async function runAgent(argv: string[], io: CliIO, wizard: WizardIO): Promise<number> {
   const [sub] = argv;
   const { flags } = parseArgs(argv.slice(1));
   const root = resolve(flags.get('dir') ?? process.cwd());
@@ -240,27 +300,146 @@ async function runAgent(argv: string[], io: CliIO): Promise<number> {
     return 1;
   }
 
-  try {
-    const result = await installAgentCommands({
-      root,
-      agent: flags.get('agent') ?? 'opencode',
-      ...(flags.has('force') ? { allowOverwrite: true } : {}),
-      ...(flags.has('dry-run') ? { dryRun: true } : {}),
-    });
-    for (const path of result.written) io.out(`✓ wrote ${path}`);
-    for (const path of result.collisions) {
-      io.err(`✗ collision  ${path} (existing, refused — use --force)`);
+  // `--agent` stays for scripts and CI. With no flag the default is the guided
+  // flow: detect what this project already uses, pre-check it, then ask.
+  const explicit = flags.get('agent');
+  const assumeYes = flags.has('yes');
+  const allowGlobal = flags.has('global');
+  const interactive =
+    explicit === undefined && !assumeYes && nodeStdin.isTTY === true && nodeStdout.isTTY === true;
+
+  let chosen: string[];
+  if (explicit !== undefined) {
+    chosen = explicit
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id !== '');
+  } else {
+    const detected = await detectAgents(root);
+    if (interactive) {
+      const picked = await askWhichAgents(wizard, detected);
+      if (picked === undefined) {
+        io.out('Cancelled — nothing was written.');
+        return 0;
+      }
+      chosen = picked;
+    } else if (detected.length > 0) {
+      // No terminal (a pipe, CI) and no flag: do the obvious thing, and say so.
+      // A global target is never auto-installed — it writes outside the project,
+      // which needs the explicit `--global` consent.
+      const isGlobalId = (id: string): boolean => agentTarget(id)?.global === true;
+      const local = detected.filter((found) => !isGlobalId(found.id));
+      for (const found of detected.filter((entry) => isGlobalId(entry.id))) {
+        io.out(
+          `Detected ${found.id}, which installs outside this project — pass --global to include it.`,
+        );
+      }
+      if (local.length > 0) {
+        io.out(
+          `Detected ${local.map((found) => found.id).join(', ')} — installing without asking.`,
+        );
+      }
+      chosen = local.map((found) => found.id);
+    } else {
+      io.err('planmo agent: no coding agent detected in this project.');
+      io.err("Pass --agent <id> (see 'planmo agent list'), or run this in a terminal.");
+      return 1;
     }
-    const target = agentTarget(result.target);
-    io.out(`Installed for ${result.target}. Invoke in your agent with:`);
-    for (const file of result.files) {
-      io.out(`  ${target?.invocation(file.commandName) ?? file.commandName}`);
-    }
-    return result.collisions.length > 0 ? 2 : 0;
-  } catch (err) {
-    io.err(`planmo agent: ${(err as Error).message}`);
-    return 1;
   }
+
+  if (chosen.length === 0) {
+    io.out('Nothing selected — nothing was written.');
+    return 0;
+  }
+
+  let collisions = 0;
+  let errors = 0;
+  for (const agent of chosen) {
+    const target = agentTarget(agent);
+    if (target === undefined) {
+      io.err(`planmo agent: unknown agent '${agent}'`);
+      errors += 1;
+      continue;
+    }
+
+    const isGlobal = target.global === true;
+    if (isGlobal && !allowGlobal) {
+      if (!interactive) {
+        io.err(`planmo agent: '${agent}' installs outside the project; pass --global to confirm.`);
+        errors += 1;
+        continue;
+      }
+      const ok = await wizard.confirm(
+        `'${agent}' installs outside this project, into ${target.commandDir}. Continue?`,
+        false,
+      );
+      if (ok !== true) {
+        io.out(`Skipped ${agent}.`);
+        continue;
+      }
+    }
+
+    try {
+      const result = await installAgentCommands({
+        root,
+        agent,
+        ...(flags.has('force') ? { allowOverwrite: true } : {}),
+        ...(flags.has('dry-run') ? { dryRun: true } : {}),
+        ...(isGlobal ? { global: true } : {}),
+      });
+      for (const path of result.written) io.out(`✓ wrote ${path}`);
+      for (const path of result.collisions) {
+        io.err(`✗ collision  ${path} (yours, kept — use --force to replace)`);
+        collisions += 1;
+      }
+      io.out(`Installed for ${result.target}. Invoke in your agent with:`);
+      for (const file of result.files) {
+        io.out(`  ${target.invocation(file.commandName)}`);
+      }
+    } catch (err) {
+      io.err(`planmo agent: ${(err as Error).message}`);
+      errors += 1;
+    }
+  }
+  // 1 = a usage error (unknown agent, no workspace, a refused global write);
+  // 2 = refused because a file is yours. Keeps the documented exit contract.
+  return errors > 0 ? 1 : collisions > 0 ? 2 : 0;
+}
+
+/**
+ * The guided default: show what was detected and WHY, pre-check it, and ask.
+ * Detection is a suggestion the user can override — never a decision made for them.
+ */
+async function askWhichAgents(
+  wizard: WizardIO,
+  detected: AgentDetection[],
+): Promise<string[] | undefined> {
+  wizard.out('');
+  if (detected.length > 0) {
+    wizard.out('Detected in this project:');
+    for (const found of detected) {
+      const mark = found.state === 'installed' ? 'already installed' : 'detected';
+      wizard.out(`  ${found.id} (${mark}) — ${found.evidence.join(', ')}`);
+    }
+  } else {
+    wizard.out('No coding agent detected in this project — pick from the list.');
+  }
+
+  const choices = AGENT_TARGETS.map((target) => ({
+    value: target.id,
+    label: target.id,
+    hint: target.global === true ? `${target.commandDir} (global)` : target.commandDir,
+  }));
+
+  const picked = await wizard.multiSelect(
+    'Which agent(s) should PlanMo install commands for?',
+    choices,
+    detected.map((found) => found.id),
+  );
+  if (picked === undefined || picked.length === 0) return picked;
+
+  const ok = await wizard.confirm(`Install ${picked.length} command set(s) now?`, true);
+  return ok === true ? picked : undefined;
 }
 
 async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Promise<number> {

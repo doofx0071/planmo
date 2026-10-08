@@ -42,6 +42,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@clack/prompts": "^1.8.1",
     "@planmo/adapters": "workspace:*",
     "@planmo/agent-bridge": "workspace:*",
     "@planmo/core": "workspace:*",

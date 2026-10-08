@@ -3,6 +3,28 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, afterEach } from 'vitest';
+
+/**
+ * A wizard double for tests.
+ *
+ * `select` / `multiSelect` / `confirm` resolve to `undefined` — the cancel
+ * signal — so a test that unexpectedly reaches an interactive prompt fails
+ * loudly instead of silently picking an answer.
+ */
+const silentWizard = (prompt: (q: string, dflt?: string) => Promise<string> = async () => 'x') => ({
+  prompt,
+  select: async () => undefined,
+  multiSelect: async () => undefined,
+  confirm: async () => undefined,
+  out: () => {},
+});
+
+/** A wizard that fails the test if anything is asked at all. */
+const noPromptWizard = () =>
+  silentWizard(async () => {
+    throw new Error('should not prompt');
+  });
+
 import { run, USAGE } from './index.js';
 
 function capture() {
@@ -71,12 +93,7 @@ describe('planmo init', () => {
   it('creates a valid workspace non-interactively with defaults', async () => {
     const root = await tempRoot();
     const { io, out } = capture();
-    const wizard = {
-      prompt: async () => {
-        throw new Error('should not prompt');
-      },
-      out: () => {},
-    };
+    const wizard = noPromptWizard();
     const code = await run(['init', root, '--yes'], io, wizard);
     expect(code).toBe(0);
     const files = (await readdir(join(root, '.planmo'))).sort();
@@ -90,12 +107,7 @@ describe('planmo init', () => {
     const code = await run(
       ['init', root, '--yes', '--name', 'Billing', '--type', 'service', '--risk', 'high'],
       io,
-      {
-        prompt: async () => {
-          throw new Error('should not prompt');
-        },
-        out: () => {},
-      },
+      noPromptWizard(),
     );
     expect(code).toBe(0);
     const yaml = await readFile(join(root, '.planmo', 'project.yml'), 'utf8');
@@ -115,13 +127,10 @@ describe('planmo init', () => {
       Risk: 'medium',
       'Primary agent': 'opencode',
     };
-    const wizard = {
-      prompt: async (q: string) => {
-        asked.push(q);
-        return answers[q] ?? 'minimal';
-      },
-      out: () => {},
-    };
+    const wizard = silentWizard(async (q) => {
+      asked.push(q);
+      return answers[q] ?? 'minimal';
+    });
     const code = await run(['init', root], io, wizard);
     expect(code).toBe(0);
     expect(asked.length).toBeGreaterThan(0);
@@ -133,10 +142,7 @@ describe('planmo init', () => {
   it('dry-run writes nothing', async () => {
     const root = await tempRoot();
     const { io, out } = capture();
-    const code = await run(['init', root, '--yes', '--dry-run'], io, {
-      prompt: async () => 'x',
-      out: () => {},
-    });
+    const code = await run(['init', root, '--yes', '--dry-run'], io, silentWizard());
     expect(code).toBe(0);
     expect(out.join('\n')).toContain('[dry-run]');
     const { readdir } = await import('node:fs/promises');
@@ -145,9 +151,9 @@ describe('planmo init', () => {
 
   it('refuses to overwrite an existing workspace without --force', async () => {
     const root = await tempRoot();
-    await run(['init', root, '--yes'], capture().io, { prompt: async () => 'x', out: () => {} });
+    await run(['init', root, '--yes'], capture().io, silentWizard());
     const { io, err } = capture();
-    const code = await run(['init', root, '--yes'], io, { prompt: async () => 'x', out: () => {} });
+    const code = await run(['init', root, '--yes'], io, silentWizard());
     expect(code).toBe(2);
     expect(err.join('\n')).toContain('collision');
     expect(err.join('\n')).toContain('--force');
@@ -155,12 +161,9 @@ describe('planmo init', () => {
 
   it('overwrites existing files with --force', async () => {
     const root = await tempRoot();
-    await run(['init', root, '--yes'], capture().io, { prompt: async () => 'x', out: () => {} });
+    await run(['init', root, '--yes'], capture().io, silentWizard());
     const { io } = capture();
-    const code = await run(['init', root, '--yes', '--force'], io, {
-      prompt: async () => 'x',
-      out: () => {},
-    });
+    const code = await run(['init', root, '--yes', '--force'], io, silentWizard());
     expect(code).toBe(0);
     const yaml = await readFile(join(root, '.planmo', 'project.yml'), 'utf8');
     expect(yaml).toContain('schemaVersion: 1');
@@ -169,10 +172,7 @@ describe('planmo init', () => {
   it('reports an invalid flag value as an error', async () => {
     const root = await tempRoot();
     const { io, err } = capture();
-    const code = await run(['init', root, '--yes', '--type', 'hovercraft'], io, {
-      prompt: async () => 'x',
-      out: () => {},
-    });
+    const code = await run(['init', root, '--yes', '--type', 'hovercraft'], io, silentWizard());
     expect(code).toBe(1);
     expect(err.join('\n')).toContain('planmo init:');
   });
@@ -181,7 +181,7 @@ describe('planmo init', () => {
 describe('planmo status', () => {
   it('reports a healthy workspace', async () => {
     const root = await tempRoot();
-    await run(['init', root, '--yes'], capture().io, { prompt: async () => 'x', out: () => {} });
+    await run(['init', root, '--yes'], capture().io, silentWizard());
     const { io, out } = capture();
     const code = await run(['status', '--dir', root], io);
     expect(code).toBe(0);
@@ -221,7 +221,7 @@ describe('USAGE', () => {
 });
 
 describe('planmo generate', () => {
-  const wizard = { prompt: async () => 'x', out: () => {} };
+  const wizard = silentWizard();
 
   it('writes the planning tree for an initialized workspace and exits 0', async () => {
     const root = await tempRoot();
@@ -251,7 +251,7 @@ describe('planmo generate', () => {
 });
 
 describe('planmo init — planning workspace', () => {
-  const wizard = { prompt: async () => 'x', out: () => {} };
+  const wizard = silentWizard();
 
   it('generates the planning tree alongside .planmo', async () => {
     const root = await tempRoot();

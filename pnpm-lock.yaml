@@ -107,6 +107,9 @@ importers:
 
   packages/planmo:
     dependencies:
+      '@clack/prompts':
+        specifier: ^1.8.1
+        version: 1.8.1
       '@planmo/adapters':
         specifier: workspace:*
         version: link:../adapters
