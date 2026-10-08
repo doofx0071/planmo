@@ -79,6 +79,7 @@ never executes project scripts.
 | `planmo init [dir]`   | Create a workspace, compiling the planning tree with it   |
 | `planmo generate`     | Recompile the planning documents from the project model   |
 | `planmo validate`     | Validate the workspace documents and invariants (CI gate) |
+| `planmo agent init`   | Install PlanMo command files into your coding agent       |
 | `planmo status`       | Validate and summarize the workspace                      |
 | `planmo adopt [dir]`  | Analyze an existing repo (dry-run report; writes nothing) |
 | `planmo --version`    | Print the version                                         |
@@ -119,6 +120,33 @@ never executes project scripts.
 `validate` exits `0` when the report has no errors (warnings are allowed) and `1`
 when it does, so it can gate CI. A freshly generated workspace validates clean.
 
+## Using your coding agent
+
+PlanMo holds **no LLM key**. The agent you already run does the AI; PlanMo
+installs the commands that tell it what to do.
+
+```bash
+npx planmo agent init --agent opencode
+# ✓ wrote .opencode/commands/planmo-next.md
+# Installed for opencode. Invoke in your agent with:
+#   /planmo-next
+```
+
+Supported agents, each with its own layout:
+
+| `--agent`     | Directory                        | Layout            | Invoke as        |
+| ------------- | -------------------------------- | ----------------- | ---------------- |
+| `opencode`    | `.opencode/commands/`            | `<name>.md`       | `/planmo-next`   |
+| `claude-code` | `.claude/skills/`                | `<name>/SKILL.md` | `/planmo-next`   |
+| `codex`       | `.agents/skills/`                | `<name>/SKILL.md` | `$planmo-next`   |
+| `copilot`     | `.github/skills/`                | `<name>/SKILL.md` | `/planmo-next`   |
+| `generic`     | `.planmo/agents/commands/`       | `<name>.md`       | `/planmo-next`   |
+| `hermes`      | `~/.hermes/skills/` (global)     | `<name>/SKILL.md` | `/planmo-next`   |
+
+`hermes` installs outside the project, so it is refused unless `--global` is
+passed explicitly. Re-running `agent init` is a clean no-op; a command file you
+have edited is reported as a collision and kept, unless you pass `--force`.
+
 ## Exit codes
 
 | Code | Meaning                                                    |
@@ -143,10 +171,11 @@ equivalent output. The core needs no API key and no network access.
 
 ## Status (v1)
 
-The CLI surface is `init`, `generate`, `validate`, `status` and `adopt`. `init`
-compiles the planning tree as part of creating the workspace, `generate`
-recompiles it, and `validate` checks the canonical documents and their
-cross-document invariants. The remaining engines (workflow, trace, agent-bridge,
+The CLI surface is `init`, `generate`, `validate`, `agent init`, `status` and
+`adopt`. `init` compiles the planning tree as part of creating the workspace,
+`generate` recompiles it, `validate` checks the canonical documents and their
+cross-document invariants, and `agent init` installs the command files your
+coding agent needs. The remaining engines (workflow, trace, agent-bridge,
 design-engine) ship inside the published packages but are not yet exposed as CLI
 commands; they arrive in a later release. `--help` always lists exactly the
 implemented commands.
