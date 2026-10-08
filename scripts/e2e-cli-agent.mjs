@@ -156,5 +156,51 @@ check(
 );
 check('help documents the agent command', run(['--help']).stdout.includes('agent init'));
 
+// agent apply — the other half of the propose loop.
+const proposalPath = join(base, 'proposal.json');
+writeFileSync(
+  proposalPath,
+  JSON.stringify({
+    schemaVersion: 1,
+    agent: 'opencode',
+    requestId: 'Add planmo next',
+    items: [{ id: 'cli-next', summary: 'Wire the next command.' }],
+  }),
+);
+const applied = run(['agent', 'apply', proposalPath, '--dir', target]);
+check('agent apply exits 0', applied.status === 0, `exit ${applied.status}`);
+check(
+  'agent apply records the proposal',
+  existsSync(join(target, '.planmo', 'proposals', 'add-planmo-next.json')),
+);
+check(
+  'agent apply says plan documents were not rewritten',
+  applied.stdout.includes('Plan documents were NOT rewritten'),
+);
+check(
+  'a recorded proposal does not disturb validate',
+  run(['validate', '--dir', target]).status === 0,
+);
+
+const reapplied = run(['agent', 'apply', proposalPath, '--dir', target]);
+check('re-applying an unchanged proposal is refused', reapplied.status === 2);
+
+const badProposal = join(base, 'bad-proposal.json');
+writeFileSync(
+  badProposal,
+  JSON.stringify({
+    schemaVersion: 1,
+    agent: 'opencode',
+    requestId: 'bad',
+    items: [],
+    unexpectedKey: true,
+  }),
+);
+const rejected = run(['agent', 'apply', badProposal, '--dir', target]);
+check('an invalid proposal is refused', rejected.status === 1);
+check('the rejection names the offending key', rejected.stderr.includes('unexpectedKey'));
+check('agent apply without a file explains itself', run(['agent', 'apply']).status === 1);
+check('help documents agent apply', run(['--help']).stdout.includes('agent apply'));
+
 console.log(`\nCLI agent E2E: ${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

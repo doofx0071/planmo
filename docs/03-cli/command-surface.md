@@ -8,6 +8,7 @@ Implemented:
 - `planmo next` — print the task to work next, and the documents to read first
 - `planmo agent init` — detect your coding agent and install command files (guided)
 - `planmo agent list` — every supported agent, its directory and its format
+- `planmo agent apply <proposal.json>` — validate an agent proposal and record it (ADR-0026)
 - `planmo status` — validate and summarize the workspace
 - `planmo adopt [dir]` — read-only analysis of an existing repository
 - `planmo --version` / `planmo --help`

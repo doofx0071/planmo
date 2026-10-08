@@ -81,6 +81,7 @@ never executes project scripts.
 | `planmo validate`     | Validate the workspace documents and invariants (CI gate) |
 | `planmo next`         | Print the task to work next, and what to read first       |
 | `planmo agent init`   | Install PlanMo command files into your coding agent       |
+| `planmo agent apply`  | Validate an agent proposal and record it (ADR-0026)       |
 | `planmo status`       | Validate and summarize the workspace                      |
 | `planmo adopt [dir]`  | Analyze an existing repo (dry-run report; writes nothing) |
 | `planmo --version`    | Print the version                                         |
@@ -186,6 +187,30 @@ is in [docs/02-architecture/agent-command-files.md](../../docs/02-architecture/a
 `hermes` installs outside the project, so it is refused unless `--global` is
 passed explicitly. Re-running `agent init` is a clean no-op; a command file you
 have edited is reported as a collision and kept, unless you pass `--force`.
+
+### Closing the loop: propose → apply
+
+The `planmo-propose` command asks the agent for one JSON document describing what
+it thinks should change. PlanMo validates it strictly and records it:
+
+```bash
+npx planmo agent apply proposal.json
+```
+
+```
+✓ wrote .planmo/proposals/add-planmo-next-to-the-command-surface.json
+Recorded proposal "Add planmo next to the command surface" from cursor
+
+2 item(s):
+  cli-next  proposed  Wire the next command.
+      ref: REQ-001
+```
+
+**Plan documents are never rewritten by `apply`.** An item states what should
+change, not a mechanical edit, so changing the plan stays a human decision — that
+is the invariant that keeps agent output out of canonical state (ADR-0026). An
+invalid proposal writes nothing at all, and a proposal already recorded is refused
+rather than silently replaced (`--force` to replace).
 
 ## Exit codes
 
