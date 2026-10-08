@@ -264,7 +264,7 @@ describe('USAGE', () => {
     const text = out.join('\n');
     expect(text).toContain('agent init');
     expect(text).toContain('agent list');
-    expect(text).toContain('omit it to choose interactively');
+    expect(text).toContain('omit it to detect and choose interactively');
     expect(text).toContain('--global');
   });
 });

@@ -27,6 +27,30 @@ function renderSkillFile(name: string, description: string, body: string): strin
   return `---\nname: ${name}\ndescription: ${description}\n---\n${body}\n`;
 }
 
+/** A value as a TOML basic (double-quoted) string, on one line. */
+function tomlBasicString(value: string): string {
+  return `"${value
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/[\r\n]+/g, ' ')}"`;
+}
+
+/**
+ * A TOML command, per Gemini CLI, Tabnine and iFlow — all three use the same
+ * shape: `prompt` is required, `description` is optional.
+ *
+ * The body is emitted as a literal multi-line string (`'''`), which performs no
+ * escape processing, so markdown backslashes and backticks survive verbatim. A
+ * body that itself contains `'''` cannot use the literal form, so it falls back
+ * to an escaped basic string (`"""`) — the only case where the body is rewritten.
+ */
+function renderTomlCommand(description: string, body: string): string {
+  const prompt = body.includes("'''")
+    ? `"""\n${body.replace(/\\/g, '\\\\').replace(/"""/g, '\\"\\"\\"')}\n"""`
+    : `'''\n${body}\n'''`;
+  return `description = ${tomlBasicString(description)}\nprompt = ${prompt}\n`;
+}
+
 export function renderAgentFiles(
   target: AgentTarget,
   templates: readonly AgentCommandTemplate[],
@@ -34,6 +58,7 @@ export function renderAgentFiles(
   return templates.map((template) => {
     const commandName = `${target.prefix}-${template.name}`;
     if (target.layout === 'skills') {
+      // Skills are always `SKILL.md`, whatever the agent's command format is.
       return {
         path: `${target.commandDir}/${commandName}/SKILL.md`,
         commandName,
@@ -41,9 +66,12 @@ export function renderAgentFiles(
       };
     }
     return {
-      path: `${target.commandDir}/${commandName}.md`,
+      path: `${target.commandDir}/${commandName}.${target.format}`,
       commandName,
-      content: renderCommandFile(template.description, template.body),
+      content:
+        target.format === 'toml'
+          ? renderTomlCommand(template.description, template.body)
+          : renderCommandFile(template.description, template.body),
     };
   });
 }

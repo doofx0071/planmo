@@ -158,16 +158,29 @@ is deterministic, and the evidence is printed so a wrong guess is visible and ca
 be unticked. For scripts and CI: `--agent <id>` skips detection and every prompt,
 and `--yes` never prompts.
 
-Supported agents, each with its own layout:
+Supported agents, each with its own documented layout — 30 in all, including
+Claude Code, Codex, Copilot, Cursor, Gemini CLI, Kiro, Kimi, Grok, Kilo Code,
+Windsurf, Cline, Roo Code, Qwen Code, Junie, Trae, Tabnine, Zed, Goose, Crush and
+a `generic` fallback:
+
+```bash
+npx planmo agent list
+```
+
+A few examples:
 
 | `--agent`     | Directory                        | Layout            | Invoke as        |
 | ------------- | -------------------------------- | ----------------- | ---------------- |
 | `opencode`    | `.opencode/commands/`            | `<name>.md`       | `/planmo-next`   |
 | `claude-code` | `.claude/skills/`                | `<name>/SKILL.md` | `/planmo-next`   |
 | `codex`       | `.agents/skills/`                | `<name>/SKILL.md` | `$planmo-next`   |
-| `copilot`     | `.github/skills/`                | `<name>/SKILL.md` | `/planmo-next`   |
-| `generic`     | `.planmo/agents/commands/`       | `<name>.md`       | `/planmo-next`   |
+| `gemini-cli`  | `.gemini/commands/`              | `<name>.toml`     | `/planmo-next`   |
+| `cline`       | `.clinerules/workflows/`         | `<name>.md`       | `/planmo-next.md`|
 | `hermes`      | `~/.hermes/skills/` (global)     | `<name>/SKILL.md` | `/planmo-next`   |
+| `generic`     | `.planmo/agents/commands/`       | `<name>.md`       | `/planmo-next`   |
+
+The complete table, with the official documentation each row was verified against,
+is in [docs/02-architecture/agent-command-files.md](../../docs/02-architecture/agent-command-files.md).
 
 `hermes` installs outside the project, so it is refused unless `--global` is
 passed explicitly. Re-running `agent init` is a clean no-op; a command file you
