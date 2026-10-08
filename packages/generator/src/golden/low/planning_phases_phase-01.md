@@ -1,7 +1,7 @@
 # Phase 01 — Repository & engineering foundation
 
 ## Objective
-Create monorepo toolchain, strict types, lint/format/test, CI, boundaries..
+Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.
 
 ## Tasks
 | Task | Title | Status |

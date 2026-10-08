@@ -1,7 +1,7 @@
 # Phase 12 — Hardening, pilot & v1
 
 ## Objective
-Hardening, security review, pilot, and v1 release..
+Hardening, security review, pilot, and v1 release.
 
 ## Tasks
 | Task | Title | Status |

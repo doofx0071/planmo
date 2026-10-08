@@ -1,7 +1,7 @@
 # Phase 05 — Planning compiler & artifact generator
 
 ## Objective
-Generate plan documents with an ownership manifest and reproducible regeneration..
+Generate plan documents with an ownership manifest and reproducible regeneration.
 
 ## Tasks
 | Task | Title | Status |

@@ -50,6 +50,11 @@ function planningDocument(
   };
 }
 
+/** End a sentence with exactly one full stop. Objectives already carry one. */
+function sentence(text: string): string {
+  return /[.!?]$/.test(text) ? text : `${text}.`;
+}
+
 /**
  * The seeded task rows for one phase, in id order.
  *
@@ -76,7 +81,7 @@ export function phaseTasks(phase: PhaseNode): Array<[string, string]> {
 function renderRoadmap(ir: PlanningIR): string {
   const lines: string[] = ['# Detailed Roadmap', ''];
   for (const phase of ir.phases) {
-    lines.push(`## Phase ${phase.id} — ${phase.title}`, '', `${phase.objective}.`, '');
+    lines.push(`## Phase ${phase.id} — ${phase.title}`, '', sentence(phase.objective), '');
   }
   return `${lines.join('\n').trimEnd()}\n`;
 }
@@ -119,7 +124,7 @@ function renderPhaseDoc(phase: PhaseNode, ir: PlanningIR): string {
     `# Phase ${phase.id} — ${phase.title}`,
     '',
     '## Objective',
-    `${phase.objective}.`,
+    sentence(phase.objective),
     '',
     '## Tasks',
     '| Task | Title | Status |',

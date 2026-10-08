@@ -1,7 +1,7 @@
 # Phase 08 — Workflow/session engine
 
 ## Objective
-Implement phases, handoffs, work packets, gates, planmo next..
+Implement phases, handoffs, work packets, gates, planmo next.
 
 ## Tasks
 | Task | Title | Status |
