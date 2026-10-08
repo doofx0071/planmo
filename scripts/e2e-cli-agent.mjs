@@ -6,7 +6,7 @@
  * build or a missing export cannot hide behind the test runner.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +23,22 @@ const check = (label, ok, detail = '') => {
 };
 
 check('init exits 0', run(['init', target, '--yes']).status === 0);
+
+// Detection: with no --agent and no terminal, PlanMo decides from the project.
+const detected = join(base, 'detected');
+check('init exits 0 (detected project)', run(['init', detected, '--yes']).status === 0);
+mkdirSync(join(detected, '.claude'), { recursive: true });
+const auto = run(['agent', 'init', '--dir', detected]);
+check('detection installs without --agent', auto.status === 0, `exit ${auto.status}`);
+check('detection says what it found', auto.stdout.includes('Detected claude-code'));
+check(
+  "detection writes the detected agent's tree",
+  existsSync(join(detected, '.claude', 'skills', 'planmo-next', 'SKILL.md')),
+);
+check(
+  'nothing detected and no flag is an error, not a guess',
+  run(['agent', 'init', '--dir', join(base, 'no-markers')]).status === 1,
+);
 
 const list = run(['agent', 'list']);
 check('agent list exits 0', list.status === 0, `exit ${list.status}`);

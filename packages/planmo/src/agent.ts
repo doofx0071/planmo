@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { readStatus, writeManaged } from '@planmo/core';
 import { AGENT_COMMANDS, agentTarget, renderAgentFiles } from '@planmo/agent-bridge';
@@ -25,6 +26,10 @@ export interface AgentInitOptions {
   allowOverwrite?: boolean;
   /** Compute the plan without writing anything. */
   dryRun?: boolean;
+  /** Permit a target that installs outside the project (Hermes). Explicit consent. */
+  global?: boolean;
+  /** Home directory a global target resolves `~` against. Injectable for tests. */
+  home?: string;
 }
 
 export interface AgentInitOutcome {
@@ -68,7 +73,7 @@ export async function installAgentCommands(opts: AgentInitOptions): Promise<Agen
   if (target === undefined) {
     throw new Error(`unknown agent '${opts.agent}'`);
   }
-  if (target.global === true) {
+  if (target.global === true && opts.global !== true) {
     // Generation never writes outside the project root without explicit consent.
     throw new Error(
       `agent '${target.id}' installs outside the project (${target.commandDir}); ` +
@@ -81,10 +86,17 @@ export async function installAgentCommands(opts: AgentInitOptions): Promise<Agen
     throw new Error(`no readable .planmo/project.yml in ${opts.root}`);
   }
 
-  const files = renderAgentFiles(target, AGENT_COMMANDS);
+  // A global target writes under the home directory, so `~` is resolved here and
+  // the writer is pointed at the directory that contains the files. Its
+  // containment check still applies — it just starts from home, not the root.
+  const writeRoot = target.global === true ? (opts.home ?? homedir()) : opts.root;
+  const files = renderAgentFiles(target, AGENT_COMMANDS).map((file) => ({
+    ...file,
+    path: target.global === true ? file.path.replace(/^~\//, '') : file.path,
+  }));
   const onDisk = new Map<string, string>();
   for (const file of files) {
-    const existing = await readIfPresent(join(opts.root, file.path));
+    const existing = await readIfPresent(join(writeRoot, file.path));
     if (existing !== undefined) onDisk.set(file.path, existing);
   }
 
@@ -110,7 +122,7 @@ export async function installAgentCommands(opts: AgentInitOptions): Promise<Agen
     writable.length === 0
       ? []
       : (
-          await writeManaged(opts.root, writable, {
+          await writeManaged(writeRoot, writable, {
             contentDirs: dirs,
             allowOverwrite: true,
             ...(opts.dryRun !== undefined ? { dryRun: opts.dryRun } : {}),

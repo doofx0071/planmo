@@ -126,11 +126,37 @@ PlanMo holds **no LLM key**. The agent you already run does the AI; PlanMo
 installs the commands that tell it what to do.
 
 ```bash
-npx planmo agent init --agent opencode
-# ✓ wrote .opencode/commands/planmo-next.md
-# Installed for opencode. Invoke in your agent with:
-#   /planmo-next
+npx planmo agent init
 ```
+
+It detects which agents the project already uses, shows you the evidence, and
+lets you pick — no `--agent` needed:
+
+```console
+$ planmo agent init
+
+Detected in this project:
+  opencode (already installed) — .opencode/, .opencode/commands/planmo-next.md
+
+◆  Which agent(s) should PlanMo install commands for?
+│  ◼ opencode        .opencode/commands
+│  ◻ claude-code     .claude/skills
+│  ◻ codex           .agents/skills
+│  ◻ copilot         .github/skills
+│  ◻ hermes          ~/.hermes/skills (global)
+│  ◻ generic         .planmo/agents/commands
+└
+◆  Install 1 command set(s) now? (Y/n)
+✓ wrote .opencode/commands/planmo-next.md
+Installed for opencode. Invoke in your agent with:
+  /planmo-next
+```
+
+Detection reads filesystem markers only — `.opencode/`, `.claude/` or `CLAUDE.md`,
+`.codex/` or `AGENTS.md`, `.github/copilot-instructions.md`, `~/.hermes/` — so it
+is deterministic, and the evidence is printed so a wrong guess is visible and can
+be unticked. For scripts and CI: `--agent <id>` skips detection and every prompt,
+and `--yes` never prompts.
 
 Supported agents, each with its own layout:
 
