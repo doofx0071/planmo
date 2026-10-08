@@ -6,7 +6,7 @@ Implement declarative packs, deterministic resolution, lockfile, profiles..
 ## Tasks
 | Task | Title | Status |
 |---|---|---|
-| P04-01 | Implement Implement declarative packs, deterministic resolution, lockfile, profiles. | TODO |
+| P04-01 | Implement declarative packs, deterministic resolution, lockfile, profiles. | TODO |
 | P04-02 | Tests & evidence for the phase exit gates | TODO |
 | P04-03 | Docs & traceability for Pack & profile system | TODO |
 | P04-04 | Record the phase handoff | TODO |

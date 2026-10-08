@@ -6,7 +6,7 @@ Hardening, security review, pilot, and v1 release..
 ## Tasks
 | Task | Title | Status |
 |---|---|---|
-| P12-01 | Implement Hardening, security review, pilot, and v1 release. | TODO |
+| P12-01 | Hardening, security review, pilot, and v1 release. | TODO |
 | P12-02 | Tests & evidence for the phase exit gates | TODO |
 | P12-03 | Docs & traceability for Hardening, pilot & v1 | TODO |
 | P12-04 | Record the phase handoff | TODO |

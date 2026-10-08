@@ -1,17 +1,17 @@
 id,phase,title,status,priority
-P00-01,00,"Implement Lock product boundaries, naming, licensing criteria, and non-goals.",TODO,MUST
+P00-01,00,"Lock product boundaries, naming, licensing criteria, and non-goals.",TODO,MUST
 P00-02,00,Tests & evidence for the phase exit gates,TODO,SHOULD
 P00-03,00,Docs & traceability for Product & research foundation,TODO,SHOULD
 P00-04,00,Record the phase handoff,TODO,SHOULD
-P01-01,01,"Implement Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.",TODO,MUST
+P01-01,01,"Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.",TODO,MUST
 P01-02,01,Tests & evidence for the phase exit gates,TODO,SHOULD
 P01-03,01,Docs & traceability for Repository & engineering foundation,TODO,SHOULD
 P01-04,01,Record the phase handoff,TODO,SHOULD
-P02-01,02,Implement Schema-version every persisted PlanMo document and add migration tests.,TODO,MUST
+P02-01,02,Schema-version every persisted PlanMo document and add migration tests.,TODO,MUST
 P02-02,02,Tests & evidence for the phase exit gates,TODO,SHOULD
 P02-03,02,Docs & traceability for Canonical project model & schemas,TODO,SHOULD
 P02-04,02,Record the phase handoff,TODO,SHOULD
-P03-01,03,"Implement Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.",TODO,MUST
+P03-01,03,"Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.",TODO,MUST
 P03-02,03,Tests & evidence for the phase exit gates,TODO,SHOULD
 P03-03,03,Docs & traceability for CLI foundation,TODO,SHOULD
 P03-04,03,Record the phase handoff,TODO,SHOULD

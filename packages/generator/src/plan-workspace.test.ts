@@ -165,6 +165,21 @@ describe('renderPlanWorkspace', () => {
     }
   });
 
+  it('uses the phase objective verbatim as the first task title', () => {
+    const csv = renderPlanWorkspace(ir).find((a) => a.path === 'planning/tasks.csv')?.content;
+    const rows = (csv ?? '')
+      .trimEnd()
+      .split('\n')
+      .slice(1)
+      .map((line) => splitCsvLine(line));
+    for (const phase of ir.phases) {
+      const first = rows.find((r) => r[0] === `P${phase.id}-01`);
+      // The objective is already imperative; prefixing it produced
+      // "Implement Implement init…".
+      expect(first?.[2], `phase ${phase.id}`).toBe(phase.objective);
+    }
+  });
+
   it('records lineage on every artifact', () => {
     for (const artifact of renderPlanWorkspace(ir)) {
       expect(artifact.sources).toContain(`inputHash:${ir.inputHash}`);
