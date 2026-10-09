@@ -144,7 +144,16 @@ check('the user edit survives', readFileSync(edited, 'utf8') === 'my own command
 // Refusals.
 check(
   'a global agent needs --global',
-  run(['agent', 'init', '--dir', target, '--agent', 'hermes']).status === 1,
+  run(['agent', 'init', '--dir', target, '--agent', 'hermes-global']).status === 1,
+);
+check(
+  'hermes itself installs project-locally, where Hermes looks',
+  (() => {
+    const r = run(['agent', 'init', '--dir', target, '--agent', 'hermes']);
+    return (
+      r.status === 0 && existsSync(join(target, '.hermes', 'skills', 'planmo-next', 'SKILL.md'))
+    );
+  })(),
 );
 check(
   'an unknown agent is refused',

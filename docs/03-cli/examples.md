@@ -236,7 +236,8 @@ replaced. `--force` replaces it; `--dry-run` reports without writing.
 
 ## 7. What is NOT in v1 (yet)
 
-`planmo plan`, `planmo pack` are **not wired in the CLI**:
+`planmo plan` is **not wired in the CLI** — there is no engine for it in any
+package, so it is a design decision rather than a missing wire:
 
 ```console
 $ planmo plan

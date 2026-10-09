@@ -8,6 +8,9 @@ Implemented:
 - `planmo validate` — validate the workspace documents and invariants (the CI gate)
 - `planmo doctor` — report environment and workspace health
 - `planmo next` — print the task to work next, and the documents to read first
+- `planmo trace [id]` — render the requirements → tasks → tests trace graph
+- `planmo handoff` — record the current phase's handoff document (refuses to overwrite one you own)
+- `planmo pack` — inspect the pack catalog and reconcile `.planmo/lock.yml`
 - `planmo agent init` — detect your coding agent and install command files (guided)
 - `planmo agent list` — every supported agent, its directory and its format
 - `planmo agent apply <proposal.json>` — validate an agent proposal and record it (ADR-0026)
@@ -15,14 +18,13 @@ Implemented:
 - `planmo adopt [dir]` — read-only analysis of an existing repository
 - `planmo --version` / `planmo --help`
 
-Not yet wired (the engines exist in the packages; see `ROADMAP.md`):
+Not yet wired:
 
-- `planmo plan`
-- `planmo doctor`
-- `planmo trace <id>`
-- `planmo handoff`
-- `planmo diff`
-- `planmo pack ...`
+- `planmo plan` — **no engine exists** in any package; wiring it means designing it
+
+`planmo pack` reads a catalog only from a local directory of `pack.yml` files
+(`--source <dir>`). There is no remote registry and no bundled catalog, so with no
+source it says so rather than pretending one exists.
 
 Later:
 

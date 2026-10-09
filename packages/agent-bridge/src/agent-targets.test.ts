@@ -31,6 +31,7 @@ describe('agent targets', () => {
       'goose',
       'grok',
       'hermes',
+      'hermes-global',
       'iflow',
       'junie',
       'kilo-code',
@@ -129,7 +130,24 @@ describe('agent targets', () => {
   });
 
   it('marks only the out-of-project target as global', () => {
-    expect(AGENT_TARGETS.filter((t) => t.global === true).map((t) => t.id)).toEqual(['hermes']);
+    expect(AGENT_TARGETS.filter((t) => t.global === true).map((t) => t.id)).toEqual([
+      'hermes-global',
+    ]);
+  });
+
+  it('installs Hermes project-locally, where Hermes actually looks', () => {
+    // Hermes reads repo-local skills from `<project>/.hermes/skills/`. It used to
+    // point at `~/.hermes/skills`, which on Windows is not Hermes's home at all,
+    // so the file landed where Hermes never scanned — and it needed --global.
+    expect(agentTarget('hermes')).toMatchObject({
+      commandDir: '.hermes/skills',
+      layout: 'skills',
+    });
+    expect(agentTarget('hermes')?.global).toBeUndefined();
+    expect(agentTarget('hermes-global')).toMatchObject({
+      commandDir: '~/.hermes/skills',
+      global: true,
+    });
   });
 
   it('keeps every command directory inside the project except the global one', () => {

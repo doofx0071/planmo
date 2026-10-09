@@ -167,6 +167,43 @@ try {
 check('next --json emits parseable JSON', parsedBrief?.task?.id === 'P00-01');
 check('next --json reports the phase', parsedBrief?.phase === '00');
 
+// trace / handoff / pack — the engines that were unwired.
+const empty = join(base, 'empty');
+
+const trace = run(['trace', '--dir', target]);
+check('trace exits 0', trace.status === 0, `exit ${trace.status}`);
+check('trace renders the trace graph', trace.stdout.includes('TRACE REPORT'));
+check('trace exits 3 without a workspace', run(['trace', '--dir', empty]).status === 3);
+
+const handoffFile = join(target, 'planning', 'handoffs', 'phase-00-handoff.md');
+const handoffDry = run(['handoff', '--dir', target, '--dry-run']);
+check('handoff --dry-run prints the document', handoffDry.stdout.includes('# Phase 00 Handoff'));
+check('handoff --dry-run writes nothing', handoffDry.status === 0 && !existsSync(handoffFile));
+
+const handoff = run(['handoff', '--dir', target]);
+check('handoff writes the phase document', handoff.status === 0 && existsSync(handoffFile));
+check('handoff reports the next phase', handoff.stdout.includes('next phase 01'));
+check('handoff exits 3 without a workspace', run(['handoff', '--dir', empty]).status === 3);
+// A handoff is user-owned: a second run must refuse rather than overwrite it.
+const handoffAgain = run(['handoff', '--dir', target]);
+check(
+  'handoff refuses to overwrite a user-owned handoff',
+  handoffAgain.status === 2,
+  `exit ${handoffAgain.status}`,
+);
+
+const pack = run(['pack', '--dir', target]);
+check('pack exits 0 with no catalog source', pack.status === 0, `exit ${pack.status}`);
+check(
+  'pack states the missing catalog honestly',
+  pack.stdout.includes('No pack catalog source is configured'),
+);
+check('pack exits 3 without a workspace', run(['pack', '--dir', empty]).status === 3);
+
+check('help documents trace', run(['--help']).stdout.includes('planmo trace'));
+check('help documents handoff', run(['--help']).stdout.includes('planmo handoff'));
+check('help documents pack', run(['--help']).stdout.includes('planmo pack'));
+
 console.log(
   `\nCLI generate E2E: ${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURE(S)`}`,
 );

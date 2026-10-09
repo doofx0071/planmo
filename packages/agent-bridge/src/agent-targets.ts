@@ -392,18 +392,41 @@ export const AGENT_TARGETS: readonly AgentTarget[] = [
     docs: 'https://zed.dev/docs/ai/skills',
   },
   {
-    // Global by design: Hermes reads user-level skills from ~/.hermes/skills.
-    // PlanMo refuses this target unless --global is passed explicitly, because
-    // generation never writes outside the project root without consent.
+    // Hermes reads repo-local skills from `<project>/.hermes/skills/` when it is
+    // launched inside a checkout, alongside `<project>/.agents/skills/`. That is
+    // the right target: project-scoped, and it needs no consent because it stays
+    // inside the project.
+    //
+    // This used to point at `~/.hermes/skills`, which was wrong twice over: on
+    // Windows Hermes's home is `%LOCALAPPDATA%\hermes`, so the file landed in a
+    // directory Hermes never scans, and it required --global to write outside the
+    // project at all. Verified by installing and then loading the generated skill
+    // through Hermes itself.
     id: 'hermes',
     label: 'Hermes Agent',
+    commandDir: '.hermes/skills',
+    layout: 'skills',
+    format: 'md',
+    prefix: 'planmo',
+    invocation: slash,
+    markers: ['.hermes/'],
+    docs: 'https://hermes.nousresearch.com/docs/user-guide/features/skills',
+  },
+  {
+    // The user-level location, for making the commands available in every
+    // project. Hermes documents `~/.hermes/skills/` as its source of truth, so
+    // this is correct wherever the home directory is the default — but Hermes on
+    // Windows resolves its home under %LOCALAPPDATA%, so treat this as the POSIX
+    // path until the CLI can resolve the platform-specific home.
+    id: 'hermes-global',
+    label: 'Hermes Agent (all projects)',
     commandDir: '~/.hermes/skills',
     layout: 'skills',
     format: 'md',
     prefix: 'planmo',
     invocation: slash,
     markers: ['~/.hermes/'],
-    docs: 'https://hermes-agent.nousresearch.com/docs',
+    docs: 'https://hermes.nousresearch.com/docs/user-guide/features/skills',
     global: true,
   },
   {

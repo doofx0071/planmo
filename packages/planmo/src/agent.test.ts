@@ -50,13 +50,15 @@ describe('installAgentCommands', () => {
 
   it('refuses a global target without explicit consent', async () => {
     const root = await freshWorkspace();
-    await expect(installAgentCommands({ root, agent: 'hermes' })).rejects.toThrow(/--global/);
+    await expect(installAgentCommands({ root, agent: 'hermes-global' })).rejects.toThrow(
+      /--global/,
+    );
   });
 
   it('installs a global target under the home directory when consent is given', async () => {
     const root = await freshWorkspace();
     const home = await mkdtemp(join(tmpdir(), 'planmo-home-'));
-    const result = await installAgentCommands({ root, agent: 'hermes', global: true, home });
+    const result = await installAgentCommands({ root, agent: 'hermes-global', global: true, home });
 
     expect(result.written).toContain('.hermes/skills/planmo-next/SKILL.md');
     const body = await readFile(join(home, '.hermes/skills/planmo-next/SKILL.md'), 'utf8');
