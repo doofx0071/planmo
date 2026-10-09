@@ -80,6 +80,7 @@ never executes project scripts.
 | `planmo generate`     | Recompile the planning documents from the project model   |
 | `planmo diff`         | Show what `generate` would change, writing nothing        |
 | `planmo validate`     | Validate the workspace documents and invariants (CI gate) |
+| `planmo doctor`       | Report environment and workspace health                   |
 | `planmo next`         | Print the task to work next, and what to read first       |
 | `planmo agent init`   | Install PlanMo command files into your coding agent       |
 | `planmo agent apply`  | Validate an agent proposal and record it (ADR-0026)       |

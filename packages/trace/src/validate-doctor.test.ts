@@ -214,12 +214,32 @@ describe('doctorEngine (P09-03)', () => {
     expect(result.result).toBe('warn');
   });
 
-  it('flags a non-pnpm package manager (DOC-003)', () => {
-    const result = doctorEngine().check(cleanEnv({ packageManagerName: 'npm' }));
+  it('flags a non-pnpm package manager (DOC-003) when the project expects pnpm', () => {
+    const result = doctorEngine().check(
+      cleanEnv({ packageManagerName: 'npm', expectedPackageManager: 'pnpm' }),
+    );
     const doc = result.diagnostics.find((d) => d.code === 'DOC-003');
     expect(doc?.severity).toBe('error');
     expect(doc?.target).toBe('packageManager');
     expect(result.result).toBe('fail');
+  });
+
+  it('does not invent a package-manager expectation (DOC-003 stays silent)', () => {
+    // The engine used to hardcode "pnpm", so every non-pnpm project — a Python
+    // service, a Go binary — was told its package manager was an error. With no
+    // declared expectation there is nothing to judge, so it reports nothing and
+    // the "clean environment reports nothing" property holds.
+    const result = doctorEngine().check(cleanEnv({ packageManagerName: 'poetry' }));
+    expect(result.diagnostics.find((d) => d.code === 'DOC-003')).toBeUndefined();
+    expect(result.result).toBe('ok');
+  });
+
+  it('stays quiet when the declared expectation matches (DOC-003)', () => {
+    const result = doctorEngine().check(
+      cleanEnv({ packageManagerName: 'pnpm', expectedPackageManager: 'pnpm' }),
+    );
+    expect(result.diagnostics.find((d) => d.code === 'DOC-003')).toBeUndefined();
+    expect(result.result).toBe('ok');
   });
 
   it('flags a dirty git worktree (DOC-004) as a warning', () => {
