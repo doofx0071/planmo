@@ -26,6 +26,16 @@ export interface DoctorInput {
   nodeVersion: string;
   /** Package manager name, e.g. "pnpm", "npm", "yarn". */
   packageManagerName: string;
+  /**
+   * The package manager this project requires, when something actually declares
+   * one. Absent means "no expectation", and DOC-003 then reports what was
+   * detected as info instead of failing.
+   *
+   * The engine must not invent this. It used to hardcode "pnpm" — correct for the
+   * PlanMo repo, where pnpm is the convention, and wrong for every other project:
+   * a Python project would have been told its package manager was an error.
+   */
+  expectedPackageManager?: string;
   /** Whether the git worktree has uncommitted changes. */
   gitWorktreeDirty: boolean;
   /** Minutes since the phase gate checks last ran (absent = never ran). */
@@ -78,14 +88,20 @@ export function doctorEngine(): DoctorEngine {
         });
       }
 
-      // DOC-003 — package manager.
-      if (input.packageManagerName !== 'pnpm') {
+      // DOC-003 — package manager, but only against a declared expectation.
+      // Without one there is nothing to judge, so the engine stays silent rather
+      // than inventing an error (it used to hardcode "pnpm") or a diagnostic that
+      // would break the "a clean environment reports nothing" property.
+      if (
+        input.expectedPackageManager !== undefined &&
+        input.packageManagerName !== input.expectedPackageManager
+      ) {
         diagnostics.push({
           code: 'DOC-003',
           severity: 'error',
           target: 'packageManager',
-          message: `package manager is "${input.packageManagerName}", expected "pnpm"`,
-          remediation: 'Enable pnpm via corepack (corepack enable) and re-run doctor.',
+          message: `package manager is "${input.packageManagerName}", expected "${input.expectedPackageManager}"`,
+          remediation: `Use ${input.expectedPackageManager} for this project and re-run doctor.`,
         });
       }
 

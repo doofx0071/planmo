@@ -10,6 +10,7 @@ import { installAgentCommands } from './agent.js';
 import { applyProposal, renderApplyOutcome } from './apply.js';
 import { detectAgents, type AgentDetection } from './detect.js';
 import { diffWorkspace, renderDiff } from './diff.js';
+import { renderDoctor, runDoctor } from './doctor.js';
 import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
 import { initWorkspace, ProjectNotFoundError, readStatus } from '@planmo/core';
@@ -53,6 +54,7 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} generate      generate/refresh the planning workspace`,
   `  ${PRODUCT_SLUG} diff          show what generate would change (writes nothing)`,
   `  ${PRODUCT_SLUG} validate      validate the workspace documents and invariants`,
+  `  ${PRODUCT_SLUG} doctor        report environment and workspace health`,
   `  ${PRODUCT_SLUG} next          print the task to work next, and what to read`,
   `  ${PRODUCT_SLUG} agent init    install command files for your coding agent`,
   `  ${PRODUCT_SLUG} agent list    list the supported agents and their layouts`,
@@ -92,6 +94,9 @@ export const USAGE = [
   '',
   'validate options:',
   '      --dir <path>          project root (default: walk up from cwd)',
+  '',
+  'doctor options:',
+  '      --dir <path>          project root (default: cwd)',
   '',
   'next options:',
   '      --dir <path>          project root (default: cwd)',
@@ -242,6 +247,8 @@ export async function run(
       return runDiff(argv.slice(1), io);
     case 'validate':
       return runValidate(argv.slice(1), io);
+    case 'doctor':
+      return runDoctorCommand(argv.slice(1), io);
     case 'next':
       return runNext(argv.slice(1), io);
     case 'agent':
@@ -316,6 +323,21 @@ async function runValidate(argv: string[], io: CliIO): Promise<number> {
     return 1;
   } catch (err) {
     io.err(`planmo validate: ${(err as Error).message}`);
+    return 3;
+  }
+}
+
+async function runDoctorCommand(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  try {
+    const outcome = await runDoctor({ root });
+    io.out(renderDoctor(outcome));
+    // A report, so it exits 0 unless the environment genuinely fails — which is
+    // what makes it usable as a pre-flight check.
+    return outcome.result.result === 'fail' ? 1 : 0;
+  } catch (err) {
+    io.err(`planmo doctor: ${(err as Error).message}`);
     return 3;
   }
 }
