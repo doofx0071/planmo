@@ -236,7 +236,7 @@ replaced. `--force` replaces it; `--dry-run` reports without writing.
 
 ## 7. What is NOT in v1 (yet)
 
-`planmo plan`, `planmo doctor`, `planmo diff`, `planmo pack` are **not wired in
+`planmo plan`, `planmo doctor`, `planmo pack` are **not wired in
 the CLI**:
 
 ```console

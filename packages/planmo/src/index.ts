@@ -9,6 +9,7 @@ import { validateWorkspace } from './validate.js';
 import { installAgentCommands } from './agent.js';
 import { applyProposal, renderApplyOutcome } from './apply.js';
 import { detectAgents, type AgentDetection } from './detect.js';
+import { diffWorkspace, renderDiff } from './diff.js';
 import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
 import { initWorkspace, ProjectNotFoundError, readStatus } from '@planmo/core';
@@ -50,6 +51,7 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} status        validate and summarize the workspace`,
   `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo (dry-run report; writes nothing)`,
   `  ${PRODUCT_SLUG} generate      generate/refresh the planning workspace`,
+  `  ${PRODUCT_SLUG} diff          show what generate would change (writes nothing)`,
   `  ${PRODUCT_SLUG} validate      validate the workspace documents and invariants`,
   `  ${PRODUCT_SLUG} next          print the task to work next, and what to read`,
   `  ${PRODUCT_SLUG} agent init    install command files for your coding agent`,
@@ -83,6 +85,10 @@ export const USAGE = [
   '      --dir <path>          project root (default: cwd)',
   '      --dry-run             print the plan and write nothing',
   '      --force               overwrite files the manifest already owns',
+  '',
+  'diff options:',
+  '      --dir <path>          project root (default: cwd)',
+  '      --exit-code           exit 1 when the planning tree is out of date',
   '',
   'validate options:',
   '      --dir <path>          project root (default: walk up from cwd)',
@@ -232,6 +238,8 @@ export async function run(
       return runAdopt(argv.slice(1), io);
     case 'generate':
       return runGenerate(argv.slice(1), io);
+    case 'diff':
+      return runDiff(argv.slice(1), io);
     case 'validate':
       return runValidate(argv.slice(1), io);
     case 'next':
@@ -267,6 +275,23 @@ async function runGenerate(argv: string[], io: CliIO): Promise<number> {
     return result.collisions.length > 0 ? 2 : 0;
   } catch (err) {
     io.err(`planmo generate: ${(err as Error).message}`);
+    return 3;
+  }
+}
+
+async function runDiff(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  try {
+    const outcome = await diffWorkspace({ root, planmoVersion: cliVersion() });
+    io.out(renderDiff(outcome));
+    // `--exit-code` makes this usable as a check, the way `git diff --exit-code`
+    // is. Without it, a diff is information, not a failure — so the default stays
+    // exit 0 and the documented exit contract is untouched.
+    if (flags.has('exit-code') && !outcome.upToDate) return 1;
+    return 0;
+  } catch (err) {
+    io.err(`planmo diff: ${(err as Error).message}`);
     return 3;
   }
 }
