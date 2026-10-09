@@ -25,6 +25,19 @@ export interface GenerateOutcome {
   diff: string;
   /** Resolution diagnostics (missing/unknown pack refs). Never fatal here. */
   diagnostics: string[];
+  /**
+   * Per-document action from the synth preview: what WOULD happen to each file.
+   * Present on a dry run too, which is what makes `planmo diff` precise rather
+   * than a guess from the written list.
+   *
+   * NOTE: `overwrite`/`merge` mean "the manifest owns this and it would be
+   * written", NOT "its content differs". The preview decides by ownership, not by
+   * bytes, so a caller asking "would anything actually change?" must compare
+   * against `contents`.
+   */
+  changes: { path: string; action: string; reason: string }[];
+  /** The exact bytes each document would be written with, keyed by path. */
+  contents: Record<string, string>;
 }
 
 export async function generatePlanningWorkspace(opts: GenerateOptions): Promise<GenerateOutcome> {
@@ -57,5 +70,11 @@ export async function generatePlanningWorkspace(opts: GenerateOptions): Promise<
     collisions: [...result.collisions],
     diff: result.diff,
     diagnostics: resolution.diagnostics.map((d) => `${d.code}: ${d.message}`),
+    changes: result.preview.changes.map((change) => ({
+      path: change.path,
+      action: change.action,
+      reason: change.reason,
+    })),
+    contents: Object.fromEntries(result.artifacts.map((a) => [a.path, a.content])),
   };
 }

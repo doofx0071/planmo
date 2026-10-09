@@ -78,6 +78,7 @@ never executes project scripts.
 | --------------------- | --------------------------------------------------------- |
 | `planmo init [dir]`   | Create a workspace, compiling the planning tree with it   |
 | `planmo generate`     | Recompile the planning documents from the project model   |
+| `planmo diff`         | Show what `generate` would change, writing nothing        |
 | `planmo validate`     | Validate the workspace documents and invariants (CI gate) |
 | `planmo next`         | Print the task to work next, and what to read first       |
 | `planmo agent init`   | Install PlanMo command files into your coding agent       |
