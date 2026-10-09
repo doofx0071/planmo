@@ -1,5 +1,33 @@
 import type { PlanningIR } from '../ir.js';
+import { policyClassesInUse } from '../standards-context.js';
 import { doc, projectName } from './shared.js';
+
+/**
+ * The folder table, derived from what the renderers actually emit.
+ *
+ * `policies/` is the one conditional folder: it exists only when a standard
+ * class has applicable rules, which needs a pack selected. Deriving the row from
+ * the same predicate the policy renderer uses means the generated README can
+ * never again list a folder that is not there.
+ */
+function folderRows(ir: PlanningIR): string[] {
+  const rows: [string, string][] = [
+    ['`architecture/`', 'system shape, domain model, security & privacy, state machines'],
+    ['`compliance/`', 'policy register'],
+    ['`design/`', 'design brief and design system'],
+    ['`handoffs/`', 'per-phase handoff records (template provided)'],
+    ['`phases/`', 'one document per planned phase'],
+  ];
+  if (policyClassesInUse(ir).length > 0) {
+    rows.push(['`policies/`', 'one document per standard class in use']);
+  }
+  rows.push(
+    ['`prompts/`', 'agent prompts for this project'],
+    ['`requirements/`', 'product requirements'],
+    ['`testing/`', 'test strategy'],
+  );
+  return rows.map(([folder, contents]) => `| ${folder} | ${contents} |`);
+}
 
 export function renderReadme(ir: PlanningIR): string {
   return doc([
@@ -28,17 +56,11 @@ export function renderReadme(ir: PlanningIR): string {
     '',
     '## Folders',
     '',
+    'Only the folders that were actually generated are listed.',
+    '',
     '| Folder | Contents |',
     '|---|---|',
-    '| `architecture/` | system shape, domain model, security & privacy, state machines |',
-    '| `compliance/` | policy register |',
-    '| `design/` | design brief and design system |',
-    '| `handoffs/` | per-phase handoff records (template provided) |',
-    '| `phases/` | one document per planned phase |',
-    '| `policies/` | one document per standard class in use |',
-    '| `prompts/` | agent prompts for this project |',
-    '| `requirements/` | product requirements |',
-    '| `testing/` | test strategy |',
+    ...folderRows(ir),
     '',
     '## Rules',
     '',

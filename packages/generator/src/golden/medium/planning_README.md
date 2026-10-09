@@ -23,6 +23,8 @@ These are seeded once and never regenerated — edit them freely:
 
 ## Folders
 
+Only the folders that were actually generated are listed.
+
 | Folder | Contents |
 |---|---|
 | `architecture/` | system shape, domain model, security & privacy, state machines |

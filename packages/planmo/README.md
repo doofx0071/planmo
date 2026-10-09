@@ -42,7 +42,7 @@ my-project/planning/
 ├── design/         DESIGN-BRIEF.md  DESIGN-SYSTEM.md
 ├── handoffs/       TEMPLATE.md
 ├── phases/         phase-00.md … phase-NN.md
-├── policies/       <one per standard class in use>
+├── policies/       <one per standard class in use — only when a pack applies>
 ├── prompts/        README.md  phase-prompt.md
 ├── requirements/   PRODUCT-REQUIREMENTS.md
 └── testing/        TEST-STRATEGY.md
