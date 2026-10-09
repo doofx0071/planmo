@@ -191,6 +191,21 @@ function renderContextDoc(ir: PlanningIR): string {
 }
 
 /**
+ * The standard classes that actually have applicable rules, in canonical class
+ * order.
+ *
+ * This is the single predicate for "does `planning/policies/` exist". The policy
+ * renderer and the generated `planning/README.md` both call it, so the README
+ * cannot advertise a folder that was never written — which it did, for every
+ * project with no packs selected.
+ */
+export function policyClassesInUse(ir: PlanningIR): readonly StandardClass[] {
+  return STANDARD_CLASSES.filter((className) =>
+    ir.standards.rules.some((rule) => rule.class === className),
+  );
+}
+
+/**
  * Render the standards/context/policy document set for a compiled IR
  * (P05-09). Deterministic order: STANDARDS.md, one policy doc per standard
  * class in canonical class order, then CONTEXT.md.
@@ -200,7 +215,7 @@ export const renderStandardsAndContext: Renderer = (ir) => {
     standardsDocument('planning/STANDARDS.md', renderStandardsDoc(ir), ir),
   ];
   const rules = sortedRules(ir.standards.rules);
-  for (const className of STANDARD_CLASSES) {
+  for (const className of policyClassesInUse(ir)) {
     const group = rules.filter((r) => r.class === className);
     if (group.length === 0) continue;
     artifacts.push(

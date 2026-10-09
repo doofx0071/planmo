@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { isTaskId, splitCsvLine, taskId, taskPhase } from '@planmo/shared';
-import { buildIr } from './ir.js';
+import { buildIr, type PlanningIR } from './ir.js';
 import { mediumAssuranceInput } from './fixtures.js';
 import { PLAN_WORKSPACE_PATHS, renderPlanWorkspace } from './plan-workspace.js';
 import { phaseTasks, renderPlanningDocuments } from './render.js';
+import { policyClassesInUse, renderStandardsAndContext } from './standards-context.js';
+import { renderReadme } from './workspace/readme.js';
 
 /**
  * Full planning-workspace renderer. These tests pin the properties the
@@ -37,6 +39,59 @@ describe('renderPlanWorkspace', () => {
         `missing ${folder}`,
       ).toBe(true);
     }
+  });
+
+  it('advertises only folders it actually generates', () => {
+    // The generated README lists the folder tree, and it used to list
+    // `policies/` for every project — including the ones where no standard class
+    // has rules, so the folder was never written. This is the invariant that
+    // catches the table drifting from the renderers again.
+    //
+    // The README describes the whole planning tree, which THREE renderers emit:
+    // the phase spine (`render.ts`), this one, and the standards/policy set.
+    // Check the union, not one half.
+    const artifacts = [
+      ...renderPlanningDocuments(ir),
+      ...renderPlanWorkspace(ir),
+      ...renderStandardsAndContext(ir),
+    ];
+    const readme = artifacts.find((a) => a.path === 'planning/README.md');
+    expect(readme).toBeDefined();
+
+    const advertised = [...(readme?.content ?? '').matchAll(/^\| `([a-z-]+)\/`/gm)].map(
+      (match) => `planning/${match[1]}/`,
+    );
+    expect(advertised.length).toBeGreaterThan(0);
+
+    const generated = new Set(
+      artifacts
+        .filter((artifact) => artifact.path.startsWith('planning/'))
+        .map((artifact) => artifact.path.slice(0, artifact.path.lastIndexOf('/') + 1))
+        .filter((dir) => dir !== 'planning/'),
+    );
+
+    for (const folder of advertised) {
+      expect(
+        generated.has(folder),
+        `README advertises ${folder} but nothing is generated there`,
+      ).toBe(true);
+    }
+  });
+
+  it('omits the policies folder when no standard class has rules', () => {
+    // A default project selects no packs, so no class has rules and no policy
+    // document is emitted. The README must not promise the folder.
+    const withoutRules: PlanningIR = {
+      ...ir,
+      standards: { ...ir.standards, rules: [] },
+    };
+    expect(policyClassesInUse(withoutRules)).toEqual([]);
+    expect(renderReadme(withoutRules)).not.toContain('`policies/`');
+  });
+
+  it('keeps the policies folder when a standard class does have rules', () => {
+    expect(policyClassesInUse(ir).length).toBeGreaterThan(0);
+    expect(renderReadme(ir)).toContain('`policies/`');
   });
 
   it('splits ownership: derived documents are generated, accumulators are seeded', () => {
