@@ -140,6 +140,9 @@ importers:
       '@planmo/workflow':
         specifier: workspace:*
         version: link:../workflow
+      yaml:
+        specifier: 2.9.1
+        version: 2.9.1
 
   packages/scanner:
     dependencies:

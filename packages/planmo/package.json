@@ -52,6 +52,7 @@
     "@planmo/schema": "workspace:*",
     "@planmo/shared": "workspace:*",
     "@planmo/trace": "workspace:*",
-    "@planmo/workflow": "workspace:*"
+    "@planmo/workflow": "workspace:*",
+    "yaml": "2.9.1"
   }
 }

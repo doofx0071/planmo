@@ -83,11 +83,15 @@ describe('detectAgents', () => {
     expect(await detect(['AGENTS.md'])).toEqual(['amp', 'codex', 'openhands']);
   });
 
-  it('detects hermes from the global ~/.hermes marker', async () => {
+  it('detects hermes project-locally, and the global target from the home dir', async () => {
+    // Project-local: Hermes reads `<project>/.hermes/skills/`.
+    expect(await detect(['.hermes/'])).toEqual(['hermes']);
+
+    // User-level: only when the home directory carries `~/.hermes`.
     const home = await mkdtemp(join(tmpdir(), 'planmo-home-'));
     await mkdir(join(home, '.hermes'), { recursive: true });
     const found = await detectAgents(await project([]), { home });
-    expect(found.map((d) => d.id)).toEqual(['hermes']);
+    expect(found.map((d) => d.id)).toEqual(['hermes-global']);
     expect(found[0]?.evidence).toContain('~/.hermes/');
   });
 

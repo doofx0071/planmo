@@ -6,6 +6,9 @@ import { PRODUCT_SLUG } from '@planmo/shared';
 import { cliVersion } from './version.js';
 import { generatePlanningWorkspace } from './generate.js';
 import { validateWorkspace } from './validate.js';
+import { buildHandoff, renderHandoffDocument } from './handoff.js';
+import { packReport, renderPackReport } from './pack.js';
+import { traceWorkspace } from './trace.js';
 import { installAgentCommands } from './agent.js';
 import { applyProposal, renderApplyOutcome } from './apply.js';
 import { detectAgents, type AgentDetection } from './detect.js';
@@ -56,6 +59,9 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} validate      validate the workspace documents and invariants`,
   `  ${PRODUCT_SLUG} doctor        report environment and workspace health`,
   `  ${PRODUCT_SLUG} next          print the task to work next, and what to read`,
+  `  ${PRODUCT_SLUG} trace [id]    render the requirements -> tasks -> tests trace graph`,
+  `  ${PRODUCT_SLUG} handoff       record the current phase's handoff document`,
+  `  ${PRODUCT_SLUG} pack          inspect the pack catalog and reconcile the lockfile`,
   `  ${PRODUCT_SLUG} agent init    install command files for your coding agent`,
   `  ${PRODUCT_SLUG} agent list    list the supported agents and their layouts`,
   `  ${PRODUCT_SLUG} agent apply   validate and record a proposal from an agent`,
@@ -102,6 +108,22 @@ export const USAGE = [
   '      --dir <path>          project root (default: cwd)',
   '      --print               print the brief to stdout and write nothing (the default)',
   '      --json                emit the brief as machine-readable JSON',
+  '',
+  'trace options:',
+  '      --dir <path>          project root (default: cwd)',
+  '      [id]                  focus on a requirement/task id (the engine renders',
+  '                            the whole graph; the note names the focused node)',
+  '',
+  'handoff options:',
+  '      --dir <path>          project root (default: cwd)',
+  '      --dry-run             print the document and write nothing',
+  '      --force               overwrite an existing handoff you have edited',
+  '',
+  'pack options:',
+  '      --dir <path>          project root (default: cwd)',
+  '      --source <dir>        local directory of pack.yml files to use as the catalog',
+  '                            (the only source; no remote registry is ever fetched)',
+  '      --dry-run             show what the lockfile would become, write nothing',
   '',
   'agent options:',
   '      --agent <id>          any id from `planmo agent list` (comma-separated)',
@@ -251,6 +273,12 @@ export async function run(
       return runDoctorCommand(argv.slice(1), io);
     case 'next':
       return runNext(argv.slice(1), io);
+    case 'trace':
+      return runTrace(argv.slice(1), io);
+    case 'handoff':
+      return runHandoff(argv.slice(1), io);
+    case 'pack':
+      return runPack(argv.slice(1), io);
     case 'agent':
       return runAgent(argv.slice(1), io, wizard);
     default:
@@ -357,6 +385,81 @@ async function runNext(argv: string[], io: CliIO): Promise<number> {
     io.err(`planmo next: ${(err as Error).message}`);
     // 3 = there is no workspace here at all. 1 = a workspace that exists but is
     // not ready to be read (the planning tree was never generated).
+    return err instanceof ProjectNotFoundError ? 3 : 1;
+  }
+}
+
+async function runTrace(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? process.cwd());
+  const id = flags.get('id') ?? positional[0];
+  try {
+    const outcome = await traceWorkspace({ root, ...(id !== undefined ? { id } : {}) });
+    // The trace engine renders the whole graph and offers no subgraph filtering,
+    // so a focus id never narrows the output. Say so rather than implying it did.
+    if (outcome.focusNote !== null) io.out(outcome.focusNote);
+    io.out(outcome.text);
+    return 0;
+  } catch (err) {
+    io.err(`planmo trace: ${(err as Error).message}`);
+    return err instanceof ProjectNotFoundError ? 3 : 1;
+  }
+}
+
+async function runHandoff(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  const dryRun = flags.has('dry-run');
+  try {
+    const outcome = await buildHandoff({
+      root,
+      planmoVersion: cliVersion(),
+      ...(dryRun ? { dryRun: true } : {}),
+      ...(flags.has('force') ? { allowOverwrite: true } : {}),
+    });
+    for (const p of outcome.written) {
+      io.out(`${dryRun ? '[dry-run] would write' : '✓ wrote'} ${p}`);
+    }
+    for (const c of outcome.collisions) {
+      io.err(`✗ collision  ${c} (existing, refused — use --force to overwrite)`);
+    }
+    if (dryRun) io.out(outcome.text);
+    // `missingForResume` is the engine's own answer to "is this handoff enough to
+    // resume from?". It is legitimate information, not a failure: a phase with no
+    // completed tasks yet genuinely cannot be resumed from, and that is the normal
+    // state early in a phase. So it is a warning — the write still succeeded, and
+    // exiting non-zero for work that happened would be a false failure. Only a
+    // refused write (a file the user owns) is an error.
+    if (outcome.missingForResume.length > 0) {
+      io.err('handoff: warning — this handoff would not resume cleanly:');
+      for (const missing of outcome.missingForResume) io.err(`  missing: ${missing}`);
+    }
+    if (outcome.collisions.length > 0) return 2;
+    io.out(`handoff: OK — phase ${outcome.phase} recorded, next phase ${outcome.nextPhase}`);
+    return 0;
+  } catch (err) {
+    io.err(`planmo handoff: ${(err as Error).message}`);
+    return err instanceof ProjectNotFoundError ? 3 : 1;
+  }
+}
+
+async function runPack(argv: string[], io: CliIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  const source = flags.get('source');
+  try {
+    const outcome = await packReport({
+      root,
+      planmoVersion: cliVersion(),
+      ...(source !== undefined ? { source } : {}),
+      ...(flags.has('dry-run') ? { dryRun: true } : {}),
+    });
+    io.out(renderPackReport(outcome));
+    // Nothing resolved is a failure worth signalling: the project asked for packs
+    // and the run could not place them.
+    return outcome.resolution.ok ? 0 : 1;
+  } catch (err) {
+    io.err(`planmo pack: ${(err as Error).message}`);
     return err instanceof ProjectNotFoundError ? 3 : 1;
   }
 }

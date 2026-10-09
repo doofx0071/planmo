@@ -82,6 +82,9 @@ never executes project scripts.
 | `planmo validate`     | Validate the workspace documents and invariants (CI gate) |
 | `planmo doctor`       | Report environment and workspace health                   |
 | `planmo next`         | Print the task to work next, and what to read first       |
+| `planmo trace [id]`   | Render the requirements → tasks → tests trace graph       |
+| `planmo handoff`      | Record the current phase's handoff document               |
+| `planmo pack`         | Inspect the pack catalog and reconcile the lockfile       |
 | `planmo agent init`   | Install PlanMo command files into your coding agent       |
 | `planmo agent apply`  | Validate an agent proposal and record it (ADR-0026)       |
 | `planmo status`       | Validate and summarize the workspace                      |

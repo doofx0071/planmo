@@ -166,12 +166,12 @@ describe('planmo agent init — guided flow', () => {
 
   it('asks before installing a target that lives outside the project', async () => {
     const root = await workspace();
-    const { wizard, seen } = scripted({ picked: ['hermes'], confirms: [true, false] });
+    const { wizard, seen } = scripted({ picked: ['hermes-global'], confirms: [true, false] });
     const { io, out } = capture();
 
     expect(await asTty(() => run(['agent', 'init', '--dir', root], io, wizard))).toBe(0);
     expect(seen.prompts.join('\n')).toContain('outside this project');
-    expect(out.join('\n')).toContain('Skipped hermes');
+    expect(out.join('\n')).toContain('Skipped hermes-global');
   });
 });
 
