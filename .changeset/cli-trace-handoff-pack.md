@@ -51,7 +51,7 @@ Nothing is downloaded and no network call is made.
 All three adapters threw a **plain** `Error` when `.planmo/` existed but
 `project.yml` was unreadable, which lost the `ProjectNotFoundError` type the CLI's
 exit-3 mapping depends on — and `pack` wrapped the original error, so it lost the
-type on *every* path. A missing workspace reported exit 1, the code for a generic
+type on _every_ path. A missing workspace reported exit 1, the code for a generic
 error, in a contract callers branch on.
 
 They now share one `WorkspaceNotFoundError extends ProjectNotFoundError`. Caught
