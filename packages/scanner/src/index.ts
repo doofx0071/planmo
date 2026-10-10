@@ -19,6 +19,7 @@ export {
   SCAN_WARNING_CODES,
 } from './scan/safe-scanner.js';
 export { NodeFileReader, nodeFileReader } from './scan/node-reader.js';
+export { DEFAULT_EXCLUDES } from './contracts.js';
 export { ConstructorReader, constructorReader } from './scan/virtual-reader.js';
 
 // Detection layer (P10-02): evidence + confidence stack/test/CI detection.

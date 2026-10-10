@@ -20,7 +20,7 @@ import { renderDoctor, runDoctor } from './doctor.js';
 import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
 import { initWorkspace, ProjectNotFoundError, readStatus } from '@planmo/core';
-import { analyzeRepository, nodeFileReader } from '@planmo/scanner';
+import { analyzeRepository, nodeFileReader, DEFAULT_EXCLUDES } from '@planmo/scanner';
 import type {
   AccessibilityLevel,
   AgentId,
@@ -923,7 +923,15 @@ async function runAdopt(argv: string[], io: CliIO): Promise<number> {
   const { flags, positional } = parseArgs(argv);
   const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
   try {
-    const { report } = await analyzeRepository(root, nodeFileReader());
+    // A scan of a real project can take a while, and the user is staring at a
+    // silent terminal while it happens. Say what is being scanned, to stderr so
+    // stdout stays exactly the report.
+    io.err(`adopt: scanning ${root} …`);
+    const { report } = await analyzeRepository(root, nodeFileReader(), {
+      // Without this the scan walks node_modules and the findings describe your
+      // dependencies rather than your code (see DEFAULT_EXCLUDES).
+      scan: { exclude: DEFAULT_EXCLUDES },
+    });
     io.out(
       report.reportMarkdown.endsWith('\n') ? report.reportMarkdown : `${report.reportMarkdown}\n`,
     );
