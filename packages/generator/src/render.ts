@@ -170,19 +170,31 @@ export function phaseTasks(
  */
 export function tasksForPhase(ir: PlanningIR, phase: PhaseNode): TaskRecord[] {
   const planned = ir.plan?.phases.find((candidate) => candidate.id === phase.id);
-  if (planned === undefined) return phaseTasks(phase, ir.profile?.gates);
-  return planned.tasks.map((task) => ({
-    id: task.id,
-    phase: phase.id,
-    title: task.title,
-    status: 'TODO',
-    priority: task.priority,
-    acceptance: [...task.acceptance],
-    verification: {
-      required: task.verification.required,
-      checks: [...task.verification.checks],
-    },
-  }));
+  const tasks =
+    planned === undefined
+      ? phaseTasks(phase, ir.profile?.gates)
+      : planned.tasks.map((task) => ({
+          id: task.id,
+          phase: phase.id,
+          title: task.title,
+          status: 'TODO' as const,
+          priority: task.priority,
+          acceptance: [...task.acceptance],
+          verification: {
+            required: task.verification.required,
+            checks: [...task.verification.checks],
+          },
+        }));
+
+  // Recorded progress wins over the generated default. This is the ONE place task
+  // status is decided, so `tasks.csv`, `TRACKER.md` and the phase documents cannot
+  // disagree — and `generate` cannot silently reset a task the user marked done.
+  // An id the workspace does not know is ignored rather than invented.
+  const overrides = ir.taskStatus;
+  if (Object.keys(overrides).length === 0) return tasks;
+  return tasks.map((task) =>
+    overrides[task.id] === undefined ? task : { ...task, status: overrides[task.id]! },
+  );
 }
 
 /** ROADMAP.md — the full depth-pruned phase spine with objectives. */

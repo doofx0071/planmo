@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { PRODUCT_SLUG } from '@planmo/shared';
 import { cliVersion } from './version.js';
 import { renderAdoptArtifacts } from './adopt-write.js';
+import { readTaskRows, recordTaskStatus, renderTaskOutcome } from './task.js';
 import { generatePlanningWorkspace } from './generate.js';
 import { validateWorkspace } from './validate.js';
 import { runPlan, renderPlanSummary } from './plan.js';
@@ -22,7 +23,13 @@ import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
 import { initWorkspace, ProjectNotFoundError, readStatus, writeManaged } from '@planmo/core';
 import { analyzeRepository, nodeFileReader, DEFAULT_EXCLUDES } from '@planmo/scanner';
-import { AGENT_IDS, PROJECT_LIFECYCLES, PROJECT_RISKS, PROJECT_TYPES } from '@planmo/schema';
+import {
+  AGENT_IDS,
+  PROJECT_LIFECYCLES,
+  PROJECT_RISKS,
+  PROJECT_TYPES,
+  TASK_STATUSES,
+} from '@planmo/schema';
 import type {
   AccessibilityLevel,
   AgentId,
@@ -65,6 +72,7 @@ export const USAGE = [
   `  ${PRODUCT_SLUG} validate      validate the workspace documents and invariants`,
   `  ${PRODUCT_SLUG} doctor        report environment and workspace health`,
   `  ${PRODUCT_SLUG} next          print the task to work next, and what to read`,
+  `  ${PRODUCT_SLUG} task [id]     record a task's status (interactive without args)`,
   `  ${PRODUCT_SLUG} trace [id]    render the requirements -> tasks -> tests trace graph`,
   `  ${PRODUCT_SLUG} handoff       record the current phase's handoff document`,
   `  ${PRODUCT_SLUG} pack          inspect the pack catalog and reconcile the lockfile`,
@@ -100,6 +108,16 @@ export const USAGE = [
   '  adopt prints a read-only report, then offers to write the reports to',
   '  .planmo/adopt/ and to create the workspace. Both prompts default to the safe',
   '  answer; --yes and --dry-run skip them and write nothing, as before.',
+  '',
+  'task options:',
+  '      [id]                  task id, e.g. P00-01 (omit to choose interactively)',
+  '      --status <v>          TODO | IN_PROGRESS | BLOCKED | REVIEW | DONE',
+  '      --dir <path>          project root (default: cwd)',
+  '      --dry-run             report the change and write nothing',
+  '',
+  '  Status is recorded in .planmo/state.yml, which regeneration preserves. Editing',
+  '  the status column of planning/tasks.csv directly does NOT work: that file is',
+  '  generated, and the next `planmo generate` resets it to TODO.',
   '',
   'generate options:',
   '      --dir <path>          project root (default: cwd)',
@@ -291,6 +309,8 @@ export async function run(
       return runStatus(argv.slice(1), io);
     case 'adopt':
       return runAdopt(argv.slice(1), io, wizard);
+    case 'task':
+      return runTask(argv.slice(1), io, wizard);
     case 'generate':
       return runGenerate(argv.slice(1), io);
     case 'diff':
@@ -703,12 +723,19 @@ async function runAgent(argv: string[], io: CliIO, wizard: WizardIO): Promise<nu
         ...(flags.has('dry-run') ? { dryRun: true } : {}),
         ...(isGlobal ? { global: true } : {}),
       });
-      for (const path of result.written) io.out(`✓ wrote ${path}`);
+      // A global target installs OUTSIDE the project, into the user's home. Printing
+      // the bare relative path makes it indistinguishable from a project-local
+      // install: two identical "✓ wrote .hermes/skills/…" lines for two different
+      // destinations, one of which leaves the repository.
+      const prefix = isGlobal ? '~/' : '';
+      for (const path of result.written) io.out(`✓ wrote ${prefix}${path}`);
       for (const path of result.collisions) {
-        io.err(`✗ collision  ${path} (yours, kept — use --force to replace)`);
+        io.err(`✗ collision  ${prefix}${path} (yours, kept — use --force to replace)`);
         collisions += 1;
       }
-      io.out(`Installed for ${target.label}.`);
+      io.out(
+        `Installed for ${target.label}${isGlobal ? ' — outside this project, in your home directory' : ''}.`,
+      );
       if (target.howToRun !== undefined) {
         io.out(`  ${target.howToRun}`);
       } else {
@@ -1032,6 +1059,75 @@ function progressLine(io: CliIO, text: string): (suffix?: string) => void {
     clearInterval(timer);
     process.stderr.write(`\r${text} ${suffix}\n`);
   };
+}
+
+async function runTask(argv: string[], io: CliIO, wizard: WizardIO): Promise<number> {
+  const { flags, positional } = parseArgs(argv);
+  // The positional argument is the TASK ID, not a directory — the root comes from
+  // --dir or the working directory.
+  const root = resolve(flags.get('dir') ?? process.cwd());
+  try {
+    const rows = await readTaskRows(root);
+    let id = positional[0];
+
+    // Interactive-first: with no id, choose from the tasks that are not done.
+    if (id === undefined) {
+      const open = rows.filter((row) => row.status !== 'DONE');
+      if (open.length === 0) {
+        io.out('Every task is DONE.');
+        return 0;
+      }
+      const picked = await wizard.select(
+        'Which task?',
+        open.map((row) => ({
+          value: row.id,
+          label: `${row.id}  ${row.status}  ${row.title}`,
+        })),
+      );
+      if (picked === undefined) return 1;
+      id = picked;
+    }
+
+    const row = rows.find((candidate) => candidate.id === id);
+    let status = flags.get('status');
+
+    if (status === undefined) {
+      // DONE first and recommended: closing the task is what the loop needs, and
+      // it is the overwhelmingly common case.
+      const ordered = ['DONE', ...TASK_STATUSES.filter((value) => value !== 'DONE')];
+      const picked = await wizard.select(
+        `Status for ${id}${row === undefined ? '' : ` (currently ${row.status})`}`,
+        ordered.map((value) => ({
+          value,
+          label: value,
+          ...(value === 'DONE' ? { hint: 'recommended' } : {}),
+        })),
+      );
+      if (picked === undefined) return 1;
+      status = picked;
+    }
+
+    // Narrowed explicitly: the assignment above happens inside a nested branch, so
+    // TypeScript cannot prove the value is present from the earlier check alone.
+    if (status === undefined) return 1;
+
+    const outcome = await recordTaskStatus({
+      root,
+      id,
+      status,
+      ...(flags.has('dry-run') ? { dryRun: true } : {}),
+    });
+    io.out(renderTaskOutcome(outcome));
+    if (flags.has('dry-run') && !outcome.unchanged) {
+      io.out('[dry-run] nothing was written.');
+    } else if (!outcome.unchanged) {
+      io.out('Recorded in .planmo/state.yml — regeneration preserves it.');
+    }
+    return 0;
+  } catch (err) {
+    io.err(`planmo task: ${(err as Error).message}`);
+    return 1;
+  }
 }
 
 async function runAdopt(argv: string[], io: CliIO, wizard: WizardIO): Promise<number> {
