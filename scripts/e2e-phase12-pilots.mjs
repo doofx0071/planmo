@@ -428,31 +428,41 @@ pilot('high-assurance-init — planmo init <dir> --yes --depth high-assurance');
     'high-assurance workspace reports HEALTHY',
     status.status === 0 && status.stdout.includes('status: HEALTHY'),
   );
-  // The deterministic plan/generate path is NOT CLI-wired in v1 (see
-  // packages/cli/src/index.ts): planmo plan/generate/next are unknown
-  // commands. Asserted in pilot 7 — no plan/generate pilot can exist in v1.
-  check('documented surface note: plan/generate not CLI-wired in v1 (asserted in pilot 7)', true);
+  // The whole advertised surface is wired now that the AI planning engine landed:
+  // plan, generate, next, trace, handoff and pack all exist. Asserted in pilot 7.
+  check('documented surface note: the CLI surface is wired (asserted in pilot 7)', true);
 }
 
 // ---------------------------------------------------------------- pilot 7
 pilot('v1-surface-honesty — --help claims exactly the commands that exist');
 {
-  // `plan` is still not CLI-wired.
-  for (const cmd of ['plan']) {
-    const r = run([cmd, '--yes']);
-    check(
-      `planmo ${cmd} exits 1 (unknown command)`,
-      r.status === 1 && r.stderr.includes(`unknown command '${cmd}'`),
-      `exit ${r.status}`,
-    );
-  }
-  // `generate` and `next` ARE wired: they must behave like real commands (exit 3
-  // with no workspace) and never fall through to "unknown command".
-  for (const cmd of ['generate', 'next']) {
+  // Every advertised command IS wired: each must behave like a real command and
+  // never fall through to "unknown command".
+  for (const cmd of ['generate', 'next', 'trace', 'handoff', 'pack']) {
     const r = run([cmd, '--dir', join(BASE, 'no-such-workspace')]);
     check(
       `planmo ${cmd} is wired (exits 3, not "unknown command")`,
       r.status === 3 && !r.stderr.includes('unknown command'),
+      `exit ${r.status}`,
+    );
+  }
+  // `plan` needs an idea before it looks for a workspace, so it is checked with one.
+  // The provider is never consulted on this path, so the check is independent of
+  // whatever credentials happen to be in the environment.
+  {
+    const r = run(['plan', 'an idea', '--dir', join(BASE, 'no-such-workspace')]);
+    check(
+      'planmo plan is wired (exits 3 with no workspace, not "unknown command")',
+      r.status === 3 && !r.stderr.includes('unknown command'),
+      `exit ${r.status}`,
+    );
+  }
+  // ...and it refuses to plan without an idea, rather than guessing one.
+  {
+    const r = run(['plan', '--dir', join(BASE, 'no-such-workspace')]);
+    check(
+      'planmo plan requires an idea',
+      r.status === 1 && r.stderr.includes('an idea is required'),
       `exit ${r.status}`,
     );
   }
@@ -462,7 +472,7 @@ pilot('v1-surface-honesty — --help claims exactly the commands that exist');
   check('--help lists adopt', help.stdout.includes('planmo adopt'));
   check('--help lists generate', help.stdout.includes('planmo generate'));
   check('--help lists next', help.stdout.includes('planmo next'));
-  check('--help does NOT claim plan', !help.stdout.includes('planmo plan'));
+  check('--help lists plan', help.stdout.includes('planmo plan'));
   check(
     '--help documents exit codes',
     help.stdout.includes('Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found'),

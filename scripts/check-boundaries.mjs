@@ -25,6 +25,7 @@ const ALLOWED = {
   schema: ['shared'],
   core: ['shared', 'schema'],
   planmo: [
+    'ai',
     'shared',
     'schema',
     'core',

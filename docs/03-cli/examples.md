@@ -234,17 +234,26 @@ invalid proposal writes nothing at all — not even the proposals directory — 
 proposal that is already recorded is refused with exit `2` rather than silently
 replaced. `--force` replaces it; `--dry-run` reports without writing.
 
-## 7. What is NOT in v1 (yet)
+## 7. What was not in v1 (now implemented)
 
-`planmo plan` is **not wired in the CLI** — there is no engine for it in any
-package, so it is a design decision rather than a missing wire:
+`planmo plan` **is** wired: it authors `.planmo/plan.yml` with a model, once, and
+`generate` then compiles from it (ADR-0027). It needs a provider credential, or
+`--provider mock` to exercise the flow offline:
 
 ```console
-$ planmo plan
-planmo: unknown command 'plan'
-Run 'planmo --help' for usage.
+$ planmo plan "Build a team task app" --dir my-app --provider mock
+note: using the mock provider — output is simulated, not a real model.
+plan generated.
+  phases: 1   tasks: 1
+  author: mock / mock
+Workspace: .planmo/plan.yml
+
+Next step:
+  planmo generate
 ```
-exit code `1`.
+
+Without a credential it explains how to set one and exits `1` — it never falls back
+to fake output, and the mock is never selected implicitly.
 
 `planmo generate` **is** wired: it recompiles the planning documents from
 `.planmo/project.yml`, and `planmo init` runs it automatically, so a fresh

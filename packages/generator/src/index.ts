@@ -9,6 +9,7 @@ export * from './ir.js';
 export * from './contracts.js';
 export * from './render.js';
 export * from './plan-workspace.js';
+export * from './plan-validate.js';
 export * from './standards-context.js';
 export * from './manifest.js';
 export * from './synth.js';

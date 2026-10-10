@@ -1,6 +1,6 @@
 import type { PlanningIR } from '../ir.js';
 import { doc } from './shared.js';
-import { phaseTasks } from '../render.js';
+import { phaseTasks, tasksForPhase } from '../render.js';
 import { csvField } from '@planmo/shared';
 import { serializeTasksCsv, type TaskRecord } from '@planmo/schema';
 
@@ -16,7 +16,7 @@ export function renderTraceability(ir: PlanningIR): string {
     '|---|---|---|---|---|---|',
   ];
   ir.phases.forEach((phase, index) => {
-    const tasks = phaseTasks(phase);
+    const tasks = tasksForPhase(ir, phase);
     const first = tasks[0]?.id ?? '';
     const last = tasks[tasks.length - 1]?.id ?? '';
     lines.push(
@@ -51,7 +51,7 @@ export function renderTraceability(ir: PlanningIR): string {
 export function renderTasksCsv(ir: PlanningIR): string {
   const tasks: TaskRecord[] = [];
   for (const phase of ir.phases) {
-    tasks.push(...phaseTasks(phase, ir.profile?.gates));
+    tasks.push(...tasksForPhase(ir, phase));
   }
   return `${serializeTasksCsv(tasks)}\n`;
 }
@@ -71,7 +71,7 @@ export function renderTasksCsv(ir: PlanningIR): string {
 export function renderTestEvidence(ir: PlanningIR): string {
   const rows: string[] = ['task_id,check,command,result'];
   for (const phase of ir.phases) {
-    for (const task of phaseTasks(phase, ir.profile?.gates)) {
+    for (const task of tasksForPhase(ir, phase)) {
       if (!task.verification.required) continue;
       for (const check of task.verification.checks) {
         rows.push([task.id, csvField(check), '', ''].join(','));

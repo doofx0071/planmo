@@ -3,6 +3,7 @@
 Implemented:
 
 - `planmo init [dir]` — create a workspace; compiles the planning tree with it
+- `planmo plan "<idea>"` — author `.planmo/plan.yml` with a model, once (ADR-0027)
 - `planmo generate` — recompile the planning documents from the project model
 - `planmo diff` — show what `generate` would change, writing nothing
 - `planmo validate` — validate the workspace documents and invariants (the CI gate)

@@ -36,3 +36,27 @@ always reports `simulated: true`, so a caller can never mistake simulated output
 for a real model's. The default test suite uses only the mock: no network, no
 credentials. The HTTP provider retries transport, rate-limit and 5xx failures with
 bounded backoff, and never retries an auth error.
+
+### Providers
+
+`PROVIDER_PRESETS` is a declared table of gateways and vendors (Token Harbor,
+OpenAI, Anthropic, DeepSeek, Moonshot/Kimi, xAI/Grok, OpenRouter, and an
+overridable `custom`). Each row records only the credential **env var name** and
+the wire protocol — never a key and never a model list — so a gateway like Token
+Harbor can serve `provider/model` slugs from a single key. `resolveProvider`
+selects one from an injected `env` (or `process.env`); `describeProviders(env)`
+returns render-ready rows. `createHttpProvider` speaks either wire format:
+
+```ts
+import { resolveProvider, createHttpProvider } from '@planmo/ai';
+
+const resolved = resolveProvider({ env: process.env, model: 'deepseek/deepseek-v4-flash' });
+if (resolved.configured) {
+  const provider = createHttpProvider({
+    baseUrl: resolved.baseUrl,
+    apiKey: process.env[resolved.preset.credentialEnv]!,
+    model: resolved.model ?? '',
+    wireFormat: resolved.wireFormat, // 'openai' | 'anthropic'
+  });
+}
+```

@@ -79,6 +79,7 @@ never executes project scripts.
 | `planmo init [dir]`   | Create a workspace, compiling the planning tree with it   |
 | `planmo generate`     | Recompile the planning documents from the project model   |
 | `planmo diff`         | Show what `generate` would change, writing nothing        |
+| `planmo plan`         | Author the plan document with a model, once (ADR-0027)    |
 | `planmo validate`     | Validate the workspace documents and invariants (CI gate) |
 | `planmo doctor`       | Report environment and workspace health                   |
 | `planmo next`         | Print the task to work next, and what to read first       |

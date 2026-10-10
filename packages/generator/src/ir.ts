@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { PackLockEntry as PackLockEntryType } from '@planmo/schema';
-import type { ProjectConfig, PlanningDepth, PhaseMode } from '@planmo/schema';
+import type { ProjectConfig, PlanningDepth, PhaseMode, PlanDocument } from '@planmo/schema';
 import type { ResolutionResult } from '@planmo/packs';
 import type { StandardsSelection, PlanningProfile } from '@planmo/packs';
 
@@ -114,6 +114,16 @@ export interface IrInput {
   profile: PlanningProfile | null;
   /** Standards + policy selection for the project context (never undefined). */
   standards: StandardsSelection;
+  /**
+   * The recorded plan document, when the project has one.
+   *
+   * A plan AUGMENTS the canonical spine rather than replacing it: with a plan, its
+   * phases and tasks are the project's; without one, the canonical spine and the
+   * seeded tasks stand exactly as before. That is what keeps every workspace
+   * generated before the AI planner existed — and every golden fixture — valid and
+   * byte-identical, and makes the AI opt-in rather than a breaking change.
+   */
+  plan?: PlanDocument | null;
 }
 
 /**
@@ -130,8 +140,10 @@ export interface PlanningIR {
   phaseMode: PhaseMode;
   /** Locked packs sorted by ref — the exact versions/checksums generation binds to. */
   lockedPacks: readonly PackLockEntryType[];
-  /** Phases this project plans through (canonical spine, already filtered by depth). */
+  /** Phases this project plans through (the plan's, or the canonical spine). */
   phases: readonly PhaseNode[];
+  /** The recorded plan document, or null when the project has none. */
+  plan: PlanDocument | null;
   /** Standards selection, sorted, with conflicts surfaced (never silently resolved). */
   standards: StandardsSelection;
   /** Compiled profile or null when depth is custom. */
@@ -196,7 +208,18 @@ export function buildIr(input: IrInput): PlanningIR {
   // on a per-build basis).
   const planning = input.project.planning ?? DEFAULT_PLANNING;
   const normalizedProject: ProjectConfig = { ...input.project, planning };
-  const phases = phasesForDepth(planning.depth);
+  const plan = input.plan ?? null;
+  // With a plan, the project's own decomposition is the spine. Without one, the
+  // canonical depth-pruned spine — unchanged, which is what keeps the goldens and
+  // every pre-existing workspace byte-identical.
+  const phases: readonly PhaseNode[] =
+    plan === null
+      ? phasesForDepth(planning.depth)
+      : plan.phases.map((phase) => ({
+          id: phase.id,
+          title: phase.title,
+          objective: phase.objective,
+        }));
 
   const hash = sha256Hex(
     canonicalJson({
@@ -205,6 +228,12 @@ export function buildIr(input: IrInput): PlanningIR {
       profile: input.profile,
       standards: input.standards,
       phases,
+      // The plan is an input when there IS one. A project without a plan has
+      // unchanged inputs, so its hash must not move either — otherwise adopting
+      // the AI planner would make every existing workspace report as out of date.
+      // Tasks are inside `plan`, so a plan that changes its tasks without changing
+      // its phases still changes the hash.
+      ...(plan !== null ? { plan } : {}),
     }),
   );
 
@@ -216,6 +245,7 @@ export function buildIr(input: IrInput): PlanningIR {
     phaseMode: planning.phaseMode,
     lockedPacks: sortedPacks,
     phases,
+    plan,
     standards: input.standards,
     profile: input.profile,
   };

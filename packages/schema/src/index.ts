@@ -35,6 +35,9 @@ export {
   parseTasksCsv,
 } from './task.js';
 
+// The plan document (step 4) — what an AI authors once, deterministically compiled after
+export { PlanTask, PlanPhase, PlanDocument, PLAN_PATH, planIdProblems } from './plan.js';
+
 // Versioning + migrations
 export {
   UnsupportedSchemaVersionError,
