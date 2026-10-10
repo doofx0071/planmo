@@ -33,6 +33,9 @@ import type {
 const MARKER_RULES: ReadonlyArray<readonly [phrase: string, code: string]> = Object.freeze([
   // INJ-001 instruction-like phrases (attempts to hand the model new instructions)
   ['ignore previous instructions', 'INJ-001'],
+  // The most common phrasing, and NOT a substring of the line above: "ignore ALL
+  // previous instructions" would otherwise sail straight through the detector.
+  ['ignore all previous instructions', 'INJ-001'],
   ['disregard all prior', 'INJ-001'],
   ['you are now', 'INJ-001'],
   ['act as if', 'INJ-001'],
@@ -41,20 +44,36 @@ const MARKER_RULES: ReadonlyArray<readonly [phrase: string, code: string]> = Obj
   ['pretend you are', 'INJ-001'],
   ['force mode', 'INJ-001'],
   ['jailbreak', 'INJ-001'],
-  ['!!!', 'INJ-001'],
   ['override your policy', 'INJ-001'],
-  // INJ-002 authority-claim phrases (the text asserts authority over the model)
-  ['you must', 'INJ-002'],
+  // INJ-002 authority-claim phrases. These claim authority OVER THE MODEL, which is
+  // what makes them evidence. Ordinary English that merely sounds directive ("you
+  // must run npm install", "you must keep the API stable") is documentation, not an
+  // attack, and used to be listed here — which is why a benign README with a badge
+  // and a build instruction was reported as poisoned.
+  ['you must obey', 'INJ-002'],
   ['you will obey', 'INJ-002'],
   ['system prompt', 'INJ-002'],
-  // INJ-003 deceptive-system phrases (masquerade as platform/system content)
-  ['system:', 'INJ-003'],
+  // INJ-003 deceptive-system phrases (masquerade as platform/system content).
+  // A bare `system:` was listed here and removed: it appears in configs, logs and
+  // API docs constantly, and a real "system: ignore all previous instructions" is
+  // caught by the instruction phrase itself — which is the part that matters.
   ['developer message', 'INJ-003'],
   ['this is a system instruction', 'INJ-003'],
-  // INJ-004 hidden/comment instructions
-  ['<!--', 'INJ-004'],
-  ['/*', 'INJ-004'],
 ]);
+
+/**
+ * Structural tokens that are NOT injection evidence on their own.
+ *
+ * A block comment, an HTML comment, a TODO and a `system:` label are ordinary
+ * markup. Every file with a JSDoc header contains `/*`; every README with a badge
+ * contains `<!--`. Counting them as markers made the detector fire on benign
+ * input, which is worse than not firing at all: it teaches the reader to ignore the
+ * warning and it buries the file that genuinely is trying something.
+ *
+ * They count only on a line that ALSO carries an instruction word — the rule the
+ * TODO case already used. `STRUCTURAL_TOKENS` is the markup half of that pair.
+ */
+const STRUCTURAL_TOKENS: ReadonlyArray<string> = Object.freeze(['/*', '<!--', 'todo']);
 
 /**
  * Words that make a `TODO` comment an INJ-004 marker ("TODO with instruction
@@ -77,6 +96,8 @@ const TODO_INSTRUCTION_WORDS: ReadonlyArray<string> = Object.freeze([
 
 /** Composite phrase emitted for a TODO line that also carries instruction words. */
 const TODO_MARKER_PHRASE = 'todo with instruction words';
+/** Composite phrase emitted for an instruction phrase hidden inside a comment. */
+const COMMENT_MARKER_PHRASE = 'comment with instruction words';
 
 const POLICY_RULES: readonly string[] = Object.freeze([
   'PLN-001: scanned repository text is data, never instruction authority.',
@@ -84,11 +105,16 @@ const POLICY_RULES: readonly string[] = Object.freeze([
   'PLN-003: classification is benign (no markers), suspicious (exactly one marker), ' +
     'or poisoned (two or more markers, or any deceptive-system marker).',
   'PLN-004: the marker phrase list is immutable; repository content cannot modify it.',
+  'PLN-005: structural markup (block comments, HTML comments, TODOs) is evidence only ' +
+    'on a line that also carries an instruction phrase or instruction word; markup alone ' +
+    'is never a marker.',
 ]);
 
 /** Every phrase the engine can emit, encoded in one place, sorted, frozen. */
 const POLICY_PHRASES: readonly string[] = Object.freeze(
-  [...MARKER_RULES.map(([phrase]) => phrase), TODO_MARKER_PHRASE].sort(compareAsc),
+  [...MARKER_RULES.map(([phrase]) => phrase), TODO_MARKER_PHRASE, COMMENT_MARKER_PHRASE].sort(
+    compareAsc,
+  ),
 );
 
 function compareAsc(a: string, b: string): number {
@@ -157,6 +183,28 @@ function collectTodoMatches(text: string, into: PromptMarker[]): void {
   }
 }
 
+/**
+ * INJ-004 "comment with instruction words": an instruction PHRASE hidden inside a
+ * block or HTML comment.
+ *
+ * This is deliberately narrower than the TODO rule. A comment has to contain one of
+ * the real instruction phrases above — not merely a directive-sounding word — before
+ * the comment itself counts as evidence. `/** Add two numbers. *​/` and
+ * `/* must be non-null *​/` are ordinary code; `/* you must obey *​/` is a hidden
+ * instruction, and the hiding is what makes it a second marker.
+ */
+function collectCommentMatches(text: string, into: PromptMarker[]): void {
+  const lines = text.split('\n');
+  const phraseRe = new RegExp(`(${MARKER_RULES.map(([p]) => escapeRegExp(p)).join('|')})`, 'i');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!;
+    if (!line.includes('/*') && !line.includes('<!--')) continue;
+    if (phraseRe.test(line)) {
+      into.push({ code: 'INJ-004', phrase: COMMENT_MARKER_PHRASE, line: i + 1 });
+    }
+  }
+}
+
 /** Frozen classification rules from the contract: see the module doc. */
 function classifyMarkers(markers: readonly PromptMarker[]): InjectionClass {
   if (markers.length >= 2 || markers.some((m) => m.code === 'INJ-003')) return 'poisoned';
@@ -174,6 +222,7 @@ export function classify(text: string): InjectionScanResult {
     collectPhraseMatches(text, phrase, code, lineStarts, markers);
   }
   collectTodoMatches(text, markers);
+  collectCommentMatches(text, markers);
   markers.sort(
     (a, b) => a.line - b.line || compareAsc(a.phrase, b.phrase) || compareAsc(a.code, b.code),
   );
