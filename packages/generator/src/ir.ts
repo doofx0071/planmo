@@ -1,6 +1,12 @@
 import { createHash } from 'node:crypto';
 import type { PackLockEntry as PackLockEntryType } from '@planmo/schema';
-import type { ProjectConfig, PlanningDepth, PhaseMode, PlanDocument } from '@planmo/schema';
+import type {
+  ProjectConfig,
+  PlanningDepth,
+  PhaseMode,
+  PlanDocument,
+  TaskStatus,
+} from '@planmo/schema';
 import type { ResolutionResult } from '@planmo/packs';
 import type { StandardsSelection, PlanningProfile } from '@planmo/packs';
 
@@ -124,6 +130,16 @@ export interface IrInput {
    * byte-identical, and makes the AI opt-in rather than a breaking change.
    */
   plan?: PlanDocument | null;
+  /**
+   * Per-task status overrides from `.planmo/state.yml` (`tasks`), keyed by task id.
+   *
+   * Status is PROGRESS, not a planning input, so it is deliberately not part of
+   * `inputHash`: recording that a task is done must not make the workspace report
+   * as out of date. It travels through the IR only so that every surface which
+   * lists tasks — `tasks.csv`, `TRACKER.md`, the phase documents — shows the same
+   * status, and so `generate` cannot silently reset a task the user marked done.
+   */
+  taskStatus?: Readonly<Record<string, TaskStatus>>;
 }
 
 /**
@@ -148,6 +164,11 @@ export interface PlanningIR {
   standards: StandardsSelection;
   /** Compiled profile or null when depth is custom. */
   profile: PlanningProfile | null;
+  /**
+   * Per-task status overrides, applied by `tasksForPhase`. Always present (possibly
+   * empty) so consumers do not branch on it; not part of `inputHash`.
+   */
+  taskStatus: Readonly<Record<string, TaskStatus>>;
 }
 
 /** Canonical JSON: recursive key-sort so identical inputs hash identically. */
@@ -248,5 +269,6 @@ export function buildIr(input: IrInput): PlanningIR {
     plan,
     standards: input.standards,
     profile: input.profile,
+    taskStatus: input.taskStatus ?? {},
   };
 }

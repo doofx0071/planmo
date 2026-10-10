@@ -101,7 +101,12 @@ export function renderNextBrief(
       '',
       'Change only what this task requires, and add no adjacent edits.',
       'Do not explore beyond the files listed above.',
-      'When you are done, run `npx -y planmo validate`.',
+      // `validate` is a STRUCTURAL check, and an agent that reads "run validate" as
+      // an acceptance gate will report a task finished on a green exit code. Say
+      // what it actually checks.
+      'When you are done, run `npx -y planmo validate`. It checks the workspace',
+      'structure — state, tasks.csv, the manifest, the invariants — NOT this task’s',
+      'acceptance criteria, so a clean result is not proof the task is done.',
     );
   }
 

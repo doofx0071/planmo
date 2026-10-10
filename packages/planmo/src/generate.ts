@@ -66,6 +66,10 @@ export async function generatePlanningWorkspace(opts: GenerateOptions): Promise<
     profile: compilePlanningProfile(project.planning?.depth ?? 'standard'),
     standards: selectStandards(resolution.packs, { risk: project.project.risk }),
     plan,
+    // Progress recorded by `planmo task` travels into every surface that lists
+    // tasks, so a regeneration shows the status the user set instead of resetting
+    // it to TODO.
+    ...(status.state?.tasks !== undefined ? { taskStatus: status.state.tasks } : {}),
   });
 
   const result = await compileWorkspace(ir, {
