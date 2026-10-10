@@ -101,9 +101,18 @@ export function renderNextBrief(
       '',
       'Change only what this task requires, and add no adjacent edits.',
       'Do not explore beyond the files listed above.',
-      // `validate` is a STRUCTURAL check, and an agent that reads "run validate" as
-      // an acceptance gate will report a task finished on a green exit code. Say
-      // what it actually checks.
+      '',
+      `When the task is done, close it:  npx -y planmo task ${brief.task.id} --status DONE`,
+      '',
+      // The evidence contract, stated here because it is otherwise only discoverable
+      // by reading the trace engine's source — which is what an agent did, at real
+      // cost. TEST-EVIDENCE.csv is user-owned, so results recorded there survive.
+      'Verification evidence goes in planning/testing/TEST-EVIDENCE.csv — columns',
+      'task_id,check,command,result. A result counts as passing ONLY for',
+      'pass | passed | ok | green (case-insensitive); every other value, including',
+      'FAIL, counts as no evidence. Record what actually happened, including checks',
+      'you could not run.',
+      '',
       'When you are done, run `npx -y planmo validate`. It checks the workspace',
       'structure — state, tasks.csv, the manifest, the invariants — NOT this task’s',
       'acceptance criteria, so a clean result is not proof the task is done.',
