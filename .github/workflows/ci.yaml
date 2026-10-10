@@ -6,6 +6,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# A superseded push cancels its predecessor instead of paying for both. Without
+# this, pushing twice to a PR branch runs the whole matrix twice.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: ${{ matrix.os }} / node ${{ matrix.node }}
@@ -13,7 +19,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # macOS bills at TEN times the Linux rate, so it dominates this workflow:
+        # the full matrix costs 1 + 2 + 10 units against ubuntu's 1, and macOS alone
+        # is ~77% of the spend. Pull requests run ubuntu + windows; macOS runs on
+        # main and on manual dispatch, which still catches platform-specific
+        # breakage before a release without paying 10x on every intermediate push.
+        #
+        # Revert to the full matrix on every event when the billing headroom is
+        # comfortable — this is a cost measure, not a correctness one.
+        os: ${{ github.event_name == 'pull_request' && fromJSON('["ubuntu-latest","windows-latest"]') || fromJSON('["ubuntu-latest","macos-latest","windows-latest"]') }}
         node: ['24.x']
     steps:
       - uses: actions/checkout@v4
