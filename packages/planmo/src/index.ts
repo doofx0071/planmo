@@ -4,6 +4,7 @@ import * as clack from '@clack/prompts';
 import { resolve } from 'node:path';
 import { PRODUCT_SLUG } from '@planmo/shared';
 import { cliVersion } from './version.js';
+import { renderAdoptArtifacts } from './adopt-write.js';
 import { generatePlanningWorkspace } from './generate.js';
 import { validateWorkspace } from './validate.js';
 import { runPlan, renderPlanSummary } from './plan.js';
@@ -19,7 +20,7 @@ import { diffWorkspace, renderDiff } from './diff.js';
 import { renderDoctor, runDoctor } from './doctor.js';
 import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
-import { initWorkspace, ProjectNotFoundError, readStatus } from '@planmo/core';
+import { initWorkspace, ProjectNotFoundError, readStatus, writeManaged } from '@planmo/core';
 import { analyzeRepository, nodeFileReader, DEFAULT_EXCLUDES } from '@planmo/scanner';
 import { PROJECT_LIFECYCLES, PROJECT_RISKS, PROJECT_TYPES } from '@planmo/schema';
 import type {
@@ -57,7 +58,7 @@ export const USAGE = [
   'Commands:',
   `  ${PRODUCT_SLUG} init [dir]    create a PlanMo workspace (wizard, or flags)`,
   `  ${PRODUCT_SLUG} status        validate and summarize the workspace`,
-  `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo (dry-run report; writes nothing)`,
+  `  ${PRODUCT_SLUG} adopt [dir]    analyze an existing repo, then offer to record it`,
   `  ${PRODUCT_SLUG} plan "<idea>" author the plan document with a model (once)`,
   `  ${PRODUCT_SLUG} generate      generate/refresh the planning workspace`,
   `  ${PRODUCT_SLUG} diff          show what generate would change (writes nothing)`,
@@ -93,6 +94,12 @@ export const USAGE = [
   '',
   'adopt options:',
   '      --dir <path>          repository root (default: cwd)',
+  '      --yes                 report only, never prompt (scripts and CI)',
+  '      --dry-run             report only, never prompt',
+  '',
+  '  adopt prints a read-only report, then offers to write the reports to',
+  '  .planmo/adopt/ and to create the workspace. Both prompts default to the safe',
+  '  answer; --yes and --dry-run skip them and write nothing, as before.',
   '',
   'generate options:',
   '      --dir <path>          project root (default: cwd)',
@@ -283,7 +290,7 @@ export async function run(
     case 'status':
       return runStatus(argv.slice(1), io);
     case 'adopt':
-      return runAdopt(argv.slice(1), io);
+      return runAdopt(argv.slice(1), io, wizard);
     case 'generate':
       return runGenerate(argv.slice(1), io);
     case 'diff':
@@ -853,10 +860,12 @@ async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
   // Detect BEFORE asking. The user should be confirming what PlanMo found, not
   // supplying what PlanMo can work out for itself: this wizard used to ask a
   // Next.js repository with 158 files whether it was greenfield.
-  if (!flags.has('yes') && !flags.has('dry-run')) {
-    io.err(`init: detecting ${root} …`);
-  }
+  const detecting =
+    !flags.has('yes') && !flags.has('dry-run')
+      ? progressLine(io, `init: detecting ${root} …`)
+      : () => {};
   const detected = await detectForInit(root);
+  detecting(`— ${detected.fileCount} file(s)`);
 
   if (!flags.has('yes') && positional.length === 0 && !flags.has('name')) {
     const parts = [
@@ -995,19 +1004,55 @@ async function runStatus(argv: string[], io: CliIO): Promise<number> {
   }
 }
 
-async function runAdopt(argv: string[], io: CliIO): Promise<number> {
+/**
+ * A one-line progress indicator for operations long enough that a silent terminal
+ * reads as a hang.
+ *
+ * On a TTY it animates in place, so the user sees the scan is alive; anywhere else
+ * (a pipe, a CI log, a test) it prints the line once and never animates, because
+ * carriage returns in a captured log are noise. Writing goes straight to stderr
+ * rather than through `io` precisely so the animated frames cannot pollute captured
+ * stdout.
+ */
+function progressLine(io: CliIO, text: string): (suffix?: string) => void {
+  if (process.stdout.isTTY !== true) {
+    io.err(text);
+    return () => {};
+  }
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  let frame = 0;
+  const timer = setInterval(() => {
+    process.stderr.write(`\r${frames[frame++ % frames.length]!} ${text}`);
+  }, 80);
+  timer.unref?.();
+  return (suffix = '') => {
+    clearInterval(timer);
+    process.stderr.write(`\r${text} ${suffix}\n`);
+  };
+}
+
+async function runAdopt(argv: string[], io: CliIO, wizard: WizardIO): Promise<number> {
   const { flags, positional } = parseArgs(argv);
   const root = resolve(flags.get('dir') ?? positional[0] ?? process.cwd());
+  // `adopt` is read-only by default and STAYS read-only unless the user answers the
+  // prompt: --dry-run and --yes both mean "report only", so scripts and CI keep the
+  // behaviour they had before the prompts existed.
+  const reportOnly = flags.has('yes') || flags.has('dry-run');
   try {
     // A scan of a real project can take a while, and the user is staring at a
     // silent terminal while it happens. Say what is being scanned, to stderr so
     // stdout stays exactly the report.
-    io.err(`adopt: scanning ${root} …`);
-    const { report } = await analyzeRepository(root, nodeFileReader(), {
-      // Without this the scan walks node_modules and the findings describe your
-      // dependencies rather than your code (see DEFAULT_EXCLUDES).
-      scan: { exclude: DEFAULT_EXCLUDES },
-    });
+    const scanning = progressLine(io, `adopt: scanning ${root} …`);
+    const { report, scan, detection, injections } = await analyzeRepository(
+      root,
+      nodeFileReader(),
+      {
+        // Without this the scan walks node_modules and the findings describe your
+        // dependencies rather than your code (see DEFAULT_EXCLUDES).
+        scan: { exclude: DEFAULT_EXCLUDES },
+      },
+    );
+    scanning(`— ${report.scanSummary.files} file(s)`);
     io.out(
       report.reportMarkdown.endsWith('\n') ? report.reportMarkdown : `${report.reportMarkdown}\n`,
     );
@@ -1022,6 +1067,43 @@ async function runAdopt(argv: string[], io: CliIO): Promise<number> {
         `adopt: NOTE ${report.injectionSummary.suspicious} file(s) are suspicious (single marker).`,
       );
     }
+
+    // The report above says "would-be artifacts" and then the command used to just
+    // end — leaving the user to discover that nothing was written and that `init`
+    // is a separate command. Ask instead.
+    const artifacts = renderAdoptArtifacts({
+      root,
+      planmoVersion: cliVersion(),
+      report,
+      scan,
+      detection,
+      injections,
+    });
+
+    if (!reportOnly) {
+      io.out('');
+      const write = await wizard.confirm(
+        `Write these ${artifacts.length} reports to .planmo/adopt/?`,
+        true,
+      );
+      if (write === true) {
+        const result = await writeManaged(root, [...artifacts], {
+          contentDirs: ['.planmo/adopt'],
+        });
+        for (const path of result.written) io.out(`✓ wrote ${path}`);
+        for (const path of result.collisions) {
+          io.err(`✗ collision  ${path} (existing, refused — use --force to overwrite)`);
+        }
+      }
+
+      // The workspace is what the user was actually expecting when they ran this.
+      const create = await wizard.confirm('Create the PlanMo workspace here now?', false);
+      if (create === true) {
+        io.out('');
+        return runInit([root, '--yes'], io, wizard);
+      }
+    }
+
     return 0;
   } catch (err) {
     io.err(`planmo adopt: ${(err as Error).message}`);

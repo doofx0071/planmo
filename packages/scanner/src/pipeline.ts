@@ -12,6 +12,7 @@ import type {
   FileReader,
   InjectionScanResult,
   ScanOptions,
+  ScanReport,
   ScannerEngine,
   DetectionEngine,
   StandardsDiscoveryEngine,
@@ -94,6 +95,8 @@ export interface AnalyzeOptions {
 
 export interface AnalyzeResult {
   report: AdoptReport;
+  /** The scan itself, so a caller can record its stats and whether a cap cut it short. */
+  scan: ScanReport;
   /** Every injection-classified text (path attached). */
   injections: readonly InjectionScanResult[];
   standards: Awaited<ReturnType<StandardsDiscoveryEngine['discover']>>;
@@ -138,5 +141,5 @@ export async function analyzeRepository(
 
   // 4) Dry-run plan (never writes; rewritesApplicationCode is false).
   const report = adopt.plan({ scan, detection, injections, root });
-  return { report, injections, standards, detection };
+  return { report, scan, injections, standards, detection };
 }
