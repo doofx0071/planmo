@@ -4,7 +4,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "private": true,
   "description": "PlanMo AI layer: a vendor-neutral model-provider abstraction with a deterministic offline mock provider and an OpenAI-compatible HTTP provider (no vendor SDK).",
   "license": "MIT",
   "keywords": [
