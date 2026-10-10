@@ -82,6 +82,41 @@ export interface ScanOptions {
   include?: readonly string[];
 }
 
+/**
+ * Paths a repository scan should almost never descend into.
+ *
+ * Without these, `planmo adopt` walks `node_modules` — which on a real project is
+ * tens of thousands of files and hundreds of megabytes of third-party code. That
+ * makes the scan slow and, worse, makes its findings meaningless: the injection
+ * counts then describe your dependencies rather than your code, so a report can
+ * say "16,246 files contain prompt-injection-like content" when none of them are
+ * yours.
+ *
+ * Exported rather than baked into the scanner's defaults so a caller can still ask
+ * for a raw scan, and so the list is visible at the call site.
+ */
+export const DEFAULT_EXCLUDES: readonly string[] = [
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  'out',
+  'coverage',
+  '.next',
+  '.nuxt',
+  '.turbo',
+  '.cache',
+  '.svelte-kit',
+  'vendor',
+  'target',
+  '__pycache__',
+  '.venv',
+  'venv',
+  // PlanMo's own workspace: re-scanning generated planning documents would report
+  // PlanMo's own boilerplate as repository content.
+  '.planmo',
+];
+
 export interface ScanWarning {
   /** Stable code family: SCN-001 depth cap, SCN-002 entry cap, SCN-003 escaping symlink refused,
    *  SCN-004 skipped-over-size, SCN-005 unreadable entry, SCN-006 unsupported type, SCN-007 excluded. */

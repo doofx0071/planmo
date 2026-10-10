@@ -254,18 +254,27 @@ pilot('brownfield-adopt — planmo adopt --dry-run --dir <hostile fixture>');
   // frameworks and CI systems (their detail bullets live in the would-be
   // detection-summary.md artifact, which dry-run adopt never writes).
   const oversized = 'big-blob.dat';
-  const filesWithType = [...files.keys(), 'logo.bin', oversized];
-  const scannedFiles = filesWithType.filter((f) => f !== oversized).length; // 12
+  // `planmo adopt` excludes dependency and build directories by default
+  // (DEFAULT_EXCLUDES in @planmo/scanner). Scanning node_modules reports on
+  // third-party code rather than the project — which is how a real 88k-file scan
+  // produced 16,246 meaningless "poisoned" files. The scanner ENGINE still scans
+  // whatever it is given; this is the CLI's default, and the exclusion itself is
+  // asserted below so it cannot regress silently.
+  const ADOPT_EXCLUDED = ['node_modules', 'vendor'];
+  const excluded = (rel) => ADOPT_EXCLUDED.some((d) => rel === d || rel.startsWith(`${d}/`));
+  const includedFiles = new Map([...files].filter(([rel]) => !excluded(rel)));
+  const filesWithType = [...includedFiles.keys(), 'logo.bin', oversized];
+  const scannedFiles = filesWithType.filter((f) => f !== oversized).length;
   const injectedFiles = scannedFiles - 1; // logo.bin is binary, never classified
   const dirs = new Set();
   for (const f of filesWithType) {
     let d = dirname(f);
-    while (d !== '.') {
+    while (d !== '.' && !excluded(d)) {
       dirs.add(d);
       d = dirname(d);
     }
   }
-  const bytes = totalBytes(files, root);
+  const bytes = totalBytes(includedFiles, root);
 
   const adopt = run(['adopt', '--dry-run', '--dir', root]);
   const ex = expectExit(adopt, 0);
@@ -314,10 +323,11 @@ pilot('brownfield-adopt — planmo adopt --dry-run --dir <hostile fixture>');
   );
   check('injection summary Poisoned: 1', adopt.stdout.includes('- Poisoned: 1'));
   check('injection summary Suspicious: 1', adopt.stdout.includes('- Suspicious: 1'));
+  const benign = injectedFiles - 2; // two carry markers: one poisoned, one suspicious
   check(
-    'injection summary Benign: 9',
-    adopt.stdout.includes('- Benign: 9'),
-    `injected=${injectedFiles} -> benign=${injectedFiles - 2}`,
+    `injection summary Benign: ${benign}`,
+    adopt.stdout.includes(`- Benign: ${benign}`),
+    `injected=${injectedFiles} -> benign=${benign}`,
   );
   check(
     `injection summary Files scanned: ${injectedFiles}`,
