@@ -30,10 +30,14 @@ sort after `P07-09`.
 
 ## Task list
 
-`planning/tasks.csv` is the canonical task list. It has exactly five columns:
+`planning/tasks.csv` is the canonical task list. Since schema v2 it has eight
+columns: acceptance criteria and the verification checks are `;`-separated lists
+inside one RFC 4180 quoted cell, so a criterion containing a comma cannot split a
+row. `@planmo/trace`'s validator accepts this width and the five-column v1 width,
+so a workspace generated before v2 keeps validating.
 
 ```text
-id,phase,title,status,priority
+id,phase,title,status,priority,acceptance,verification,checks
 ```
 
 - `status` is one of `TODO`, `IN_PROGRESS`, `BLOCKED`, `REVIEW`, `DONE`.

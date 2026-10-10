@@ -39,12 +39,11 @@ import { WorkspaceNotFoundError } from './workspace-error.js';
  *   - decisions    — `planning/DECISIONS.md` (the `D-###` ids, e.g. D-000).
  *   - links        — requirement → task edges from the `Tasks` column of
  *     `planning/REQUIREMENTS-TRACEABILITY.md` (e.g. `P00-01–P00-04`, expanded).
- *   - tests        — NONE. The generated workspace carries no per-task test
- *     evidence: `planning/testing/TEST-STRATEGY.md` declares gate levels, not
- *     test→task rows, and there is no evidence file. `tests` is therefore empty
- *     and the engine reports every task as untested (TRC-002). We do NOT
- *     fabricate test rows. If a workspace ever ships evidence rows, this is
- *     where they would be read.
+ *   - tests        — `planning/testing/TEST-EVIDENCE.csv` (schema v2): one row per
+ *     check a `verification.required` task must satisfy. A recorded pass is
+ *     evidence; a blank result means the check was never run, so the engine
+ *     reports that task as lacking evidence (TRC-002). This is what makes the
+ *     warning clearable — and why an agent reporting success does not clear it.
  *
  * LINKS THE ENGINE COULD USE BUT THE WORKSPACE DOES NOT CARRY: the engine links
  * requirements to tasks only. `DECISIONS.md` records project-level decisions
@@ -53,6 +52,9 @@ import { WorkspaceNotFoundError } from './workspace-error.js';
  */
 
 const TRACEABILITY_PATH = 'planning/REQUIREMENTS-TRACEABILITY.md';
+
+/** The evidence scaffold: one row per check a `verification.required` task needs. */
+const EVIDENCE_PATH = 'planning/testing/TEST-EVIDENCE.csv';
 const PRODUCT_REQUIREMENTS_PATH = 'planning/requirements/PRODUCT-REQUIREMENTS.md';
 const DECISIONS_PATH = 'planning/DECISIONS.md';
 
@@ -115,6 +117,35 @@ export function parseTasksCsv(csv: string): TraceTask[] {
     });
   }
   return tasks;
+}
+
+/**
+ * Parse `planning/testing/TEST-EVIDENCE.csv` into the engine's test records.
+ *
+ * Columns: `task_id,check,command,result`. `passing` is true ONLY for a recorded
+ * pass — a blank result means the check was never run, and anything else
+ * (including an explicit failure) is not a pass either, so the engine reports the
+ * task as lacking evidence. The `file` field the engine requires carries the
+ * recorded command when there is one, because that is the thing that produced the
+ * evidence; with no command recorded it names the evidence file itself.
+ */
+export function parseTestEvidence(csv: string): TraceTest[] {
+  const tests: TraceTest[] = [];
+  for (const line of csv.split(/\r?\n/)) {
+    if (line.trim() === '') continue;
+    const fields = splitCsvLine(line);
+    if (fields.length < 4) continue;
+    const [taskId = '', check = '', command = '', result = ''] = fields;
+    if (taskId.trim() === 'task_id') continue; // header
+    if (check.trim() === '') continue;
+    tests.push({
+      name: check,
+      file: command.trim() === '' ? EVIDENCE_PATH : command,
+      task: taskId,
+      passing: /^(pass|passed|ok|green)$/i.test(result.trim()),
+    });
+  }
+  return tests;
 }
 
 /** Requirement ids declared in a document, in first-seen order, deduped. */
@@ -228,11 +259,12 @@ export async function traceWorkspace(opts: TraceOptions): Promise<TraceOutcome> 
   }
   const root = status.root;
 
-  const [csv, traceabilityDoc, productDoc, decisionsDoc] = await Promise.all([
+  const [csv, traceabilityDoc, productDoc, decisionsDoc, evidenceCsv] = await Promise.all([
     readIfPresent(join(root, TASKS_CSV_PATH)),
     readIfPresent(join(root, TRACEABILITY_PATH)),
     readIfPresent(join(root, PRODUCT_REQUIREMENTS_PATH)),
     readIfPresent(join(root, DECISIONS_PATH)),
+    readIfPresent(join(root, EVIDENCE_PATH)),
   ]);
 
   const tasks = csv === undefined ? [] : parseTasksCsv(csv);
@@ -255,9 +287,11 @@ export async function traceWorkspace(opts: TraceOptions): Promise<TraceOutcome> 
 
   const decisions = decisionsDoc === undefined ? [] : collectDecisionIds(decisionsDoc);
 
-  // No test evidence is carried by the workspace — see the module header. We do
-  // not invent test rows; an empty list is the honest input.
-  const tests: TraceTest[] = [];
+  // Test evidence: one row per check in planning/testing/TEST-EVIDENCE.csv, which
+  // the generator seeds for every `verification.required` task. This is what makes
+  // TRC-002 clearable — a recorded result is evidence, and an agent reporting that
+  // it ran a check is not.
+  const tests: TraceTest[] = evidenceCsv === undefined ? [] : parseTestEvidence(evidenceCsv);
 
   const input: TraceInput = { requirements, tasks, decisions, tests, links: trace.links };
 

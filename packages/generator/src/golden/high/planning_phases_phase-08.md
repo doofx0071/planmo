@@ -4,12 +4,31 @@
 Implement phases, handoffs, work packets, gates, planmo next.
 
 ## Tasks
-| Task | Title | Status |
-|---|---|---|
-| P08-01 | Implement phases, handoffs, work packets, gates, planmo next. | TODO |
-| P08-02 | Tests & evidence for the phase exit gates | TODO |
-| P08-03 | Docs & traceability for Workflow/session engine | TODO |
-| P08-04 | Record the phase handoff | TODO |
+| Task | Title | Priority | Status |
+|---|---|---|---|
+| P08-01 | Implement phases, handoffs, work packets, gates, planmo next. | MUST | TODO |
+| P08-02 | Tests & evidence for the phase exit gates | MUST | TODO |
+| P08-03 | Docs & traceability for Workflow/session engine | SHOULD | TODO |
+| P08-04 | Record the phase handoff | SHOULD | TODO |
+
+### Acceptance criteria
+
+A task is DONE only when every criterion below holds. A task whose verification
+is `required` also needs a recorded result in `planning/testing/TEST-EVIDENCE.csv`.
+
+**P08-01** — verification **required**
+- [ ] The phase objective is met: Implement phases, handoffs, work packets, gates, planmo next.
+- [ ] Every exit gate named in planning/phases/phase-08.md passes
+
+**P08-02** — verification **required**
+- [ ] Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv
+- [ ] Any check that was not run is marked as not run, not left blank
+
+**P08-03** — verification optional
+- [ ] planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 08
+
+**P08-04** — verification optional
+- [ ] planning/handoffs/phase-08-handoff.md is recorded and names the next phase
 
 ## Phase mode
 Phases are gated: each phase finishes with a recorded handoff before the next begins.

@@ -26,7 +26,7 @@ import { generatePlanningWorkspace } from './generate.js';
  * none. The golden fixtures declare packs and therefore emit more — that
  * difference is expected, not a regression.
  */
-const EXPECTED_ARTIFACTS = 30;
+const EXPECTED_ARTIFACTS = 31;
 /** The first run also writes `.planmo/manifest.json` itself. */
 const EXPECTED_FIRST_RUN_WRITES = EXPECTED_ARTIFACTS + 1;
 const EXPECTED_MANIFEST_ENTRIES = EXPECTED_ARTIFACTS;

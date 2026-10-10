@@ -21,6 +21,7 @@ const packagesDir = join(root, 'packages');
 // Edges for packages that do not exist yet are reserved for their owning phases.
 const ALLOWED = {
   shared: [],
+  ai: [],
   schema: ['shared'],
   core: ['shared', 'schema'],
   planmo: [

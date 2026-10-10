@@ -4,12 +4,31 @@
 Support adopting an existing repository incrementally.
 
 ## Tasks
-| Task | Title | Status |
-|---|---|---|
-| P10-01 | Support adopting an existing repository incrementally. | TODO |
-| P10-02 | Tests & evidence for the phase exit gates | TODO |
-| P10-03 | Docs & traceability for Existing repository adoption | TODO |
-| P10-04 | Record the phase handoff | TODO |
+| Task | Title | Priority | Status |
+|---|---|---|---|
+| P10-01 | Support adopting an existing repository incrementally. | MUST | TODO |
+| P10-02 | Tests & evidence for the phase exit gates | MUST | TODO |
+| P10-03 | Docs & traceability for Existing repository adoption | SHOULD | TODO |
+| P10-04 | Record the phase handoff | SHOULD | TODO |
+
+### Acceptance criteria
+
+A task is DONE only when every criterion below holds. A task whose verification
+is `required` also needs a recorded result in `planning/testing/TEST-EVIDENCE.csv`.
+
+**P10-01** — verification **required**
+- [ ] The phase objective is met: Support adopting an existing repository incrementally.
+- [ ] Every exit gate named in planning/phases/phase-10.md passes
+
+**P10-02** — verification **required**
+- [ ] Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv
+- [ ] Any check that was not run is marked as not run, not left blank
+
+**P10-03** — verification optional
+- [ ] planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 10
+
+**P10-04** — verification optional
+- [ ] planning/handoffs/phase-10-handoff.md is recorded and names the next phase
 
 ## Phase mode
 Phases are gated: each phase finishes with a recorded handoff before the next begins.

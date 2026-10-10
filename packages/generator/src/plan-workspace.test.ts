@@ -148,17 +148,48 @@ describe('renderPlanWorkspace', () => {
     }
   });
 
-  it('renders tasks.csv in the canonical five-column shape', () => {
+  it('renders tasks.csv in the canonical schema-v2 shape', () => {
     const csv = renderPlanWorkspace(ir).find((a) => a.path === 'planning/tasks.csv')?.content;
     expect(csv).toBeDefined();
     const lines = (csv ?? '').trimEnd().split('\n');
-    // The shape is fixed by @planmo/trace's validator, which requires exactly
-    // five fields per row (quote-aware, so a title may contain a comma).
-    expect(lines[0]).toBe('id,phase,title,status,priority');
+    // Eight columns since schema v2: acceptance and checks are `;`-separated
+    // lists inside one RFC 4180 cell. @planmo/trace's validator accepts this
+    // width and the v1 width, so both kinds of workspace validate.
+    expect(lines[0]).toBe('id,phase,title,status,priority,acceptance,verification,checks');
     expect(lines).toHaveLength(ir.phases.length * 4 + 1);
     for (const line of lines.slice(1)) {
-      expect(splitCsvLine(line), line).toHaveLength(5);
+      expect(splitCsvLine(line), line).toHaveLength(8);
       expect(line).toContain('TODO');
+      // Every task carries at least one acceptance criterion — that is the point
+      // of the schema, and an empty cell would mean the criterion was dropped.
+      expect(splitCsvLine(line)[5], line).not.toBe('');
+    }
+  });
+
+  it('seeds TEST-EVIDENCE.csv with a row per required check', () => {
+    const csv = renderPlanWorkspace(ir).find(
+      (a) => a.path === 'planning/testing/TEST-EVIDENCE.csv',
+    )?.content;
+    expect(csv).toBeDefined();
+    const lines = (csv ?? '').trimEnd().split('\n');
+    expect(lines[0]).toBe('task_id,check,command,result');
+    // Required tasks are the two gate-bearing ones per phase; optional tasks get
+    // no rows, because nothing gates on them.
+    const requiredTasks = ir.phases.flatMap((phase) =>
+      phaseTasks(phase, ir.profile?.gates).filter((task) => task.verification.required),
+    );
+    const expectedRows = requiredTasks.reduce(
+      (sum, task) => sum + task.verification.checks.length,
+      0,
+    );
+    expect(lines).toHaveLength(expectedRows + 1);
+    for (const line of lines.slice(1)) {
+      const fields = splitCsvLine(line);
+      expect(fields, line).toHaveLength(4);
+      // command and result are blank until the check is actually run — the file
+      // is a scaffold, and a pre-filled result would be a fabricated one.
+      expect(fields[2], line).toBe('');
+      expect(fields[3], line).toBe('');
     }
   });
 
@@ -194,7 +225,7 @@ describe('renderPlanWorkspace', () => {
         (a) => a.path === `planning/phases/phase-${phase.id}.md`,
       )?.content;
       expect(doc, `phase ${phase.id}`).toContain('## Tasks');
-      for (const [id] of phaseTasks(phase)) {
+      for (const { id } of phaseTasks(phase)) {
         expect(doc, `${id} in phase ${phase.id}`).toContain(`| ${id} |`);
       }
     }

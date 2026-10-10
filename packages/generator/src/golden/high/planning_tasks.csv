@@ -1,53 +1,53 @@
-id,phase,title,status,priority
-P00-01,00,"Lock product boundaries, naming, licensing criteria, and non-goals.",TODO,MUST
-P00-02,00,Tests & evidence for the phase exit gates,TODO,SHOULD
-P00-03,00,Docs & traceability for Product & research foundation,TODO,SHOULD
-P00-04,00,Record the phase handoff,TODO,SHOULD
-P01-01,01,"Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.",TODO,MUST
-P01-02,01,Tests & evidence for the phase exit gates,TODO,SHOULD
-P01-03,01,Docs & traceability for Repository & engineering foundation,TODO,SHOULD
-P01-04,01,Record the phase handoff,TODO,SHOULD
-P02-01,02,Schema-version every persisted PlanMo document and add migration tests.,TODO,MUST
-P02-02,02,Tests & evidence for the phase exit gates,TODO,SHOULD
-P02-03,02,Docs & traceability for Canonical project model & schemas,TODO,SHOULD
-P02-04,02,Record the phase handoff,TODO,SHOULD
-P03-01,03,"Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.",TODO,MUST
-P03-02,03,Tests & evidence for the phase exit gates,TODO,SHOULD
-P03-03,03,Docs & traceability for CLI foundation,TODO,SHOULD
-P03-04,03,Record the phase handoff,TODO,SHOULD
-P04-01,04,"Implement declarative packs, deterministic resolution, lockfile, profiles.",TODO,MUST
-P04-02,04,Tests & evidence for the phase exit gates,TODO,SHOULD
-P04-03,04,Docs & traceability for Pack & profile system,TODO,SHOULD
-P04-04,04,Record the phase handoff,TODO,SHOULD
-P05-01,05,Generate plan documents with an ownership manifest and reproducible regeneration.,TODO,MUST
-P05-02,05,Tests & evidence for the phase exit gates,TODO,SHOULD
-P05-03,05,Docs & traceability for Planning compiler & artifact generator,TODO,SHOULD
-P05-04,05,Record the phase handoff,TODO,SHOULD
-P06-01,06,Implement generic and per-agent adapters with a structured AI proposal contract.,TODO,MUST
-P06-02,06,Tests & evidence for the phase exit gates,TODO,SHOULD
-P06-03,06,Docs & traceability for Agent bridge,TODO,SHOULD
-P06-04,06,Record the phase handoff,TODO,SHOULD
-P07-01,07,"Implement design profiles, design tokens, eight styles, frontend docs.",TODO,MUST
-P07-02,07,Tests & evidence for the phase exit gates,TODO,SHOULD
-P07-03,07,Docs & traceability for Frontend design engine,TODO,SHOULD
-P07-04,07,Record the phase handoff,TODO,SHOULD
-P08-01,08,"Implement phases, handoffs, work packets, gates, planmo next.",TODO,MUST
-P08-02,08,Tests & evidence for the phase exit gates,TODO,SHOULD
-P08-03,08,Docs & traceability for Workflow/session engine,TODO,SHOULD
-P08-04,08,Record the phase handoff,TODO,SHOULD
-P09-01,09,"Implement trace graph, validation, drift detection, doctor command.",TODO,MUST
-P09-02,09,Tests & evidence for the phase exit gates,TODO,SHOULD
-P09-03,09,"Docs & traceability for Trace, validate, doctor & drift",TODO,SHOULD
-P09-04,09,Record the phase handoff,TODO,SHOULD
-P10-01,10,Support adopting an existing repository incrementally.,TODO,MUST
-P10-02,10,Tests & evidence for the phase exit gates,TODO,SHOULD
-P10-03,10,Docs & traceability for Existing repository adoption,TODO,SHOULD
-P10-04,10,Record the phase handoff,TODO,SHOULD
-P11-01,11,"Packs registry, templates, agent ecosystem integrations.",TODO,MUST
-P11-02,11,Tests & evidence for the phase exit gates,TODO,SHOULD
-P11-03,11,Docs & traceability for Ecosystem & integrations,TODO,SHOULD
-P11-04,11,Record the phase handoff,TODO,SHOULD
-P12-01,12,"Hardening, security review, pilot, and v1 release.",TODO,MUST
-P12-02,12,Tests & evidence for the phase exit gates,TODO,SHOULD
-P12-03,12,"Docs & traceability for Hardening, pilot & v1",TODO,SHOULD
-P12-04,12,Record the phase handoff,TODO,SHOULD
+id,phase,title,status,priority,acceptance,verification,checks
+P00-01,00,"Lock product boundaries, naming, licensing criteria, and non-goals.",TODO,MUST,"The phase objective is met: Lock product boundaries, naming, licensing criteria, and non-goals.; Every exit gate named in planning/phases/phase-00.md passes",required,unit tests; typecheck; lint; format:check
+P00-02,00,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P00-03,00,Docs & traceability for Product & research foundation,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 00,optional,docs updated
+P00-04,00,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-00-handoff.md is recorded and names the next phase,optional,handoff recorded
+P01-01,01,"Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.",TODO,MUST,"The phase objective is met: Create monorepo toolchain, strict types, lint/format/test, CI, boundaries.; Every exit gate named in planning/phases/phase-01.md passes",required,unit tests; typecheck; lint; format:check
+P01-02,01,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P01-03,01,Docs & traceability for Repository & engineering foundation,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 01,optional,docs updated
+P01-04,01,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-01-handoff.md is recorded and names the next phase,optional,handoff recorded
+P02-01,02,Schema-version every persisted PlanMo document and add migration tests.,TODO,MUST,The phase objective is met: Schema-version every persisted PlanMo document and add migration tests.; Every exit gate named in planning/phases/phase-02.md passes,required,unit tests; typecheck; lint; format:check
+P02-02,02,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P02-03,02,Docs & traceability for Canonical project model & schemas,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 02,optional,docs updated
+P02-04,02,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-02-handoff.md is recorded and names the next phase,optional,handoff recorded
+P03-01,03,"Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.",TODO,MUST,"The phase objective is met: Implement init, safe filesystem writer, dry-run/diff, ownership rules, status.; Every exit gate named in planning/phases/phase-03.md passes",required,unit tests; typecheck; lint; format:check
+P03-02,03,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P03-03,03,Docs & traceability for CLI foundation,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 03,optional,docs updated
+P03-04,03,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-03-handoff.md is recorded and names the next phase,optional,handoff recorded
+P04-01,04,"Implement declarative packs, deterministic resolution, lockfile, profiles.",TODO,MUST,"The phase objective is met: Implement declarative packs, deterministic resolution, lockfile, profiles.; Every exit gate named in planning/phases/phase-04.md passes",required,unit tests; typecheck; lint; format:check
+P04-02,04,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P04-03,04,Docs & traceability for Pack & profile system,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 04,optional,docs updated
+P04-04,04,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-04-handoff.md is recorded and names the next phase,optional,handoff recorded
+P05-01,05,Generate plan documents with an ownership manifest and reproducible regeneration.,TODO,MUST,The phase objective is met: Generate plan documents with an ownership manifest and reproducible regeneration.; Every exit gate named in planning/phases/phase-05.md passes,required,unit tests; typecheck; lint; format:check
+P05-02,05,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P05-03,05,Docs & traceability for Planning compiler & artifact generator,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 05,optional,docs updated
+P05-04,05,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-05-handoff.md is recorded and names the next phase,optional,handoff recorded
+P06-01,06,Implement generic and per-agent adapters with a structured AI proposal contract.,TODO,MUST,The phase objective is met: Implement generic and per-agent adapters with a structured AI proposal contract.; Every exit gate named in planning/phases/phase-06.md passes,required,unit tests; typecheck; lint; format:check
+P06-02,06,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P06-03,06,Docs & traceability for Agent bridge,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 06,optional,docs updated
+P06-04,06,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-06-handoff.md is recorded and names the next phase,optional,handoff recorded
+P07-01,07,"Implement design profiles, design tokens, eight styles, frontend docs.",TODO,MUST,"The phase objective is met: Implement design profiles, design tokens, eight styles, frontend docs.; Every exit gate named in planning/phases/phase-07.md passes",required,unit tests; typecheck; lint; format:check
+P07-02,07,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P07-03,07,Docs & traceability for Frontend design engine,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 07,optional,docs updated
+P07-04,07,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-07-handoff.md is recorded and names the next phase,optional,handoff recorded
+P08-01,08,"Implement phases, handoffs, work packets, gates, planmo next.",TODO,MUST,"The phase objective is met: Implement phases, handoffs, work packets, gates, planmo next.; Every exit gate named in planning/phases/phase-08.md passes",required,unit tests; typecheck; lint; format:check
+P08-02,08,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P08-03,08,Docs & traceability for Workflow/session engine,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 08,optional,docs updated
+P08-04,08,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-08-handoff.md is recorded and names the next phase,optional,handoff recorded
+P09-01,09,"Implement trace graph, validation, drift detection, doctor command.",TODO,MUST,"The phase objective is met: Implement trace graph, validation, drift detection, doctor command.; Every exit gate named in planning/phases/phase-09.md passes",required,unit tests; typecheck; lint; format:check
+P09-02,09,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P09-03,09,"Docs & traceability for Trace, validate, doctor & drift",TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 09,optional,docs updated
+P09-04,09,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-09-handoff.md is recorded and names the next phase,optional,handoff recorded
+P10-01,10,Support adopting an existing repository incrementally.,TODO,MUST,The phase objective is met: Support adopting an existing repository incrementally.; Every exit gate named in planning/phases/phase-10.md passes,required,unit tests; typecheck; lint; format:check
+P10-02,10,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P10-03,10,Docs & traceability for Existing repository adoption,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 10,optional,docs updated
+P10-04,10,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-10-handoff.md is recorded and names the next phase,optional,handoff recorded
+P11-01,11,"Packs registry, templates, agent ecosystem integrations.",TODO,MUST,"The phase objective is met: Packs registry, templates, agent ecosystem integrations.; Every exit gate named in planning/phases/phase-11.md passes",required,unit tests; typecheck; lint; format:check
+P11-02,11,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P11-03,11,Docs & traceability for Ecosystem & integrations,TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 11,optional,docs updated
+P11-04,11,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-11-handoff.md is recorded and names the next phase,optional,handoff recorded
+P12-01,12,"Hardening, security review, pilot, and v1 release.",TODO,MUST,"The phase objective is met: Hardening, security review, pilot, and v1 release.; Every exit gate named in planning/phases/phase-12.md passes",required,unit tests; typecheck; lint; format:check
+P12-02,12,Tests & evidence for the phase exit gates,TODO,MUST,"Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv; Any check that was not run is marked as not run, not left blank",required,unit tests; typecheck; lint; format:check
+P12-03,12,"Docs & traceability for Hardening, pilot & v1",TODO,SHOULD,planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 12,optional,docs updated
+P12-04,12,Record the phase handoff,TODO,SHOULD,planning/handoffs/phase-12-handoff.md is recorded and names the next phase,optional,handoff recorded
