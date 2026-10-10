@@ -104,6 +104,9 @@ describe('renderPlanWorkspace', () => {
         'planning/RISKS.md',
         'planning/prompts/README.md',
         'planning/prompts/phase-prompt.md',
+        // Evidence is RECORDED here, so a generated file would discard it on every
+        // regeneration — and clear the `pass` the trace engine had already accepted.
+        'planning/testing/TEST-EVIDENCE.csv',
       ].sort(),
     );
     for (const artifact of artifacts) {

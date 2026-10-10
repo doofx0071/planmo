@@ -72,7 +72,17 @@ const DOCUMENTS: readonly DocumentSpec[] = [
   { path: 'planning/tasks.csv', ownership: 'generated', render: renderTasksCsv },
   {
     path: 'planning/testing/TEST-EVIDENCE.csv',
-    ownership: 'generated',
+    // SEEDED, not generated. This file is where evidence is RECORDED, and a
+    // generated file is rewritten from the scaffold on every regeneration — which
+    // silently discards every recorded result and clears the `pass` the trace
+    // engine had already accepted. Observed on a real workspace: record six
+    // results, run `planmo generate`, get zero rows back.
+    //
+    // Same family as DECISIONS.md and RISKS.md: PlanMo writes the scaffold once and
+    // the user owns it afterwards. If the task list later grows, the new tasks
+    // simply have no rows — which the trace reports as missing evidence, which is
+    // true, rather than as evidence that was thrown away.
+    ownership: 'seeded',
     render: renderTestEvidence,
   },
   {

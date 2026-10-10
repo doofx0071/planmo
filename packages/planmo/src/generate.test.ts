@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, readdir } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -31,7 +31,7 @@ const EXPECTED_ARTIFACTS = 31;
 const EXPECTED_FIRST_RUN_WRITES = EXPECTED_ARTIFACTS + 1;
 const EXPECTED_MANIFEST_ENTRIES = EXPECTED_ARTIFACTS;
 /** Seeded documents are created once and never rewritten afterwards. */
-const EXPECTED_SEEDED = 6;
+const EXPECTED_SEEDED = 7;
 const EXPECTED_SECOND_RUN_WRITES = EXPECTED_FIRST_RUN_WRITES - EXPECTED_SEEDED;
 
 async function freshRoot(): Promise<string> {
@@ -74,7 +74,33 @@ describe('generatePlanningWorkspace', () => {
     expect(second.written).toHaveLength(EXPECTED_SECOND_RUN_WRITES);
     expect(second.written).not.toContain('planning/DECISIONS.md');
     expect(second.written).not.toContain('planning/RISKS.md');
+    // Evidence is recorded by the user; rewriting it would discard every result and
+    // clear the `pass` the trace engine had already accepted.
+    expect(second.written).not.toContain('planning/testing/TEST-EVIDENCE.csv');
     expect(second.written).toContain('planning/MASTER-PLAN.md');
+  });
+
+  it('preserves recorded evidence across a regeneration', async () => {
+    const root = await freshRoot();
+    await generatePlanningWorkspace({ root, planmoVersion: '0.0.0-test' });
+
+    // Record a real result the way a user (or an agent) would.
+    const evidencePath = join(root, 'planning', 'testing', 'TEST-EVIDENCE.csv');
+    const before = await readFile(evidencePath, 'utf8');
+    const recorded = before
+      .split('\n')
+      .map((line) =>
+        line.startsWith('P00-01,unit tests,') ? 'P00-01,unit tests,bun run test,pass' : line,
+      )
+      .join('\n');
+    await writeFile(evidencePath, recorded, 'utf8');
+
+    await generatePlanningWorkspace({ root, planmoVersion: '0.0.0-test' });
+
+    const after = await readFile(evidencePath, 'utf8');
+    // The whole point: a generated file here would come back as a blank scaffold and
+    // TRC-002 would fire again for every task that had been evidenced.
+    expect(after).toContain('P00-01,unit tests,bun run test,pass');
   });
 
   it('dry-run writes nothing', async () => {
