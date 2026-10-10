@@ -1,5 +1,13 @@
 # @planmo/workflow
 
+## 1.1.4
+
+### Patch Changes
+
+- Updated dependencies [60b39b1]
+  - @planmo/schema@1.2.0
+  - @planmo/agent-bridge@1.3.3
+
 ## 1.1.3
 
 ### Patch Changes
