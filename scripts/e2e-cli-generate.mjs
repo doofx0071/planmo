@@ -203,6 +203,55 @@ check('pack exits 3 without a workspace', run(['pack', '--dir', empty]).status =
 check('help documents trace', run(['--help']).stdout.includes('planmo trace'));
 check('help documents handoff', run(['--help']).stdout.includes('planmo handoff'));
 check('help documents pack', run(['--help']).stdout.includes('planmo pack'));
+check('help documents plan', run(['--help']).stdout.includes('planmo plan'));
+
+// ---------------------------------------------------------------- plan
+// The AI planning engine, exercised offline with the mock provider: no network, no
+// credential. The point of this block is that the plan document, once recorded, is
+// what `generate` compiles from — so the whole loop is checked, not just the write.
+{
+  const planFile = join(target, '.planmo', 'plan.yml');
+  check('plan refuses to run without an idea', run(['plan', '--dir', target]).status === 1);
+
+  // The dry run comes first, while no plan exists yet, so it exercises the happy
+  // path. (After a plan exists it would report a collision — the same contract as
+  // `generate --dry-run`, which is checked by the collision case below.)
+  const dry = run(['plan', 'Build a demo', '--dir', target, '--provider', 'mock', '--dry-run']);
+  check('plan --dry-run exits 0', dry.status === 0, `exit ${dry.status}`);
+  check('plan --dry-run writes nothing', !existsSync(planFile));
+
+  const planned = run(['plan', 'Build a demo', '--dir', target, '--provider', 'mock']);
+  check('plan exits 0 with the mock provider', planned.status === 0, `exit ${planned.status}`);
+  check('plan states that its output is simulated', planned.stderr.includes('simulated'));
+  check('plan reports real counts', /phases: \d+\s+tasks: \d+/.test(planned.stdout));
+  check('plan writes .planmo/plan.yml', existsSync(planFile));
+  check(
+    'plan names its author in the document',
+    readFileSync(planFile, 'utf8').includes('provider:'),
+  );
+
+  // A plan you own is a collision, not a silent overwrite.
+  const again = run(['plan', 'Build a demo', '--dir', target, '--provider', 'mock']);
+  check('plan refuses to overwrite a plan you own', again.status === 2, `exit ${again.status}`);
+
+  // The recorded plan is what generation compiles from.
+  const regenerated = run(['generate', '--dir', target, '--force']);
+  check('generate compiles from the plan', regenerated.status === 0, `exit ${regenerated.status}`);
+  const csv = readFileSync(join(target, 'planning', 'tasks.csv'), 'utf8');
+  check('tasks.csv carries the plan\u2019s task, not the seed', csv.includes('mock provider'));
+
+  // And the whole workspace still validates with a plan in play.
+  const validated = run(['validate', '--dir', target]);
+  check(
+    'a plan-driven workspace validates clean',
+    validated.status === 0 && validated.stdout.includes('validate: OK'),
+    `exit ${validated.status}`,
+  );
+
+  // `next` — the command agents consume — must see the plan's task.
+  const brief = run(['next', '--dir', target]);
+  check('next reports the plan\u2019s task', brief.stdout.includes('mock provider'));
+}
 
 console.log(
   `\nCLI generate E2E: ${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURE(S)`}`,

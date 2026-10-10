@@ -154,6 +154,37 @@ export function phaseTasks(
   ];
 }
 
+/**
+ * The tasks for a phase: the plan's own when the project has a plan covering it,
+ * otherwise the deterministic seed.
+ *
+ * One function, so every surface — `tasks.csv`, the phase document, the tracker,
+ * the traceability matrix and the evidence file — still derives from a single
+ * definition and cannot disagree. A plan replaces the seed for the phases it
+ * covers, and only those.
+ *
+ * `PlanTask.requirements` is deliberately not carried into the task record: the
+ * plan document is the canonical home for requirement references, and duplicating
+ * them into `tasks.csv` would create two sources that can drift. The references
+ * are validated when the plan is written (`PLN-007`).
+ */
+export function tasksForPhase(ir: PlanningIR, phase: PhaseNode): TaskRecord[] {
+  const planned = ir.plan?.phases.find((candidate) => candidate.id === phase.id);
+  if (planned === undefined) return phaseTasks(phase, ir.profile?.gates);
+  return planned.tasks.map((task) => ({
+    id: task.id,
+    phase: phase.id,
+    title: task.title,
+    status: 'TODO',
+    priority: task.priority,
+    acceptance: [...task.acceptance],
+    verification: {
+      required: task.verification.required,
+      checks: [...task.verification.checks],
+    },
+  }));
+}
+
 /** ROADMAP.md — the full depth-pruned phase spine with objectives. */
 function renderRoadmap(ir: PlanningIR): string {
   const lines: string[] = ['# Detailed Roadmap', ''];
@@ -178,7 +209,7 @@ function renderTracker(ir: PlanningIR): string {
     '|---|---|---|---|',
   ];
   for (const phase of ir.phases) {
-    const tasks = phaseTasks(phase);
+    const tasks = tasksForPhase(ir, phase);
     const first = tasks[0]?.id ?? '';
     const last = tasks[tasks.length - 1]?.id ?? '';
     lines.push(`| ${phase.id} | ${phase.title} | ${first}–${last} (${tasks.length}) | TODO |`);
@@ -193,7 +224,7 @@ function renderTracker(ir: PlanningIR): string {
 /** phase-NN.md — one document per IR phase, following the repo house style. */
 function renderPhaseDoc(phase: PhaseNode, ir: PlanningIR): string {
   const gates = ir.profile ? ir.profile.gates : [...DEFAULT_GATE_CHECKS];
-  const tasks: TaskRecord[] = phaseTasks(phase, gates);
+  const tasks: TaskRecord[] = tasksForPhase(ir, phase);
   const stopRule =
     ir.phaseMode === 'gated'
       ? `**HARD STOP after Phase ${phase.id}. Do not start another phase in this session.**`

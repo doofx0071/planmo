@@ -8,6 +8,7 @@
  * artifact generation (docs/06-agent-engine/ai-boundary.md).
  */
 export * from './contracts.js';
+export * from './providers.js';
 export * from './structured.js';
 export * from './mock.js';
 export * from './http.js';

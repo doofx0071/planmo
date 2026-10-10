@@ -1,5 +1,6 @@
 import { readStatus } from '@planmo/core';
 import { buildIr, compileWorkspace } from '@planmo/generator';
+import { readPlanDocument } from './plan.js';
 import { compilePlanningProfile, resolvePacks, selectStandards } from '@planmo/packs';
 
 /**
@@ -47,6 +48,13 @@ export async function generatePlanningWorkspace(opts: GenerateOptions): Promise<
   }
   const project = status.project;
 
+  // A recorded plan AUGMENTS the canonical spine: when `.planmo/plan.yml` exists,
+  // its phases and tasks are the project's. Absent, generation is exactly what it
+  // was before the AI planner existed — which is what keeps every pre-existing
+  // workspace and every golden fixture byte-identical, and keeps this command
+  // deterministic and model-free.
+  const plan = await readPlanDocument(status.root);
+
   // No local pack catalog is wired to the CLI yet: resolve against an empty
   // catalog so requested refs surface as diagnostics instead of silent success.
   const resolution = resolvePacks([], [...(project.packs ?? [])]);
@@ -57,6 +65,7 @@ export async function generatePlanningWorkspace(opts: GenerateOptions): Promise<
     lockfile: { planmoVersion: opts.planmoVersion, packs: [] },
     profile: compilePlanningProfile(project.planning?.depth ?? 'standard'),
     standards: selectStandards(resolution.packs, { risk: project.project.risk }),
+    plan,
   });
 
   const result = await compileWorkspace(ir, {

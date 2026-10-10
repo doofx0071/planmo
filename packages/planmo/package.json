@@ -46,6 +46,7 @@
     "@planmo/adapters": "workspace:*",
     "@planmo/agent-bridge": "workspace:*",
     "@planmo/core": "workspace:*",
+    "@planmo/ai": "workspace:*",
     "@planmo/generator": "workspace:*",
     "@planmo/packs": "workspace:*",
     "@planmo/scanner": "workspace:*",

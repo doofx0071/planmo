@@ -1,5 +1,8 @@
 /**
- * OpenAI-compatible HTTP provider (`POST {baseUrl}/chat/completions`).
+ * HTTP provider for two wire formats — OpenAI-compatible
+ * (`POST {baseUrl}/chat/completions`) and Anthropic Messages
+ * (`POST {baseUrl}/messages`). The default is OpenAI; select Anthropic with
+ * `wireFormat: 'anthropic'`.
  *
  * Uses the platform `fetch` — no vendor SDK — so nothing in PlanMo depends on a
  * model vendor's client library. The API key is REQUIRED config; it is never
@@ -23,6 +26,7 @@ import type {
   ModelResponse,
   ModelUsage,
 } from './contracts.js';
+import type { WireFormat } from './providers.js';
 import { validateAgainstSchema } from './structured.js';
 import { isPlainObject } from './util.js';
 
@@ -33,6 +37,13 @@ export interface HttpProviderConfig {
   apiKey: string;
   /** Model id sent in the request body. */
   model: string;
+  /**
+   * Wire protocol. Default `'openai'` (`POST {baseUrl}/chat/completions`).
+   * `'anthropic'` speaks the Messages API (`POST {baseUrl}/messages`).
+   */
+  wireFormat?: WireFormat;
+  /** Anthropic API version header. Default `'2023-06-01'`. Ignored by `openai`. */
+  anthropicVersion?: string;
   /** Per-attempt timeout in ms. Default 30000. */
   timeoutMs?: number;
   /** Max retries after the first attempt. Default 2 (clamped to 0..5). */
@@ -44,6 +55,11 @@ const DEFAULT_MAX_RETRIES = 2;
 const MAX_RETRIES_CEILING = 5;
 const RETRY_BASE_DELAY_MS = 100;
 const RETRY_MAX_DELAY_MS = 2_000;
+const DEFAULT_ANTHROPIC_VERSION = '2023-06-01';
+const DEFAULT_ANTHROPIC_MAX_TOKENS = 4_096;
+/** Anthropic has no `response_format`; structured mode is requested in the system prompt. */
+const ANTHROPIC_JSON_INSTRUCTION =
+  'Respond with only a single valid JSON object and nothing else — no prose and no markdown fences.';
 
 const CAPABILITIES: ModelCapabilities = {
   structuredOutput: true,
@@ -68,6 +84,14 @@ function providerIdFrom(baseUrl: string): string {
 
 function chatCompletionsUrl(baseUrl: string): string {
   return `${baseUrl.replace(/\/+$/, '')}/chat/completions`;
+}
+
+function messagesUrl(baseUrl: string): string {
+  return `${baseUrl.replace(/\/+$/, '')}/messages`;
+}
+
+function requestUrl(baseUrl: string, wireFormat: WireFormat): string {
+  return wireFormat === 'anthropic' ? messagesUrl(baseUrl) : chatCompletionsUrl(baseUrl);
 }
 
 /** Remove a secret from text before it can reach an error message. */
@@ -113,6 +137,42 @@ function buildBody(model: string, request: ModelRequest): string {
   if (request.maxOutputTokens !== undefined) body.max_tokens = request.maxOutputTokens;
   if (request.mode === 'structured') body.response_format = { type: 'json_object' };
   return JSON.stringify(body);
+}
+
+/**
+ * Anthropic Messages body: `{ model, max_tokens, system?, messages }`. Anthropic
+ * requires `max_tokens`, so a default is used when the request sets no bound.
+ * Structured mode is requested through the system prompt (the Messages API has no
+ * `response_format` field in the base wire format).
+ */
+function buildAnthropicBody(model: string, request: ModelRequest): string {
+  const system: string[] = [];
+  if (request.system !== undefined) system.push(request.system);
+  if (request.mode === 'structured') system.push(ANTHROPIC_JSON_INSTRUCTION);
+
+  const body: Record<string, unknown> = {
+    model,
+    max_tokens: request.maxOutputTokens ?? DEFAULT_ANTHROPIC_MAX_TOKENS,
+    messages: [{ role: 'user', content: request.prompt }],
+  };
+  if (system.length > 0) body.system = system.join('\n\n');
+  return JSON.stringify(body);
+}
+
+/** Request headers per wire format. The key is sent in a header, never the body. */
+function requestHeaders(
+  apiKey: string,
+  wireFormat: WireFormat,
+  anthropicVersion: string,
+): Record<string, string> {
+  if (wireFormat === 'anthropic') {
+    return {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': anthropicVersion,
+    };
+  }
+  return { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` };
 }
 
 function asUsage(payload: Record<string, unknown>): ModelUsage {
@@ -181,7 +241,75 @@ function parseResponse(
   return { text: content, usage, model, providerId, simulated: false };
 }
 
-/** Create an OpenAI-compatible `ModelProvider` backed by the platform `fetch`. */
+function anthropicUsage(payload: Record<string, unknown>): ModelUsage {
+  const usage = isPlainObject(payload.usage) ? payload.usage : {};
+  const input = usage.input_tokens;
+  const output = usage.output_tokens;
+  return {
+    inputTokens: typeof input === 'number' && Number.isFinite(input) ? input : 0,
+    outputTokens: typeof output === 'number' && Number.isFinite(output) ? output : 0,
+  };
+}
+
+/** Join the `text` content blocks of an Anthropic message; fail when there are none. */
+function extractAnthropicContent(payload: unknown): string {
+  if (!isPlainObject(payload)) {
+    throw new ProviderError('invalid-response', 'provider response was not a JSON object');
+  }
+  const content = payload.content;
+  if (!Array.isArray(content)) {
+    throw new ProviderError('invalid-response', 'provider response missing content blocks');
+  }
+  const blocks = content.filter(
+    (block): block is { type: 'text'; text: string } =>
+      isPlainObject(block) && block.type === 'text' && typeof block.text === 'string',
+  );
+  if (blocks.length === 0) {
+    throw new ProviderError('invalid-response', 'provider response contained no text content');
+  }
+  return blocks.map((block) => block.text).join('');
+}
+
+function parseAnthropicResponse(
+  payload: unknown,
+  request: ModelRequest,
+  providerId: string,
+  fallbackModel: string,
+): ModelResponse {
+  const content = extractAnthropicContent(payload);
+  const record = isPlainObject(payload) ? payload : {};
+  const usage = anthropicUsage(record);
+  const model = typeof record.model === 'string' ? record.model : fallbackModel;
+
+  if (request.mode === 'structured') {
+    let data: unknown;
+    try {
+      data = JSON.parse(content);
+    } catch (cause) {
+      throw new ProviderError(
+        'invalid-response',
+        'provider structured response was not valid JSON',
+        {
+          cause,
+        },
+      );
+    }
+    if (request.schema !== undefined) {
+      const result = validateAgainstSchema(data, request.schema);
+      if (!result.valid) {
+        throw new ProviderError(
+          'invalid-response',
+          `provider structured response failed schema validation: ${result.errors.join('; ')}`,
+        );
+      }
+    }
+    return { text: content, data, usage, model, providerId, simulated: false };
+  }
+
+  return { text: content, usage, model, providerId, simulated: false };
+}
+
+/** Create a `ModelProvider` backed by the platform `fetch` (OpenAI or Anthropic). */
 export function createHttpProvider(config: HttpProviderConfig): ModelProvider {
   if (typeof config.apiKey !== 'string' || config.apiKey.trim() === '') {
     throw new ProviderError(
@@ -196,8 +324,16 @@ export function createHttpProvider(config: HttpProviderConfig): ModelProvider {
     throw new ProviderError('invalid-response', 'createHttpProvider: model is required');
   }
 
+  const wireFormat: WireFormat = config.wireFormat ?? 'openai';
+  if (wireFormat !== 'openai' && wireFormat !== 'anthropic') {
+    throw new ProviderError(
+      'invalid-response',
+      `createHttpProvider: unknown wireFormat "${String(config.wireFormat)}"`,
+    );
+  }
+  const anthropicVersion = config.anthropicVersion ?? DEFAULT_ANTHROPIC_VERSION;
   const id = providerIdFrom(config.baseUrl);
-  const url = chatCompletionsUrl(config.baseUrl);
+  const url = requestUrl(config.baseUrl, wireFormat);
   const maxRetries = clampRetries(config.maxRetries);
 
   async function requestOnce(
@@ -226,11 +362,11 @@ export function createHttpProvider(config: HttpProviderConfig): ModelProvider {
     try {
       response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          authorization: `Bearer ${config.apiKey}`,
-        },
-        body: buildBody(config.model, request),
+        headers: requestHeaders(config.apiKey, wireFormat, anthropicVersion),
+        body:
+          wireFormat === 'anthropic'
+            ? buildAnthropicBody(config.model, request)
+            : buildBody(config.model, request),
         signal: controller.signal,
       });
     } catch (cause) {
@@ -261,7 +397,9 @@ export function createHttpProvider(config: HttpProviderConfig): ModelProvider {
         cause,
       });
     }
-    return parseResponse(payload, request, id, config.model);
+    return wireFormat === 'anthropic'
+      ? parseAnthropicResponse(payload, request, id, config.model)
+      : parseResponse(payload, request, id, config.model);
   }
 
   function backoff(attempt: number, signal: AbortSignal | undefined): Promise<void> {
