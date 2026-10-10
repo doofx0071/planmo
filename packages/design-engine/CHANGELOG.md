@@ -1,5 +1,13 @@
 # @planmo/design-engine
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [da9ad6a]
+  - @planmo/schema@1.1.0
+  - @planmo/core@1.0.4
+
 ## 1.0.1
 
 ### Patch Changes
