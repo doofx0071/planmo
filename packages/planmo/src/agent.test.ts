@@ -26,7 +26,7 @@ describe('installAgentCommands', () => {
     expect(result.collisions).toEqual([]);
     const body = await readFile(join(root, '.opencode/commands/planmo-next.md'), 'utf8');
     expect(body).toContain('description:');
-    expect(body).toContain('npx planmo next --print');
+    expect(body).toContain('npx -y planmo next --print');
   });
 
   it('writes skills with a directory-matching name', async () => {
@@ -114,7 +114,7 @@ describe('installAgentCommands', () => {
     const forced = await installAgentCommands({ root, agent: 'opencode', allowOverwrite: true });
     expect(forced.collisions).toEqual([]);
     expect(forced.written).toContain('.opencode/commands/planmo-next.md');
-    expect(await readFile(target, 'utf8')).toContain('npx planmo next --print');
+    expect(await readFile(target, 'utf8')).toContain('npx -y planmo next --print');
   });
 });
 

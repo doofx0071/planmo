@@ -3,6 +3,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { AGENT_COMMANDS, DETECTABLE_TARGETS, renderAgentFiles } from '@planmo/agent-bridge';
 import { analyzeRepository, DEFAULT_EXCLUDES, nodeFileReader } from '@planmo/scanner';
+import { AGENT_IDS, type AgentId } from '@planmo/schema';
 
 /**
  * Work out which coding agents this project already uses.
@@ -122,7 +123,11 @@ export interface InitDetection {
   /** `brownfield` when the directory already holds files outside the scan excludes. */
   readonly lifecycle: 'greenfield' | 'brownfield';
   readonly type: string;
-  readonly primaryAgent: string;
+  /**
+   * Always a member of `AGENT_IDS` (ADR-0008's v1 matrix), never a bare detected id:
+   * detection may see `codex`, but `project.yml` cannot hold it.
+   */
+  readonly primaryAgent: AgentId;
 }
 
 /**
@@ -151,6 +156,18 @@ export async function detectForInit(root: string): Promise<InitDetection> {
   const installed = agents.find((agent) => agent.state === 'installed');
   const specific = agents.find((agent) => !CONVENTION_AGENTS.includes(agent.id));
 
+  // ADR-0008 fixes the v1 primary-agent matrix at three ids; the 31 agents in
+  // @planmo/agent-bridge are for COMMAND INSTALLATION, which is a different
+  // concern. Proposing an id outside the matrix makes project.yml fail its own
+  // schema — which is exactly what happened on a repository whose only signal was
+  // AGENTS.md: detection said `codex`, `codex` is not in the matrix, and `init`
+  // refused to write the workspace at all. Detection proposes only what the
+  // workspace can accept, and falls back to the documented default.
+  const primaryAgent =
+    [installed?.id, specific?.id].find(
+      (id): id is AgentId => id !== undefined && (AGENT_IDS as readonly string[]).includes(id),
+    ) ?? 'opencode';
+
   return {
     stacks,
     testFrameworks: detection.testFrameworks,
@@ -162,6 +179,6 @@ export async function detectForInit(root: string): Promise<InitDetection> {
     // of the distinction is whether there is existing work to respect.
     lifecycle: fileCount > 0 ? 'brownfield' : 'greenfield',
     type: typed?.[1] ?? 'web-application',
-    primaryAgent: installed?.id ?? specific?.id ?? 'opencode',
+    primaryAgent,
   };
 }

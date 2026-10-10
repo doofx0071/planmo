@@ -192,6 +192,20 @@ describe('detectForInit()', () => {
     expect((await detectForInit(root)).primaryAgent).toBe('opencode');
   });
 
+  it('never proposes a primary agent outside the v1 matrix (ADR-0008)', async () => {
+    // AGENTS.md is detected as `codex`, which is NOT a valid project.yml value.
+    // Returning it made init refuse to write the workspace at all.
+    const root = await withFiles({ 'AGENTS.md': '# conventions\n' });
+    const detected = await detectForInit(root);
+    expect(detected.agents.map((a) => a.id)).toContain('codex');
+    expect(['opencode', 'claude-code', 'generic']).toContain(detected.primaryAgent);
+  });
+
+  it('keeps a detected agent that IS in the matrix', async () => {
+    const root = await withFiles({ 'CLAUDE.md': '# claude\n' });
+    expect((await detectForInit(root)).primaryAgent).toBe('claude-code');
+  });
+
   it("ignores PlanMo's own generated workspace, so init stays idempotent", async () => {
     const root = await withFiles({
       'planning/ROADMAP.md': '# roadmap\n',

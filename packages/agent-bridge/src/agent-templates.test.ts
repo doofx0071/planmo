@@ -38,6 +38,26 @@ describe('agent command templates', () => {
 
   it('tells the agent to run the CLI rather than invent a plan', () => {
     const all = AGENT_COMMANDS.map((c) => c.body).join('\n');
-    expect(all).toContain('npx planmo');
+    expect(all).toContain('npx -y planmo');
+  });
+
+  it('never invokes npx without -y, which can hang on a confirmation prompt', () => {
+    // A bare `npx planmo` asks "Ok to proceed? (y)" on a machine that has not
+    // cached the package, and does nothing at all if that prompt is dismissed. An
+    // agent following the instruction stalls silently.
+    for (const command of AGENT_COMMANDS) {
+      for (const line of command.body.split('\n')) {
+        if (!line.includes('npx planmo')) continue;
+        expect(line, `${command.name}: ${line}`).toContain('npx -y planmo');
+      }
+    }
+  });
+
+  it('tells the agent not to explore beyond the files the brief names', () => {
+    const next = AGENT_COMMANDS.find((c) => c.name === 'next')!.body;
+    // One real run of this command cost 1.6M tokens, most of it spent reading the
+    // planning tree and PlanMo's own installed source.
+    expect(next).toContain('Do not explore beyond that');
+    expect(next).toContain('node_modules');
   });
 });

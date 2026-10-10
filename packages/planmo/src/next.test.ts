@@ -182,3 +182,46 @@ describe('USAGE', () => {
     expect(text).toContain('--json');
   });
 });
+
+describe('planmo next — ownership boundary', () => {
+  it('names the user-owned documents and warns that generated ones are overwritten', () => {
+    const brief = {
+      phase: '00',
+      phaseTitle: 'Foundation',
+      task: { id: 'P00-01', title: 'Lock the scope', status: 'TODO', priority: 'MUST' },
+      read: ['planning/phases/phase-00.md'],
+      progress: { done: 0, total: 4 },
+      readyCount: 4,
+      blocked: [],
+      skipped: [],
+      complete: false,
+    } as unknown as Parameters<typeof renderNextBrief>[0];
+
+    const text = renderNextBrief(brief, ['planning/DECISIONS.md', 'planning/RISKS.md']);
+
+    // An agent cannot tell generated files from user-owned ones by looking at them,
+    // and the one that tried reverse-engineered the rule from PlanMo's own source.
+    expect(text).toContain('planning/DECISIONS.md');
+    expect(text).toContain('planning/RISKS.md');
+    expect(text).toContain('GENERATED');
+    expect(text).toContain('regeneration overwrites it');
+    expect(text).toContain('Do not explore beyond the files listed above.');
+    // The instruction it ends on must not hang on an npx confirmation prompt.
+    expect(text).toContain('npx -y planmo validate');
+  });
+
+  it('still warns about generated files when the manifest is unreadable', () => {
+    const brief = {
+      phase: null,
+      phaseTitle: null,
+      task: { id: 'P00-01', title: 'x', status: 'TODO', priority: 'MUST' },
+      read: [],
+      progress: { done: 0, total: 1 },
+      readyCount: 1,
+      blocked: [],
+      skipped: [],
+      complete: false,
+    } as unknown as Parameters<typeof renderNextBrief>[0];
+    expect(renderNextBrief(brief)).toContain('GENERATED');
+  });
+});

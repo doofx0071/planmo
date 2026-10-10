@@ -24,19 +24,33 @@ export const AGENT_COMMANDS: readonly AgentCommandTemplate[] = [
     name: 'next',
     description: 'Show the next PlanMo task and the context to work it.',
     body: [
-      'Run `npx planmo next --print` and follow the directive it prints.',
+      'Run `npx -y planmo next --print` and follow the directive it prints.',
       '',
       'Read the files it names before changing anything. Respect the task scope:',
       'change only what the task requires, and add no adjacent edits.',
       '',
-      'When you are done, run `npx planmo validate` and report its exact output.',
+      // Token discipline. Without this, an agent that cannot find an answer in the
+      // named files starts exploring: it reads the whole planning tree, then
+      // PlanMo's own installed source, to work out the rules. One real run of this
+      // command cost 1.6M tokens, most of it spelunking, for a task whose output was
+      // four short decisions. The brief states the ownership rule instead, so the
+      // answer does not have to be reverse-engineered.
+      'Do not explore beyond that. In particular: do not read PlanMo’s own installed',
+      'source under node_modules, and do not scan the rest of the planning tree — the',
+      'brief already names everything this task needs.',
+      '',
+      'Record durable decisions in the documents the brief lists as yours. Everything',
+      'else under planning/ is generated: regeneration overwrites it, so anything',
+      'written there is lost.',
+      '',
+      'When you are done, run `npx -y planmo validate` and report its exact output.',
     ].join('\n'),
   },
   {
     name: 'status',
     description: 'Report PlanMo workspace health.',
     body: [
-      'Run `npx planmo status` and `npx planmo validate`, then summarize what they',
+      'Run `npx -y planmo status` and `npx -y planmo validate`, then summarize what they',
       'report. Do not change any file for this command.',
     ].join('\n'),
   },
@@ -59,7 +73,7 @@ export const AGENT_COMMANDS: readonly AgentCommandTemplate[] = [
       '',
       'Proposed changes are DELTAS, not commands. Do not edit any project file',
       'yourself: save the JSON as `proposal.json` and tell the user to run',
-      '`npx planmo agent apply proposal.json`, which validates it before anything',
+      '`npx -y planmo agent apply proposal.json`, which validates it before anything',
       'changes.',
     ].join('\n'),
   },
