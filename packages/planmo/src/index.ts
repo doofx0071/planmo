@@ -21,6 +21,7 @@ import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
 import { initWorkspace, ProjectNotFoundError, readStatus } from '@planmo/core';
 import { analyzeRepository, nodeFileReader, DEFAULT_EXCLUDES } from '@planmo/scanner';
+import { PROJECT_LIFECYCLES, PROJECT_RISKS, PROJECT_TYPES } from '@planmo/schema';
 import type {
   AccessibilityLevel,
   AgentId,
@@ -811,19 +812,69 @@ async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
     return wizard.prompt(question, dflt);
   };
 
+  /**
+   * Ask for a value from a fixed set, as an arrow-key menu.
+   *
+   * `[]` in these prompts means the RECOMMENDED option — the one to accept unless
+   * you have a specific reason not to — not merely "whatever the code happens to
+   * default to". Three things follow from that, and they are the whole point:
+   *
+   *   - the recommended choice is labelled, so the user can see WHY it is suggested
+   *     rather than having to trust a bare bracketed word;
+   *   - it is listed first, so pressing Enter accepts it (Enter on a list means the
+   *     highlighted entry, and the first entry is the highlighted one);
+   *   - the alternatives are visible instead of having to be known or looked up.
+   *
+   * A cancelled menu keeps the recommended value rather than aborting the run;
+   * Ctrl-C is still how you abort.
+   */
+  const choose = async <T extends string>(
+    question: string,
+    recommended: T,
+    values: readonly T[],
+    supplied: string | undefined,
+  ): Promise<T> => {
+    if (supplied !== undefined || flags.has('yes')) return (supplied ?? recommended) as T;
+    const ordered = [recommended, ...values.filter((value) => value !== recommended)];
+    const picked = await wizard.select<T>(
+      question,
+      ordered.map((value) => ({
+        value,
+        label: value,
+        ...(value === recommended ? { hint: 'recommended' } : {}),
+      })),
+    );
+    return picked ?? recommended;
+  };
+
+  if (!flags.has('yes') && positional.length === 0 && !flags.has('name')) {
+    wizard.out('Press Enter to accept the recommended value. Use arrow keys to choose.');
+  }
+
   const name = await ask(
     'Project name',
     root.split(/[\\/]/).pop() ?? 'planmo-project',
     flags.get('name'),
   );
-  const type = (await ask('Type', 'web-application', flags.get('type'))) as ProjectType;
-  const lifecycle = (await ask(
+  const type = await choose<ProjectType>(
+    'Type',
+    'web-application',
+    PROJECT_TYPES,
+    flags.get('type'),
+  );
+  const lifecycle = await choose<ProjectLifecycle>(
     'Lifecycle',
     'greenfield',
+    PROJECT_LIFECYCLES,
     flags.get('lifecycle'),
-  )) as ProjectLifecycle;
-  const risk = (await ask('Risk', 'medium', flags.get('risk'))) as ProjectRisk;
-  const primaryAgent = (await ask('Primary agent', 'opencode', flags.get('agent'))) as AgentId;
+  );
+  const risk = await choose<ProjectRisk>('Risk', 'medium', PROJECT_RISKS, flags.get('risk'));
+  const primaryAgent = await choose<AgentId>(
+    'Primary agent',
+    'opencode',
+    AGENT_TARGETS.map((target) => target.id as AgentId),
+    flags.get('agent'),
+  );
 
   const style = flags.get('style');
   const density = flags.get('density');

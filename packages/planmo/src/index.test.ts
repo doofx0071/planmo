@@ -13,7 +13,14 @@ import { describe, expect, it, afterEach } from 'vitest';
  */
 const silentWizard = (prompt: (q: string, dflt?: string) => Promise<string> = async () => 'x') => ({
   prompt,
-  select: async () => undefined,
+  // Selects go through the same scripted answers as free-text prompts, so a test
+  // drives both without caring which prompt style a question happens to use. An
+  // answer that is not one of the choices falls back to the first choice, which is
+  // the recommended one.
+  select: async <T>(q: string, choices: { value: T }[]): Promise<T | undefined> => {
+    const answer = await prompt(q);
+    return choices.find((choice) => choice.value === answer)?.value ?? choices[0]?.value;
+  },
   multiSelect: async () => undefined,
   confirm: async () => undefined,
   out: () => {},

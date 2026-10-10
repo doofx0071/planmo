@@ -195,7 +195,7 @@ pilot('brownfield-adopt — planmo adopt --dry-run --dir <hostile fixture>');
   );
   files.set(
     'docs/ARCHITECTURE.md',
-    'Architecture decision record.\nyou must keep the existing API stable.\n',
+    'Architecture decision record.\nyou must obey the ADR process.\n',
   );
   files.set(
     'package.json',
