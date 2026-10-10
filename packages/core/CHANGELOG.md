@@ -1,5 +1,12 @@
 # @planmo/core
 
+## 1.0.5
+
+### Patch Changes
+
+- Updated dependencies [60b39b1]
+  - @planmo/schema@1.2.0
+
 ## 1.0.4
 
 ### Patch Changes
