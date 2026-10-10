@@ -1,5 +1,11 @@
 # @planmo/trace
 
+## 1.2.2
+
+### Patch Changes
+
+- @planmo/workflow@1.1.5
+
 ## 1.2.1
 
 ### Patch Changes
