@@ -21,6 +21,7 @@ Enforced by `scripts/check-boundaries.mjs` (run via `pnpm boundary-check`, wired
 | Package | May import |
 |---|---|
 | `@planmo/shared` | — (leaf) |
+| `@planmo/ai` | — (leaf) |
 | `@planmo/schema` | shared |
 | `@planmo/core` | shared, schema |
 | `planmo` (unscoped, published) | shared, schema, core |

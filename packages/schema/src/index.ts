@@ -20,6 +20,21 @@ export {
 } from './common.js';
 export type { Checksum as ChecksumType } from './common.js';
 
+// Canonical task model (schema v2) + the tasks.csv codec
+export {
+  TASK_PRIORITIES,
+  TaskPriority,
+  TaskVerification,
+  TaskRecord,
+  TASKS_CSV_COLUMNS,
+  TASKS_CSV_HEADER,
+  joinList,
+  splitList,
+  serializeTaskRow,
+  serializeTasksCsv,
+  parseTasksCsv,
+} from './task.js';
+
 // Versioning + migrations
 export {
   UnsupportedSchemaVersionError,

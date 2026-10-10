@@ -89,8 +89,12 @@ function parseTasksCsv(
     // must not split. Splitting on a bare ',' would turn a valid five-column
     // row into six and reject a workspace the generator itself produced.
     const fields = splitCsvLine(line);
-    if (fields.length === 5 && fields[0]?.trim() === 'id') continue; // header
-    if (fields.length !== 5) {
+    // v1 rows have five fields; schema v2 appends acceptance, verification and
+    // checks. Both widths are accepted, so a workspace generated before v2 keeps
+    // validating instead of failing on a shape it never had.
+    const supported = fields.length === 5 || fields.length === 8;
+    if (supported && fields[0]?.trim() === 'id') continue; // header
+    if (!supported) {
       return {
         ok: false,
         message: `line ${lineNo} has ${fields.length} comma-separated field(s), expected 5`,

@@ -4,12 +4,31 @@
 Implement trace graph, validation, drift detection, doctor command.
 
 ## Tasks
-| Task | Title | Status |
-|---|---|---|
-| P09-01 | Implement trace graph, validation, drift detection, doctor command. | TODO |
-| P09-02 | Tests & evidence for the phase exit gates | TODO |
-| P09-03 | Docs & traceability for Trace, validate, doctor & drift | TODO |
-| P09-04 | Record the phase handoff | TODO |
+| Task | Title | Priority | Status |
+|---|---|---|---|
+| P09-01 | Implement trace graph, validation, drift detection, doctor command. | MUST | TODO |
+| P09-02 | Tests & evidence for the phase exit gates | MUST | TODO |
+| P09-03 | Docs & traceability for Trace, validate, doctor & drift | SHOULD | TODO |
+| P09-04 | Record the phase handoff | SHOULD | TODO |
+
+### Acceptance criteria
+
+A task is DONE only when every criterion below holds. A task whose verification
+is `required` also needs a recorded result in `planning/testing/TEST-EVIDENCE.csv`.
+
+**P09-01** — verification **required**
+- [ ] The phase objective is met: Implement trace graph, validation, drift detection, doctor command.
+- [ ] Every exit gate named in planning/phases/phase-09.md passes
+
+**P09-02** — verification **required**
+- [ ] Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv
+- [ ] Any check that was not run is marked as not run, not left blank
+
+**P09-03** — verification optional
+- [ ] planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 09
+
+**P09-04** — verification optional
+- [ ] planning/handoffs/phase-09-handoff.md is recorded and names the next phase
 
 ## Phase mode
 Phases are gated: each phase finishes with a recorded handoff before the next begins.

@@ -60,8 +60,8 @@ for (const rel of [
 
 const manifest = JSON.parse(readFileSync(join(target, '.planmo', 'manifest.json'), 'utf8'));
 check(
-  'manifest records 30 generated entries',
-  manifest.entries.length === 30,
+  'manifest records 31 generated entries',
+  manifest.entries.length === 31,
   `${manifest.entries.length}`,
 );
 

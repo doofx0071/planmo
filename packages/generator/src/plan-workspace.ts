@@ -15,7 +15,11 @@ import { renderPromptsReadme, renderPhasePrompt } from './workspace/prompts.js';
 import { renderReadme } from './workspace/readme.js';
 import { renderProductRequirements } from './workspace/requirements.js';
 import { renderRisks } from './workspace/risks.js';
-import { renderTasksCsv, renderTraceability } from './workspace/traceability.js';
+import {
+  renderTasksCsv,
+  renderTestEvidence,
+  renderTraceability,
+} from './workspace/traceability.js';
 import { renderTestStrategy } from './workspace/testing.js';
 
 /**
@@ -66,6 +70,11 @@ const DOCUMENTS: readonly DocumentSpec[] = [
     render: renderTraceability,
   },
   { path: 'planning/tasks.csv', ownership: 'generated', render: renderTasksCsv },
+  {
+    path: 'planning/testing/TEST-EVIDENCE.csv',
+    ownership: 'generated',
+    render: renderTestEvidence,
+  },
   {
     path: 'planning/architecture/ARCHITECTURE.md',
     ownership: 'generated',

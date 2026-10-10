@@ -4,12 +4,31 @@
 Packs registry, templates, agent ecosystem integrations.
 
 ## Tasks
-| Task | Title | Status |
-|---|---|---|
-| P11-01 | Packs registry, templates, agent ecosystem integrations. | TODO |
-| P11-02 | Tests & evidence for the phase exit gates | TODO |
-| P11-03 | Docs & traceability for Ecosystem & integrations | TODO |
-| P11-04 | Record the phase handoff | TODO |
+| Task | Title | Priority | Status |
+|---|---|---|---|
+| P11-01 | Packs registry, templates, agent ecosystem integrations. | MUST | TODO |
+| P11-02 | Tests & evidence for the phase exit gates | MUST | TODO |
+| P11-03 | Docs & traceability for Ecosystem & integrations | SHOULD | TODO |
+| P11-04 | Record the phase handoff | SHOULD | TODO |
+
+### Acceptance criteria
+
+A task is DONE only when every criterion below holds. A task whose verification
+is `required` also needs a recorded result in `planning/testing/TEST-EVIDENCE.csv`.
+
+**P11-01** — verification **required**
+- [ ] The phase objective is met: Packs registry, templates, agent ecosystem integrations.
+- [ ] Every exit gate named in planning/phases/phase-11.md passes
+
+**P11-02** — verification **required**
+- [ ] Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv
+- [ ] Any check that was not run is marked as not run, not left blank
+
+**P11-03** — verification optional
+- [ ] planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase 11
+
+**P11-04** — verification optional
+- [ ] planning/handoffs/phase-11-handoff.md is recorded and names the next phase
 
 ## Phase mode
 Phases are gated: each phase finishes with a recorded handoff before the next begins.

@@ -1,4 +1,4 @@
-import type { OwnershipMode } from '@planmo/schema';
+import type { OwnershipMode, TaskRecord } from '@planmo/schema';
 import { taskId } from '@planmo/shared';
 import type { GeneratedArtifact, Renderer } from './contracts.js';
 import type { PhaseNode, PlanningIR } from './ir.js';
@@ -56,24 +56,101 @@ function sentence(text: string): string {
 }
 
 /**
- * The seeded task rows for one phase, in id order.
+ * The gates a phase exit requires when the profile declares none. Mirrors the
+ * fallback `renderPhaseDoc` uses, so the document and the records agree.
+ */
+export const DEFAULT_GATE_CHECKS = ['unit tests', 'typecheck', 'lint', 'format:check'] as const;
+
+/**
+ * A criterion must not contain `;` — `tasks.csv` joins criteria with `;` inside
+ * one RFC 4180 cell, so a semicolon would split one criterion into two on read.
+ * The generator guarantees this for derived text rather than trusting it, and a
+ * test asserts the invariant across every generated workspace.
+ */
+function criterion(text: string): string {
+  return text.replaceAll(';', ',');
+}
+
+/**
+ * The four seed tasks for a phase, as full task records (schema v2).
  *
  * The generator cannot know the work a project needs, so it emits the four
  * workstreams the product's own definition of done names — implement,
- * test/evidence, docs/traceability, handoff. Every surface that lists tasks
- * (`tasks.csv`, the phase document, the tracker, the traceability matrix)
- * derives from this one function, so they cannot disagree. Ids follow
- * `P<NN>-<NN>` (docs/02-architecture/identifier-scheme.md).
+ * test/evidence, docs/traceability, handoff — now carrying acceptance criteria
+ * and a verification policy derived from what it DOES know: the phase objective,
+ * the phase document, and the profile's exit gates.
+ *
+ * This is a deterministic FLOOR, not task decomposition. It gives every task at
+ * least one checkable criterion and marks the gate-bearing tasks
+ * `verification.required`, which is what makes "verified" mechanically different
+ * from "reported complete". Raising this to real, project-specific criteria is
+ * the AI planner's job, not this function's.
+ *
+ * Every surface that lists tasks (`tasks.csv`, the phase document, the tracker,
+ * the traceability matrix, TEST-EVIDENCE.csv) derives from this one function, so
+ * they cannot disagree. Ids follow `P<NN>-<NN>`
+ * (docs/02-architecture/identifier-scheme.md).
  */
-export function phaseTasks(phase: PhaseNode): Array<[string, string]> {
+export function phaseTasks(
+  phase: PhaseNode,
+  gates: readonly string[] = DEFAULT_GATE_CHECKS,
+): TaskRecord[] {
+  const checks = [...gates];
+  const phaseDoc = `planning/phases/phase-${phase.id}.md`;
   return [
-    // The objective is already an imperative sentence ("Implement init, safe
-    // filesystem writer…"), so it is used verbatim — prefixing it produced
-    // "Implement Implement init…".
-    [taskId(phase.id, 1), phase.objective],
-    [taskId(phase.id, 2), 'Tests & evidence for the phase exit gates'],
-    [taskId(phase.id, 3), `Docs & traceability for ${phase.title}`],
-    [taskId(phase.id, 4), 'Record the phase handoff'],
+    {
+      id: taskId(phase.id, 1),
+      phase: phase.id,
+      // The objective is already an imperative sentence ("Implement init, safe
+      // filesystem writer…"), so it is used verbatim — prefixing it produced
+      // "Implement Implement init…".
+      title: phase.objective,
+      status: 'TODO',
+      priority: 'MUST',
+      acceptance: [
+        criterion(`The phase objective is met: ${sentence(phase.objective)}`),
+        criterion(`Every exit gate named in ${phaseDoc} passes`),
+      ],
+      verification: { required: true, checks },
+    },
+    {
+      id: taskId(phase.id, 2),
+      phase: phase.id,
+      title: 'Tests & evidence for the phase exit gates',
+      status: 'TODO',
+      priority: 'MUST',
+      acceptance: [
+        'Each exit gate has a recorded result in planning/testing/TEST-EVIDENCE.csv',
+        'Any check that was not run is marked as not run, not left blank',
+      ],
+      verification: { required: true, checks },
+    },
+    {
+      id: taskId(phase.id, 3),
+      phase: phase.id,
+      title: `Docs & traceability for ${phase.title}`,
+      status: 'TODO',
+      priority: 'SHOULD',
+      acceptance: [
+        criterion(
+          `planning/TRACKER.md and planning/REQUIREMENTS-TRACEABILITY.md reflect phase ${phase.id}`,
+        ),
+      ],
+      verification: { required: false, checks: ['docs updated'] },
+    },
+    {
+      id: taskId(phase.id, 4),
+      phase: phase.id,
+      title: 'Record the phase handoff',
+      status: 'TODO',
+      priority: 'SHOULD',
+      acceptance: [
+        criterion(
+          `planning/handoffs/phase-${phase.id}-handoff.md is recorded and names the next phase`,
+        ),
+      ],
+      verification: { required: false, checks: ['handoff recorded'] },
+    },
   ];
 }
 
@@ -102,8 +179,8 @@ function renderTracker(ir: PlanningIR): string {
   ];
   for (const phase of ir.phases) {
     const tasks = phaseTasks(phase);
-    const first = tasks[0]?.[0] ?? '';
-    const last = tasks[tasks.length - 1]?.[0] ?? '';
+    const first = tasks[0]?.id ?? '';
+    const last = tasks[tasks.length - 1]?.id ?? '';
     lines.push(`| ${phase.id} | ${phase.title} | ${first}–${last} (${tasks.length}) | TODO |`);
   }
   lines.push(
@@ -115,7 +192,8 @@ function renderTracker(ir: PlanningIR): string {
 
 /** phase-NN.md — one document per IR phase, following the repo house style. */
 function renderPhaseDoc(phase: PhaseNode, ir: PlanningIR): string {
-  const gates = ir.profile ? ir.profile.gates : ['unit tests', 'typecheck', 'lint', 'format:check'];
+  const gates = ir.profile ? ir.profile.gates : [...DEFAULT_GATE_CHECKS];
+  const tasks: TaskRecord[] = phaseTasks(phase, gates);
   const stopRule =
     ir.phaseMode === 'gated'
       ? `**HARD STOP after Phase ${phase.id}. Do not start another phase in this session.**`
@@ -127,9 +205,23 @@ function renderPhaseDoc(phase: PhaseNode, ir: PlanningIR): string {
     sentence(phase.objective),
     '',
     '## Tasks',
-    '| Task | Title | Status |',
-    '|---|---|---|',
-    ...phaseTasks(phase).map(([id, title]) => `| ${id} | ${title} | TODO |`),
+    '| Task | Title | Priority | Status |',
+    '|---|---|---|---|',
+    ...tasks.map((task) => `| ${task.id} | ${task.title} | ${task.priority} | ${task.status} |`),
+    '',
+    '### Acceptance criteria',
+    '',
+    'A task is DONE only when every criterion below holds. A task whose verification',
+    'is `required` also needs a recorded result in `planning/testing/TEST-EVIDENCE.csv`.',
+  ];
+  for (const task of tasks) {
+    lines.push(
+      '',
+      `**${task.id}** — verification ${task.verification.required ? '**required**' : 'optional'}`,
+    );
+    for (const item of task.acceptance) lines.push(`- [ ] ${item}`);
+  }
+  lines.push(
     '',
     '## Phase mode',
     ir.phaseMode === 'gated'
@@ -137,7 +229,7 @@ function renderPhaseDoc(phase: PhaseNode, ir: PlanningIR): string {
       : 'Phases run continuously; a handoff is still recorded at every phase boundary.',
     '',
     '## Test & evidence gate',
-  ];
+  );
   for (const gate of gates) lines.push(`- ${gate}`);
   lines.push(
     '',

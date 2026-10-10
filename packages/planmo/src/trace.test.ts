@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -31,9 +31,16 @@ describe('planmo trace — adapter', () => {
     const root = await workspace();
     const { graph, text } = await traceWorkspace({ root });
 
-    expect(graph.counts).toEqual({ requirements: 7, tasks: 28, tests: 0, links: 28 });
+    expect(graph.counts.requirements).toBe(7);
+    expect(graph.counts.tasks).toBe(28);
+    expect(graph.counts.links).toBe(28);
+    // One evidence row per exit gate for each `verification.required` task, so the
+    // count is positive and divisible by the phase count. It used to be 0 — that
+    // was the gap this schema closes.
+    expect(graph.counts.tests).toBeGreaterThan(0);
+    expect(graph.counts.tests % 7).toBe(0);
     expect(text.startsWith('TRACE REPORT - trace graph')).toBe(true);
-    expect(text).toContain('counts: requirements=7 tasks=28 tests=0 links=28');
+    expect(text).toContain(`tests=${graph.counts.tests}`);
     expect(text).toContain('result: WARN');
   });
 
@@ -61,14 +68,39 @@ describe('planmo trace — adapter', () => {
     expect(decisions).toEqual(['D-000', 'D-001', 'D-002', 'D-003']);
   });
 
-  it('reports every task as untested — no test evidence is fabricated', async () => {
+  it('records the evidence scaffold as unrun, never as passing', async () => {
     const root = await workspace();
     const { graph, text } = await traceWorkspace({ root });
 
-    expect(graph.nodes.some((node) => node.kind === 'test')).toBe(false);
-    expect(graph.untested).toHaveLength(28);
-    expect(text).toContain('tests=0');
+    // The scaffold is real: the generator seeds a row per required check, so the
+    // graph has test nodes.
+    expect(graph.nodes.some((node) => node.kind === 'test')).toBe(true);
+    // `untested` counts tasks with NO test coverage at all — the docs and handoff
+    // workstreams, which nothing gates on. The gate-bearing tasks are covered by
+    // the scaffold, but covered is not passing: every task still reports TRC-002
+    // because a blank `result` means the check was never run. Treating a seeded row
+    // as a pass would fabricate exactly the evidence this schema exists to require.
+    expect(graph.untested).toHaveLength(14);
     expect(text).toContain('TRC-002');
+  });
+
+  it('clears TRC-002 for a task once a check is recorded as passing', async () => {
+    const root = await workspace();
+    const warnings = (text: string) =>
+      text.split('\n').filter((line) => line.includes('TRC-002')).length;
+    const before = warnings((await traceWorkspace({ root })).text);
+
+    const csv = join(root, 'planning', 'testing', 'TEST-EVIDENCE.csv');
+    const recorded = (await readFile(csv, 'utf8'))
+      .split('\n')
+      // A blank row is `P00-01,unit tests,,` — fill the result column.
+      .map((line) => (line.startsWith('P00-01,') ? line.replace(/,$/, ',pass') : line))
+      .join('\n');
+    await writeFile(csv, recorded, 'utf8');
+
+    // Exactly one task stops being untested — evidence clears the warning, and
+    // nothing else moves.
+    expect(warnings((await traceWorkspace({ root })).text)).toBe(before - 1);
   });
 
   it('renders deterministically', async () => {
