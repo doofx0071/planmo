@@ -14,7 +14,7 @@ import { packReport, renderPackReport } from './pack.js';
 import { traceWorkspace } from './trace.js';
 import { installAgentCommands } from './agent.js';
 import { applyProposal, renderApplyOutcome } from './apply.js';
-import { detectAgents, type AgentDetection } from './detect.js';
+import { detectAgents, detectForInit, type AgentDetection } from './detect.js';
 import { diffWorkspace, renderDiff } from './diff.js';
 import { renderDoctor, runDoctor } from './doctor.js';
 import { nextBrief } from './next.js';
@@ -833,6 +833,7 @@ async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
     recommended: T,
     values: readonly T[],
     supplied: string | undefined,
+    reason?: string,
   ): Promise<T> => {
     if (supplied !== undefined || flags.has('yes')) return (supplied ?? recommended) as T;
     const ordered = [recommended, ...values.filter((value) => value !== recommended)];
@@ -841,13 +842,30 @@ async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
       ordered.map((value) => ({
         value,
         label: value,
-        ...(value === recommended ? { hint: 'recommended' } : {}),
+        ...(value === recommended
+          ? { hint: reason === undefined ? 'recommended' : `recommended · ${reason}` }
+          : {}),
       })),
     );
     return picked ?? recommended;
   };
 
+  // Detect BEFORE asking. The user should be confirming what PlanMo found, not
+  // supplying what PlanMo can work out for itself: this wizard used to ask a
+  // Next.js repository with 158 files whether it was greenfield.
+  if (!flags.has('yes') && !flags.has('dry-run')) {
+    io.err(`init: detecting ${root} …`);
+  }
+  const detected = await detectForInit(root);
+
   if (!flags.has('yes') && positional.length === 0 && !flags.has('name')) {
+    const parts = [
+      detected.stacks.length > 0 ? detected.stacks.join(', ') : 'no known stack',
+      detected.testFrameworks.length > 0 ? `tests: ${detected.testFrameworks.join(', ')}` : '',
+      detected.agents.length > 0 ? `agents: ${detected.agents.map((a) => a.id).join(', ')}` : '',
+      `${detected.fileCount} file(s)`,
+    ].filter((part) => part !== '');
+    wizard.out(`Detected: ${parts.join(' · ')}`);
     wizard.out('Press Enter to accept the recommended value. Use arrow keys to choose.');
   }
 
@@ -858,22 +876,29 @@ async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
   );
   const type = await choose<ProjectType>(
     'Type',
-    'web-application',
+    detected.type as ProjectType,
     PROJECT_TYPES,
     flags.get('type'),
+    detected.stacks.length > 0 ? `detected ${detected.stacks.join(', ')}` : undefined,
   );
   const lifecycle = await choose<ProjectLifecycle>(
     'Lifecycle',
-    'greenfield',
+    detected.lifecycle,
     PROJECT_LIFECYCLES,
     flags.get('lifecycle'),
+    detected.lifecycle === 'brownfield'
+      ? `${detected.fileCount} file(s) present`
+      : 'empty directory',
   );
   const risk = await choose<ProjectRisk>('Risk', 'medium', PROJECT_RISKS, flags.get('risk'));
   const primaryAgent = await choose<AgentId>(
     'Primary agent',
-    'opencode',
+    detected.primaryAgent as AgentId,
     AGENT_TARGETS.map((target) => target.id as AgentId),
     flags.get('agent'),
+    detected.agents.length > 0
+      ? `detected ${detected.agents.map((a) => a.id).join(', ')}`
+      : undefined,
   );
 
   const style = flags.get('style');

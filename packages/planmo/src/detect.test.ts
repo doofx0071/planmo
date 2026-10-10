@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { detectAgents } from './detect.js';
+import { detectAgents, detectForInit } from './detect.js';
 
 /**
  * Agent detection drives the interactive default, so it must be honest about its
@@ -130,5 +130,78 @@ describe('detectAgents', () => {
       'claude-code',
       'opencode',
     ]);
+  });
+});
+
+describe('detectForInit()', () => {
+  async function withFiles(files: Record<string, string>): Promise<string> {
+    const root = await mkdtemp(join(tmpdir(), 'planmo-init-detect-'));
+    for (const [rel, content] of Object.entries(files)) {
+      const path = join(root, rel);
+      await mkdir(join(path, '..'), { recursive: true });
+      await writeFile(path, content, 'utf8');
+    }
+    return root;
+  }
+
+  it('reports brownfield when the directory already holds files', async () => {
+    const root = await withFiles({
+      'package.json': JSON.stringify({
+        name: 'x',
+        dependencies: { next: '16.0.0', react: '19.0.0' },
+      }),
+      'app/page.tsx': 'export default function Page() { return null; }\n',
+    });
+    const detected = await detectForInit(root);
+    // The wizard used to offer `greenfield` here, which is how a Next.js
+    // repository with 158 files got initialised as a fresh start.
+    expect(detected.lifecycle).toBe('brownfield');
+    expect(detected.type).toBe('web-application');
+    expect(detected.stacks).toContain('next');
+  });
+
+  it('reports greenfield for an empty directory', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'planmo-init-empty-'));
+    const detected = await detectForInit(root);
+    expect(detected.lifecycle).toBe('greenfield');
+    expect(detected.fileCount).toBe(0);
+  });
+
+  it('never counts a dependency directory as project files', async () => {
+    const root = await withFiles({
+      'node_modules/dep/index.js': 'module.exports = 1;\n',
+      'node_modules/dep/package.json': '{"name":"dep"}\n',
+    });
+    const detected = await detectForInit(root);
+    // This is the difference between "158 files" and "88,926 files".
+    expect(detected.fileCount).toBe(0);
+    expect(detected.lifecycle).toBe('greenfield');
+  });
+
+  it('prefers a specific agent marker over the shared AGENTS.md convention', async () => {
+    const root = await withFiles({ 'AGENTS.md': '# conventions\n', 'CLAUDE.md': '# claude\n' });
+    const detected = await detectForInit(root);
+    // AGENTS.md is read by several agents, so it is evidence that conventions
+    // exist, not that any particular agent is installed here.
+    expect(detected.agents.map((a) => a.id)).toContain('codex');
+    expect(detected.primaryAgent).toBe('claude-code');
+  });
+
+  it('falls back to the documented default when nothing is detected', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'planmo-init-none-'));
+    expect((await detectForInit(root)).primaryAgent).toBe('opencode');
+  });
+
+  it("ignores PlanMo's own generated workspace, so init stays idempotent", async () => {
+    const root = await withFiles({
+      'planning/ROADMAP.md': '# roadmap\n',
+      'planning/tasks.csv': 'id,phase\n',
+      '.planmo/project.yml': 'schemaVersion: 1\n',
+    });
+    const detected = await detectForInit(root);
+    // Running `init` a second time must not see the first run's documents, decide
+    // the project became brownfield, and write different answers.
+    expect(detected.fileCount).toBe(0);
+    expect(detected.lifecycle).toBe('greenfield');
   });
 });
