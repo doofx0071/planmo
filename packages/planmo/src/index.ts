@@ -22,7 +22,7 @@ import { nextBrief } from './next.js';
 import { AGENT_TARGETS, agentTarget } from '@planmo/agent-bridge';
 import { initWorkspace, ProjectNotFoundError, readStatus, writeManaged } from '@planmo/core';
 import { analyzeRepository, nodeFileReader, DEFAULT_EXCLUDES } from '@planmo/scanner';
-import { PROJECT_LIFECYCLES, PROJECT_RISKS, PROJECT_TYPES } from '@planmo/schema';
+import { AGENT_IDS, PROJECT_LIFECYCLES, PROJECT_RISKS, PROJECT_TYPES } from '@planmo/schema';
 import type {
   AccessibilityLevel,
   AgentId,
@@ -902,8 +902,11 @@ async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
   const risk = await choose<ProjectRisk>('Risk', 'medium', PROJECT_RISKS, flags.get('risk'));
   const primaryAgent = await choose<AgentId>(
     'Primary agent',
-    detected.primaryAgent as AgentId,
-    AGENT_TARGETS.map((target) => target.id as AgentId),
+    detected.primaryAgent,
+    // ADR-0008: the v1 primary-agent matrix is three ids. The 31 agents in
+    // @planmo/agent-bridge are for COMMAND INSTALLATION, and offering them here
+    // would let the user pick a value project.yml then rejects.
+    AGENT_IDS,
     flags.get('agent'),
     detected.agents.length > 0
       ? `detected ${detected.agents.map((a) => a.id).join(', ')}`

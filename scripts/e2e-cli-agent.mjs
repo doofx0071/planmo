@@ -14,7 +14,17 @@ import { fileURLToPath } from 'node:url';
 const CLI = fileURLToPath(new URL('../packages/planmo/dist/bin.js', import.meta.url));
 const base = mkdtempSync(join(tmpdir(), 'planmo-cli-agent-'));
 const target = join(base, 'demo');
-const run = (args) => spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
+// `hermes` is the one GLOBAL target: its marker lives in the user's home, not the
+// project. Without isolating the home, a developer machine that has Hermes
+// installed changes the result of the detection checks below — which is exactly
+// what happened the moment a real `~/.hermes/skills` appeared.
+const home = join(base, 'home');
+mkdirSync(home, { recursive: true });
+const run = (args) =>
+  spawnSync(process.execPath, [CLI, ...args], {
+    encoding: 'utf8',
+    env: { ...process.env, PLANMO_HOME: home },
+  });
 
 let failures = 0;
 const check = (label, ok, detail = '') => {
@@ -91,7 +101,7 @@ for (const name of ['planmo-next', 'planmo-status', 'planmo-propose']) {
 check(
   'the command body tells the agent to run the CLI',
   readFileSync(join(target, '.opencode', 'commands', 'planmo-next.md'), 'utf8').includes(
-    'npx planmo next --print',
+    'npx -y planmo next --print',
   ),
 );
 
