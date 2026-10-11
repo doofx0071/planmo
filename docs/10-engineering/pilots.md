@@ -3,8 +3,8 @@
 Status: **ALL PILOTS PASS** — 8 pilots, 63/63 checks, runner exit 0.
 Date: 2026-09-22 · Environment: Windows 11, git-bash, Node v24.11.0, pnpm 10.33.0.
 
-Every pilot drives the **real built CLI** (`node packages/cli/dist/bin.js`,
-built with `pnpm -r build`, 12/12 workspace packages compiled clean). No AI
+Every pilot drives the **real built CLI** (`node packages/planmo/dist/bin.js`,
+built with `pnpm -r build`, 13/13 workspace packages compiled clean). No AI
 key, no network, no randomness: all behaviour is deterministic, and the
 runner asserts byte-level identities where determinism is claimed. Temp
 directories are created with `mkdtemp` and removed at the end.
@@ -95,21 +95,16 @@ reports HEALTHY.
 
 ## Findings
 
-1. **Documented surface vs real CLI surface (docs mismatch, honest
-   record).** `docs/03-cli/command-surface.md` lists `generate`, `next`,
-   `validate`, `doctor`, `trace`, `handoff`, `diff`, `pack`, `agent` as
-   "Core". The v1 CLI (`packages/cli/src/index.ts`) wires **only**
-   `init`, `status`, `adopt`, `--version`, `--help`. `planmo plan`,
-   `planmo generate`, `planmo next` exit 1 with `unknown command`. The
-   deterministic plan/generate path therefore **cannot be piloted in v1**
-   — pilots 6/7 assert the actual surface instead, and `docs/03-cli/
-   examples.md` documents only real commands. Follow-up: reconcile
-   command-surface.md with the real surface (or land the commands) before
-   RC.
-   **Resolved:** `planmo generate` is wired and `planmo init` compiles the
-   planning tree with it. `command-surface.md` and `examples.md` are
-   reconciled, and pilot 7 now asserts that `--help` lists exactly the
-   implemented commands (`plan` and `next` remain unwired).
+1. **Documented surface vs real CLI surface (docs mismatch — RESOLVED).**
+   At the time of this run the docs (`docs/03-cli/command-surface.md`) listed
+   `generate`, `next`, `validate`, `doctor`, `trace`, `handoff`, `diff`, `pack`
+   and `agent` while the CLI wired only `init`, `status`, `adopt`, `--version`
+   and `--help`. **Resolved:** every listed command is now wired — the CLI
+   exposes `plan`, `generate`, `diff`, `validate`, `doctor`, `next`, `task`,
+   `trace`, `handoff`, `pack` and `agent` alongside `init`, `status` and
+   `adopt`. `command-surface.md`, `examples.md`, `README.md` and `ROADMAP.md`
+   are reconciled with the real surface, and pilot 7 asserts that `--help`
+   lists exactly the implemented commands.
 2. **adopt is a pure dry-run plan.** It never writes; `rewritesApplicationCode`
    is the literal `false`; all planned artifacts sit under `.planmo/adopt/`.
    Confirmed on a hostile tree with no side effects.
@@ -137,8 +132,9 @@ reports HEALTHY.
 
 ## Follow-ups
 
-- Reconcile `docs/03-cli/command-surface.md` with the v1 surface, or wire
-  `plan/generate` behind real deterministic commands and re-pilot.
+- ~~Reconcile `docs/03-cli/command-surface.md` with the v1 surface, or wire
+  `plan/generate` behind real deterministic commands and re-pilot.~~ Done — the
+  commands are wired and the docs are reconciled (see finding 1).
 - Decide whether the adopt report body should inline test/CI detail
   (release gate "Scanner/adoption changes" evidence would improve).
 - Re-run pilots on the Linux CI matrix before RC (Windows-only so far; the

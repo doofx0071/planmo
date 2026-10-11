@@ -21,7 +21,8 @@ Implemented:
 
 Not yet wired:
 
-- `planmo plan` — **no engine exists** in any package; wiring it means designing it
+- (none — every command listed above is wired; `planmo plan` ships with the
+  `@planmo/ai` engine)
 
 `planmo pack` reads a catalog only from a local directory of `pack.yml` files
 (`--source <dir>`). There is no remote registry and no bundled catalog, so with no

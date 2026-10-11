@@ -61,13 +61,26 @@ never executes project scripts.
 
 ## Commands
 
-| Command              | Description                                                 |
-| -------------------- | ----------------------------------------------------------- |
-| `planmo init [dir]`  | Create a workspace (interactive wizard, or flags + `--yes`) |
-| `planmo status`      | Validate and summarize the workspace                        |
-| `planmo adopt [dir]` | Analyze an existing repo (dry-run report; writes nothing)   |
-| `planmo --version`   | Print the version                                           |
-| `planmo --help`      | Show help                                                   |
+| Command                      | Description                                                     |
+| ---------------------------- | --------------------------------------------------------------- |
+| `planmo init [dir]`          | Create a workspace (interactive wizard, or flags + `--yes`)     |
+| `planmo status`              | Validate and summarize the workspace                            |
+| `planmo adopt [dir]`         | Analyze an existing repo (dry-run report; writes nothing)       |
+| `planmo plan "<idea>"`       | Author `.planmo/plan.yml` with a model, once                    |
+| `planmo generate`            | Recompile the planning documents from the project model         |
+| `planmo diff`                | Show what `generate` would change, writing nothing              |
+| `planmo validate`            | Validate the workspace documents and invariants (the CI gate)   |
+| `planmo doctor`              | Report environment and workspace health                         |
+| `planmo next`                | Print the task to work next, and what to read first             |
+| `planmo task [id]`           | Record a task's status durably (survives regeneration)          |
+| `planmo trace [id]`          | Render the requirements → tasks → tests trace graph             |
+| `planmo handoff`             | Record the current phase's handoff document                     |
+| `planmo pack`                | Inspect the pack catalog and reconcile the lockfile             |
+| `planmo agent init`          | Install command files for your coding agent                     |
+| `planmo agent list`          | List the supported agents and their layouts                     |
+| `planmo agent apply <file>`  | Validate a proposal and record it under `.planmo/proposals/`    |
+| `planmo --version`           | Print the version                                               |
+| `planmo --help`              | Show help                                                       |
 
 ### `init` options
 
@@ -98,10 +111,12 @@ never executes project scripts.
 
 ## What v1 ships
 
-The v1 CLI surface is `init`, `status` and `adopt` (plus `--version` / `--help`).
-The planning-compiler, generator, workflow, trace, design-engine and agent-bridge
-engines are implemented and tested inside the published packages but are **not yet
-exposed as CLI commands**. See [ROADMAP.md](ROADMAP.md).
+The v1 CLI surface is the command table above: `init`, `status`, `adopt`, `plan`,
+`generate`, `diff`, `validate`, `doctor`, `next`, `task`, `trace`, `handoff`,
+`pack` and `agent` (plus `--version` / `--help`). The planning-compiler,
+generator, workflow, trace, design-engine and agent-bridge engines are wired to
+the CLI, and `planmo --help` lists exactly the implemented commands. See
+[ROADMAP.md](ROADMAP.md).
 
 ## Packages
 
@@ -116,11 +131,12 @@ exposed as CLI commands**. See [ROADMAP.md](ROADMAP.md).
 | `@planmo/generator`                      | ✅        | artifact generation with an ownership manifest                   |
 | `@planmo/design-engine`                  | ✅        | DTCG design tokens, styles, accessibility rules                  |
 | `@planmo/agent-bridge`                   | ✅        | agent adapters and token-budgeted context bundles                |
+| `@planmo/ai`                             | ✅        | model-provider abstraction (OpenAI-compatible + offline mock)    |
 | `@planmo/adapters`                       | ✅        | generic / OpenCode / Codex / Claude Code adapters                |
 | `@planmo/workflow`                       | ✅        | phases, task DAG, work packets, leases, gates, handoffs          |
 | `@planmo/trace`                          | ✅        | requirement trace graph, validate, doctor, drift                 |
 
-All twelve packages are published. The build is plain `tsc` with no bundler, so
+All thirteen packages are published. The build is plain `tsc` with no bundler, so
 every package in the CLI's runtime closure must exist on the registry for
 `npm install planmo` to resolve — publishing a subset silently breaks the CLI.
 
@@ -146,7 +162,7 @@ treated as untrusted. See [SECURITY.md](SECURITY.md) and
 ## Repository layout
 
 ```text
-packages/     12 workspace packages (see the table above)
+packages/     13 workspace packages (see the table above)
 docs/         product documentation (architecture, CLI, packs, security, ADRs, …)
 specs/        example spec files
 scripts/      build, boundary and end-to-end verification scripts
