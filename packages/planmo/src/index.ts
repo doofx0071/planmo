@@ -360,7 +360,9 @@ async function runGenerate(argv: string[], io: CliIO): Promise<number> {
     return result.collisions.length > 0 ? 2 : 0;
   } catch (err) {
     io.err(`planmo generate: ${(err as Error).message}`);
-    return 3;
+    // 3 is reserved for "no workspace here". A generic failure must not wear the
+    // same code, or a broken workspace is indistinguishable from a missing one.
+    return err instanceof ProjectNotFoundError ? 3 : 1;
   }
 }
 
@@ -377,7 +379,7 @@ async function runDiff(argv: string[], io: CliIO): Promise<number> {
     return 0;
   } catch (err) {
     io.err(`planmo diff: ${(err as Error).message}`);
-    return 3;
+    return err instanceof ProjectNotFoundError ? 3 : 1;
   }
 }
 
@@ -401,7 +403,7 @@ async function runValidate(argv: string[], io: CliIO): Promise<number> {
     return 1;
   } catch (err) {
     io.err(`planmo validate: ${(err as Error).message}`);
-    return 3;
+    return err instanceof ProjectNotFoundError ? 3 : 1;
   }
 }
 
@@ -416,7 +418,7 @@ async function runDoctorCommand(argv: string[], io: CliIO): Promise<number> {
     return outcome.result.result === 'fail' ? 1 : 0;
   } catch (err) {
     io.err(`planmo doctor: ${(err as Error).message}`);
-    return 3;
+    return err instanceof ProjectNotFoundError ? 3 : 1;
   }
 }
 
