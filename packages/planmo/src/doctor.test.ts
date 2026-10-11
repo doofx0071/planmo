@@ -9,7 +9,14 @@ import { run } from './index.js';
  * `planmo doctor` reports environment and workspace health. The tests that matter
  * most here are the negative ones: doctor must not fail a project for using a
  * package manager PlanMo happens not to use itself.
+ *
+ * The health word is host-dependent — DOC-002 warns on an ahead-of-LTS Node major,
+ * and the project permits any major >= 24 — so the tests that assert "ok" pin a
+ * supported Node version rather than inheriting the runner's. `runDoctor` still
+ * judges the running Node by default; the injection is a test seam.
  */
+const SUPPORTED_NODE = '24.11.0';
+
 function capture() {
   const out: string[] = [];
   const err: string[] = [];
@@ -56,16 +63,26 @@ describe('gitWorktreeDirty', () => {
 });
 
 describe('runDoctor', () => {
-  it('reports a freshly generated workspace as ok', async () => {
+  it('reports a freshly generated workspace as ok on a supported Node', async () => {
     const root = await workspace();
-    const outcome = await runDoctor({ root });
+    const outcome = await runDoctor({ root, nodeVersion: SUPPORTED_NODE });
     expect(outcome.result.result).toBe('ok');
     expect(outcome.result.counts.error).toBe(0);
+  });
+
+  it('judges the injected Node version, not the host running the tests', async () => {
+    // The regression this seam exists for: asserting "ok" while reading the
+    // host's process.version went red on every supported non-LTS major.
+    const root = await workspace();
+    const outcome = await runDoctor({ root, nodeVersion: '20.11.0' });
+    expect(outcome.result.result).toBe('fail');
+    expect(outcome.result.diagnostics.map((d) => d.code)).toContain('DOC-001');
   });
 
   it('resolves the environment facts it passes to the engine', async () => {
     const root = await workspace();
     const outcome = await runDoctor({ root });
+    // The default is the running Node — that is the behaviour the seam preserves.
     expect(outcome.environment.nodeVersion).toBe(process.version);
     expect(outcome.environment.packageManager).toBe('unknown');
     expect(outcome.environment.promptFilesMissing).toBe(0);
@@ -78,7 +95,7 @@ describe('runDoctor', () => {
     const root = await workspace();
     await writeFile(join(root, 'poetry.lock'), '', 'utf8');
 
-    const outcome = await runDoctor({ root });
+    const outcome = await runDoctor({ root, nodeVersion: SUPPORTED_NODE });
     expect(outcome.environment.packageManager).toBe('poetry');
     expect(outcome.result.counts.error).toBe(0);
     expect(outcome.result.result).toBe('ok');
@@ -93,7 +110,7 @@ describe('runDoctor', () => {
 describe('renderDoctor', () => {
   it('shows the resolved environment even when nothing is wrong', async () => {
     const root = await workspace();
-    const text = renderDoctor(await runDoctor({ root }));
+    const text = renderDoctor(await runDoctor({ root, nodeVersion: SUPPORTED_NODE }));
     expect(text).toContain('environment:');
     expect(text).toContain('package manager unknown');
     expect(text).toContain('doctor: OK');
@@ -105,7 +122,12 @@ describe('planmo doctor — CLI', () => {
     const root = await workspace();
     const { io, out } = capture();
     expect(await run(['doctor', '--dir', root], io)).toBe(0);
-    expect(out.join('\n')).toContain('doctor: OK');
+    // The CLI judges the running Node, so the exact health word is host-dependent
+    // (DOC-002 warns on an ahead-of-LTS major). Assert the contract a healthy
+    // workspace must satisfy whatever the host: it never fails, and it always
+    // reports the resolved environment.
+    expect(out.join('\n')).toContain('doctor: ');
+    expect(out.join('\n')).toContain('environment:');
   });
 
   it('exits 3 without a workspace', async () => {

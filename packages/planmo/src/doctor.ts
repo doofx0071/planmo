@@ -22,6 +22,15 @@ import { doctorEngine, type DoctorResult } from '@planmo/trace';
  */
 export interface DoctorOptions {
   root: string;
+  /**
+   * The Node version to judge. Defaults to the running one, but is injectable so
+   * the version band (DOC-001/DOC-002) is testable deterministically. A test that
+   * asserts "a clean environment reports ok" must not inherit whatever Node the
+   * test runner happens to use: the project permits any major >= 24, and DOC-002
+   * warns on an ahead-of-LTS major, so a host-dependent assertion goes red on a
+   * perfectly supported Node.
+   */
+  nodeVersion?: string;
 }
 
 export interface DoctorOutcome {
@@ -93,7 +102,7 @@ export async function runDoctor(opts: DoctorOptions): Promise<DoctorOutcome> {
   }
 
   const environment = {
-    nodeVersion: process.version,
+    nodeVersion: opts.nodeVersion ?? process.version,
     packageManager: await detectPackageManager(status.root),
     gitWorktreeDirty: gitWorktreeDirty(status.root),
     promptFilesMissing,
