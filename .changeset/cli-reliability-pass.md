@@ -11,5 +11,6 @@ Reliability pass over the CLI and its tests.
   `ProjectNotFoundError` returns `3`.
 - `task`: fails fast with usage when a prompt would be needed but stdin is not a
   terminal, instead of hanging on a prompt that can never be answered.
-- The CLI's input/output and interactive-prompt layer (`CliIO`, `WizardIO`,
-  `parseArgs`, `terminalWizard`) moved to `src/cli-io.ts`; no behavior change.
+- The CLI is split for maintainability with no behavior change: `index.ts` is now
+  only the router, the help text lives in `usage.ts`, the I/O + prompt layer in
+  `cli-io.ts`, and the handlers in `commands/{workspace,tasks,agent,plan}.ts`.

@@ -15,34 +15,14 @@ A fresh session can resume from this file alone. Read it with
   `PLANMO_AGENT_FIX_PROMPT.md` (the working prompt, intentionally not committed and
   ignored for prettier).
 
-## Next task (P2, F-06 remainder) — finish the CLI extraction
+## State: all stages complete
 
-`packages/planmo/src/index.ts` is still ~1117 lines and mixes the router with the
-command handlers. The I/O + prompt layer is already extracted to `src/cli-io.ts`.
+Stages 0–7 are done. Stage 6 finished the CLI split: `index.ts` is now only the
+router (80 lines, from 1213), with the help text in `usage.ts`, the I/O + prompt
+layer in `cli-io.ts`, and the handlers in `commands/{workspace,tasks,agent,plan}.ts`.
+There is **no outstanding task** from the reliability pass.
 
-Extract the handlers **one domain at a time**, in this order, keeping the suite
-green after each move:
-
-1. `src/commands/plan.ts` — `runPlanCommand`
-2. `src/commands/workspace.ts` — `runInit`, `runStatus`, `runAdopt`, `runGenerate`,
-   `runDiff`, `runValidate`, `runDoctorCommand`
-3. `src/commands/tasks.ts` — `runTask`, `runNext`, `runTrace`, `runHandoff`, `runPack`
-4. `src/commands/agent.ts` — `runAgent`, `runAgentApply`, `askWhichAgents`
-
-Rules (from the prompt's Stage 6 and `AGENTS.md`):
-
-- No public behavior change: the same argv produces the same output and exit code.
-- `run()` stays in `index.ts` as the router; `USAGE` stays there too.
-- Re-export anything the tests or `bin.ts` import, so `./index.js` keeps its surface.
-- The existing 1439-test suite is the characterization net — it must stay green
-  after every extraction; do not weaken or skip a test to move code.
-- Update the `@planmo/planmo` module boundaries only if a new file crosses one
-  (it will not: these are internal modules of the same package).
-
-**Completion criteria:** `pnpm check` green; `index.ts` holds only imports, `USAGE`,
-`run()`, and small helpers; `pnpm e2e:lifecycle` and `pnpm e2e:install` still pass.
-
-## Also open
+## Open work (optional, in priority order)
 
 - **CI secret scanning (section 11 item 12).** Not added. Either rely on GitHub's
   native secret scanning or add a step to `.github/workflows/ci.yaml`.

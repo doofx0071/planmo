@@ -16,7 +16,7 @@ Statuses: `CONFIRMED` · `FIXED` · `VERIFIED` · `ALREADY FIXED` · `NOT REPROD
 | F-03 | P1 | C | FIXED | Package inventory: `@planmo/ai` missing from the README (13 ship, not 12) |
 | F-04 | P2 | C | VERIFIED | Internal dependency graph has no undeclared/missing/cyclic edges |
 | F-05 | P1 | E | FIXED | `generate`/`diff`/`validate`/`doctor` returned `3` on any error |
-| F-06 | P2 | F | PARTIAL | CLI entry point oversized (1213 lines) |
+| F-06 | P2 | F | FIXED | CLI entry point oversized (1213 lines) |
 | F-07 | P1 | G | VERIFIED | Security / filesystem protections present and retained |
 | F-08 | P1 | — | FIXED | Doctor tests were host-Node-dependent (red on Node >= 25) |
 | F-09 | P2 | — | FIXED | `format:check` failed on an untracked working file |
@@ -59,11 +59,26 @@ handler mapped `ProjectNotFoundError ? 3 : 1`. Now consistent; regression test i
 `index.test.ts` ("maps a broken workspace to exit 1..."). Existing tests that assert
 `3` for a genuinely missing workspace still pass.
 
-### F-06 — Oversized CLI entry (Lead F) — PARTIAL (staged)
+### F-06 — Oversized CLI entry (Lead F) — FIXED
 `packages/planmo/src/index.ts` was 1213 lines mixing the router, handlers, arg
-parsing, the wizard and output formatting. Stage 6 extracted the I/O + prompt layer
-into `packages/planmo/src/cli-io.ts` (108 lines), leaving 1117. Remaining stages
-(handlers by domain) are the next task in the handoff.
+parsing, the wizard and output formatting. Stage 6 split it behaviour-preservingly,
+one boundary at a time, with the full suite green after each move:
+
+| Module | Lines | Contents |
+| --- | --- | --- |
+| `index.ts` | 80 | imports + the `run()` router only |
+| `usage.ts` | 133 | the `--help` text (was inline) |
+| `cli-io.ts` | 108 | `CliIO`, `WizardIO`, `parseArgs`, `defaultIO`, `terminalWizard` |
+| `commands/workspace.ts` | 425 | `init`, `status`, `adopt`, `generate`, `diff`, `validate`, `doctor` |
+| `commands/agent.ts` | 233 | `agent init` / `agent list` / `agent apply` |
+| `commands/tasks.ts` | 191 | `next`, `task`, `trace`, `handoff`, `pack` |
+| `commands/plan.ts` | 110 | `plan` |
+
+No public behaviour change: the same argv produces the same output and exit code,
+`USAGE` is byte-identical, and `./index.js` still exports `run` and `USAGE`.
+Verified by the full unit suite plus every real-CLI e2e script
+(`e2e-phase12-pilots` 69/69, `e2e-cli-generate`, `e2e-cli-agent`, `e2e:lifecycle`,
+`e2e:install`). A dead import (`renderHandoffDocument`) was removed in the process.
 
 ### F-07 — Security / filesystem protections (Lead G) — VERIFIED
 Retained unchanged: the managed writer (`packages/core/src/writer.ts`, atomic
