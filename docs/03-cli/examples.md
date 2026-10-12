@@ -1,7 +1,8 @@
 # PlanMo CLI — Quick Examples (new user)
 
-The PlanMo CLI is **deterministic and works without an AI key**. v1 exposes
-three commands — `planmo init`, `planmo status`, `planmo adopt` — plus
+The PlanMo CLI is **deterministic and works without an AI key**. It exposes
+`init`, `status`, `adopt`, `plan`, `generate`, `diff`, `validate`, `doctor`,
+`next`, `task`, `trace`, `handoff`, `pack` and `agent` — plus
 `--version`/`--help`. Everything below was verified against the real built
 CLI (see `docs/10-engineering/pilots.md`, 63/63 checks passing).
 
@@ -259,9 +260,9 @@ to fake output, and the mock is never selected implicitly.
 `.planmo/project.yml`, and `planmo init` runs it automatically, so a fresh
 workspace arrives with `planning/` populated. `planmo next` **is** wired: it
 prints the session brief, and it is what the command files PlanMo installs into
-your coding agent call. The `doctor`/`trace` engines live in `@planmo/trace` and
-`handoff` in `@planmo/workflow`; their CLI wiring is post-v1. `--help` lists
-exactly the implemented commands, and
+your coding agent call. `planmo doctor`, `planmo trace` and `planmo handoff` are
+wired too — the engines live in `@planmo/trace` and `@planmo/workflow`, and the
+CLI exposes them. `--help` lists exactly the implemented commands, and
 `scripts/e2e-phase12-pilots.mjs` asserts that.
 
 ## 8. Environment notes

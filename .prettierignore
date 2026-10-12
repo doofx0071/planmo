@@ -12,6 +12,9 @@ CONTRIBUTING.md
 docs/
 CHANGELOG.md
 
+# A working prompt dropped at the repo root for an agent run — not repo source.
+PLANMO_AGENT_FIX_PROMPT.md
+
 # Generated or template artifacts
 .github/**
 

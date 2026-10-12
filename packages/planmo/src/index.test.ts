@@ -245,6 +245,18 @@ describe('planmo generate', () => {
     expect(err.join('\n')).toContain('planmo generate:');
   });
 
+  it('maps a broken workspace to exit 1, not the "no project" code 3', async () => {
+    // A workspace whose project.yml is present but invalid is a configuration
+    // failure, not a missing project. Returning 3 for both made the two
+    // indistinguishable — the ambiguity the exit-code lead flagged.
+    const root = await tempRoot();
+    await run(['init', root, '--yes'], capture().io, wizard);
+    await writeFile(join(root, '.planmo', 'project.yml'), 'schemaVersion: 1\n', 'utf8');
+    const { io, err } = capture();
+    expect(await run(['generate', '--dir', root], io)).toBe(1);
+    expect(err.join('\n')).toContain('planmo generate:');
+  });
+
   it('--dry-run plans without writing anything', async () => {
     const root = await tempRoot();
     await run(['init', root, '--yes'], capture().io, wizard);
@@ -254,6 +266,20 @@ describe('planmo generate', () => {
     expect(await run(['generate', '--dir', root, '--dry-run'], io)).toBe(0);
     expect(out.join('\n')).toContain('[dry-run]');
     await expect(readdir(join(root, 'planning'))).rejects.toThrow();
+  });
+});
+
+describe('planmo task — CLI', () => {
+  const wizard = silentWizard();
+
+  it('fails fast with usage when a prompt is needed but stdin is not a terminal', async () => {
+    const root = await tempRoot();
+    await run(['init', root, '--yes'], capture().io, wizard);
+    // vitest's stdin is not a TTY. Before the guard this hung forever on a prompt
+    // that could never be answered.
+    const { io, err } = capture();
+    expect(await run(['task', 'P00-01', '--dir', root], io)).toBe(1);
+    expect(err.join('\n')).toContain('--status is required');
   });
 });
 

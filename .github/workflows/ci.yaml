@@ -62,8 +62,24 @@ jobs:
       - name: Package boundaries
         run: pnpm boundary-check
 
+      - name: Package inventory
+        run: pnpm check:inventory
+
       - name: CLI smoke
         run: node packages/planmo/dist/bin.js --version
+
+      # The two end-to-end checks install/pack real artifacts, so they run on one
+      # OS only — the point is the artifact, not the platform. The lifecycle drives
+      # the real built CLI through init -> task -> generate -> handoff and proves
+      # durable state survives regeneration; the install check packs every package
+      # and installs the CLI from tarballs in isolation (no workspace symlinks).
+      - name: End-to-end lifecycle
+        if: matrix.os == 'ubuntu-latest'
+        run: pnpm e2e:lifecycle
+
+      - name: Isolated npm-tarball install
+        if: matrix.os == 'ubuntu-latest'
+        run: pnpm e2e:install
 
   # A changeset on the entry package does not republish its dependencies, so a
   # change to a dependency's source with no changeset of its own ships a stale

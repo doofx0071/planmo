@@ -19,8 +19,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "boundary-check": "node scripts/check-boundaries.mjs",
+    "check:inventory": "node scripts/check-inventory.mjs",
+    "e2e:lifecycle": "node scripts/e2e-lifecycle.mjs",
+    "e2e:install": "node scripts/e2e-install-smoke.mjs",
     "smoke": "node packages/planmo/dist/bin.js --version",
-    "check": "pnpm build && pnpm typecheck && pnpm test && pnpm lint && pnpm format:check && pnpm boundary-check && pnpm smoke"
+    "check": "pnpm build && pnpm typecheck && pnpm test && pnpm lint && pnpm format:check && pnpm boundary-check && pnpm check:inventory && pnpm smoke"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",

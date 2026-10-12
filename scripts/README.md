@@ -8,6 +8,7 @@ and dependencies installed (`pnpm install`).
 | Script                  | Purpose                                                                     |
 | ----------------------- | --------------------------------------------------------------------------- |
 | `check-boundaries.mjs`  | Enforces the package dependency graph and package naming. Wired into `pnpm boundary-check` and CI. |
+| `check-inventory.mjs`   | Audits the package inventory: declared vs imported internal edges, entry-point validity, `files` coverage, cycles, and README↔workspace agreement. Wired into `pnpm check:inventory` and CI. |
 | `check-changesets.mjs`  | Fails when a changed publishable package has no changeset of its own. Wired into CI on pull requests (`--base=origin/<base-ref>`). A package listed in `.changeset/.no-release` is exempt — use that for pure refactors, where a release would be churn. |
 
 ## End-to-end suites
@@ -28,6 +29,8 @@ prints a one-line verdict.
 | `e2e-phase12-pilots.mjs` | Real-CLI pilots: init, dry-run, collision, adopt, exit codes          |
 | `e2e-cli-generate.mjs`   | Real-CLI: `init` writes the planning tree; `generate` regeneration; `validate` |
 | `e2e-cli-agent.mjs`      | Real-CLI: `agent init` installs per-agent command files; idempotent; refusals |
+| `e2e-lifecycle.mjs`      | Real-CLI: the full user lifecycle (init → validate → task → evidence → generate → handoff) and that durable state survives regeneration |
+| `e2e-install-smoke.mjs`  | Packs every package and installs the CLI from tarballs in isolation (no workspace symlinks), then drives the installed binary |
 
 The names record the roadmap phase that introduced each suite; they are the
 regression suite, not per-phase scratch work.

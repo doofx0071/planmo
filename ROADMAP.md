@@ -9,10 +9,10 @@ This file tracks what comes **after** v1. It is a direction, not a commitment.
 
 ## Near term
 
-- **Expose the engines through the CLI.** v1 ships `init`, `status` and `adopt`.
-  The planning-compiler, generator, workflow, trace, design-engine and agent-bridge
-  engines are implemented and tested in their packages but are not yet wired to CLI
-  commands. Highest-value next step.
+- **Expose the engines through the CLI.** Done. The CLI wires `plan`, `generate`,
+  `diff`, `validate`, `doctor`, `next`, `task`, `trace`, `handoff`, `pack` and
+  `agent` alongside `init`, `status` and `adopt`, and `planmo --help` lists exactly
+  the implemented commands.
 - **Working `repository`/`homepage` links.** The packages point at
   `github.com/doofx0071/planmo`, which is still private, so those links 404 for
   anonymous visitors.
@@ -23,6 +23,10 @@ This file tracks what comes **after** v1. It is a direction, not a commitment.
 
 ## Later
 
+- **Interactive wizard and agent experience.** A specified, prioritized backlog
+  (guided setup, compatible-stack matrix, prerequisite checks, plan preview/diff,
+  safe resume, richer evidence) lives in
+  [`docs/10-engineering/wizard-and-agent-roadmap.md`](docs/10-engineering/wizard-and-agent-roadmap.md).
 - **Semantic retrieval adapter.** The v1 context engine is a deterministic lexical
   baseline; its blind spot (ranking by id order rather than query relevance) is
   measured in `scripts/eval-context-retrieval.mjs`. Embeddings or a hosted/graph

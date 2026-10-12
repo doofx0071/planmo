@@ -97,8 +97,8 @@ discard); the downgrade policy itself is recorded here and in
 `docs/10-engineering/pilots.md`.
 
 ### Representative pilots — `scripts/e2e-phase12-pilots.mjs`
-Drives the real built CLI (`node packages/cli/dist/bin.js`, after
-`pnpm -r build` — 12/12 packages compiled clean). **8 pilots, 63/63 checks
+Drives the real built CLI (`node packages/planmo/dist/bin.js`, after
+`pnpm -r build` — 13/13 packages compiled clean). **8 pilots, 63/63 checks
 PASS, runner exit 0.** Deterministic: no AI key, no network; byte-identity
 asserted across identical runs. Exit-code surface exercised: 0, 1
 (unknown command), 2 (collision refused), 3 (no project). Greenfield
@@ -106,8 +106,9 @@ init + HEALTHY status; init `--dry-run` writes nothing; re-init refuses
 (exit 2) and `--force` succeeds; brownfield `adopt --dry-run` on a hostile
 fixture is confined to `.planmo/adopt/` with `rewritesApplicationCode:
 false`, classification Poisoned 1 / Suspicious 1 / Benign 9, and no side
-effects; `--depth high-assurance` workspace validates; v1 surface honesty
-(plan/generate/next are NOT CLI-wired in v1 — asserted, not fabricated).
+effects; `--depth high-assurance` workspace validates; surface honesty
+(`--help` lists exactly the implemented commands — plan/generate/next are
+wired — asserted, not fabricated).
 
 ### Docs/examples
 - `docs/03-cli/examples.md` (NEW) — new-user walkthrough of the actual
