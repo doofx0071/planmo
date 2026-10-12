@@ -23,6 +23,10 @@ This file tracks what comes **after** v1. It is a direction, not a commitment.
 
 ## Later
 
+- **Interactive wizard and agent experience.** A specified, prioritized backlog
+  (guided setup, compatible-stack matrix, prerequisite checks, plan preview/diff,
+  safe resume, richer evidence) lives in
+  [`docs/10-engineering/wizard-and-agent-roadmap.md`](docs/10-engineering/wizard-and-agent-roadmap.md).
 - **Semantic retrieval adapter.** The v1 context engine is a deterministic lexical
   baseline; its blind spot (ranking by id order rather than query relevance) is
   measured in `scripts/eval-context-retrieval.mjs`. Embeddings or a hosted/graph
