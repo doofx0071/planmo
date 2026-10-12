@@ -118,9 +118,11 @@ packages, installs the CLI from tarballs in isolation, drives it). Both wired in
 `package.json` and CI (ubuntu only).
 
 ### F-14 — Version mismatch (Lead D) — NOT A DEFECT
-Local source `planmo@1.14.0`; official npm `latest` = `1.14.1` (published
-2026-10-10T16:43Z), one release ahead of this checkout. The "1.7.0" figure came from
-a third-party index and is contradicted by the registry. No version changed.
+At audit time the local source was `planmo@1.14.0` while official npm `latest` was
+`1.14.1` — one release ahead, because the `Version Packages` commit (#82) landed on
+`main` after this branch was cut. The "1.7.0" figure came from a third-party index
+and is contradicted by the registry. `main` now carries `planmo@1.14.1`, matching
+npm; this work changed no version.
 
 ## 3. Verification summary
 
@@ -149,13 +151,13 @@ README agreement).
 
 | Package | Version | Role |
 | --- | --- | --- |
-| `planmo` | 1.14.0 | the CLI (unscoped, owns `bin`) |
+| `planmo` | 1.14.1 | the CLI (unscoped, owns `bin`) |
 | `@planmo/shared` | 1.1.0 | shared utilities |
 | `@planmo/schema` | 1.2.0 | versioned zod project model |
 | `@planmo/core` | 1.0.5 | safe writer, status, paths |
 | `@planmo/scanner` | 1.0.8 | repository adoption, injection isolation |
 | `@planmo/packs` | 1.0.3 | declarative pack resolution |
-| `@planmo/generator` | 1.4.0 | artifact generation, ownership manifest |
+| `@planmo/generator` | 1.4.1 | artifact generation, ownership manifest |
 | `@planmo/design-engine` | 1.0.3 | DTCG tokens, styles, a11y |
 | `@planmo/agent-bridge` | 1.3.4 | adapters, context bundles |
 | `@planmo/ai` | 1.3.0 | model-provider abstraction |
