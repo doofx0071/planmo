@@ -1,7 +1,6 @@
-import { createInterface } from 'node:readline/promises';
 import { stdin as nodeStdin, stdout as nodeStdout } from 'node:process';
-import * as clack from '@clack/prompts';
 import { resolve } from 'node:path';
+import { defaultIO, parseArgs, terminalWizard, type CliIO, type WizardIO } from './cli-io.js';
 import { PRODUCT_SLUG } from '@planmo/shared';
 import { cliVersion } from './version.js';
 import { renderAdoptArtifacts } from './adopt-write.js';
@@ -49,15 +48,7 @@ import type {
  * exit code. No business logic lives here; the core owns all behavior.
  */
 
-export interface CliIO {
-  out: (line: string) => void;
-  err: (line: string) => void;
-}
-
-const defaultIO: CliIO = {
-  out: (line) => console.log(line),
-  err: (line) => console.error(line),
-};
+export type { CliIO, WizardIO };
 
 export const USAGE = [
   `Usage: ${PRODUCT_SLUG} <command> [options]`,
@@ -185,106 +176,6 @@ export const USAGE = [
   '',
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
 ].join('\n');
-
-/** Minimal `--flag value` / `--flag=value` parser (no external dep). */
-function parseArgs(argv: string[]): { flags: Map<string, string>; positional: string[] } {
-  const flags = new Map<string, string>();
-  const positional: string[] = [];
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]!;
-    if (arg.startsWith('--')) {
-      const eq = arg.indexOf('=');
-      if (eq >= 0) {
-        flags.set(arg.slice(2, eq), arg.slice(eq + 1));
-      } else {
-        const next = argv[i + 1];
-        if (next !== undefined && !next.startsWith('--')) {
-          flags.set(arg.slice(2), next);
-          i++;
-        } else {
-          flags.set(arg.slice(2), 'true');
-        }
-      }
-    } else {
-      positional.push(arg);
-    }
-  }
-  return { flags, positional };
-}
-
-/** Prompt values must be primitives — that is all a terminal prompt can render. */
-type WizardValue = string | boolean | number;
-
-/** One choice in a select or multi-select prompt. */
-interface WizardChoice<T extends WizardValue> {
-  value: T;
-  label: string;
-  hint?: string;
-}
-
-interface WizardIO {
-  prompt: (question: string, dflt?: string) => Promise<string>;
-  /** Arrow-key single select. `undefined` means the user cancelled. */
-  select: <T extends WizardValue>(
-    question: string,
-    choices: WizardChoice<T>[],
-  ) => Promise<T | undefined>;
-  /** Arrow-key multi select, with `initial` pre-checked. `undefined` = cancelled. */
-  multiSelect: <T extends WizardValue>(
-    question: string,
-    choices: WizardChoice<T>[],
-    initial: readonly T[],
-  ) => Promise<T[] | undefined>;
-  /** Yes/no confirmation. `undefined` means the user cancelled. */
-  confirm: (question: string, dflt: boolean) => Promise<boolean | undefined>;
-  out: (line: string) => void;
-}
-
-const terminalWizard: WizardIO = {
-  prompt: async (question: string, dflt?: string) => {
-    const rl = createInterface({ input: nodeStdin, output: nodeStdout });
-    try {
-      const suffix = dflt !== undefined ? ` [${dflt}]` : '';
-      const answer = await rl.question(`${question}${suffix}: `);
-      return answer.trim() === '' && dflt !== undefined ? dflt : answer.trim();
-    } finally {
-      rl.close();
-    }
-  },
-  select: async <T extends WizardValue>(
-    question: string,
-    choices: WizardChoice<T>[],
-  ): Promise<T | undefined> => {
-    // clack types its options as `Option<Value>`, a conditional type over `Value`
-    // that TypeScript cannot reduce while `Value` is still a type parameter. The
-    // shapes are identical, so the list passes through unchanged.
-    const opts = { message: question, options: choices } as unknown as Parameters<
-      typeof clack.select<T>
-    >[0];
-    const answer = await clack.select<T>(opts);
-    return clack.isCancel(answer) ? undefined : answer;
-  },
-  multiSelect: async <T extends WizardValue>(
-    question: string,
-    choices: WizardChoice<T>[],
-    initial: readonly T[],
-  ): Promise<T[] | undefined> => {
-    const opts = {
-      message: question,
-      options: choices,
-      initialValues: [...initial],
-      required: false,
-    } as unknown as Parameters<typeof clack.multiselect<T>>[0];
-    const answer = await clack.multiselect<T>(opts);
-    return clack.isCancel(answer) ? undefined : answer;
-  },
-  confirm: async (question: string, dflt: boolean): Promise<boolean | undefined> => {
-    const answer = await clack.confirm({ message: question, initialValue: dflt });
-    return clack.isCancel(answer) ? undefined : answer;
-  },
-  out: (line) => console.log(line),
-};
-
 export async function run(
   argv: string[],
   io: CliIO = defaultIO,
@@ -1073,11 +964,19 @@ async function runTask(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
     let id = positional[0];
 
     // Interactive-first: with no id, choose from the tasks that are not done.
+    // Without a terminal there is nobody to prompt, so fail with usage instead of
+    // hanging on a prompt that can never be answered (the guard `agent` uses).
+    const interactive = nodeStdin.isTTY === true && nodeStdout.isTTY === true;
     if (id === undefined) {
       const open = rows.filter((row) => row.status !== 'DONE');
       if (open.length === 0) {
         io.out('Every task is DONE.');
         return 0;
+      }
+      if (!interactive) {
+        io.err('planmo task: a task id is required when not running interactively');
+        io.err('  usage: planmo task <id> --status <value> [--dir <path>]');
+        return 1;
       }
       const picked = await wizard.select(
         'Which task?',
@@ -1094,6 +993,11 @@ async function runTask(argv: string[], io: CliIO, wizard: WizardIO): Promise<num
     let status = flags.get('status');
 
     if (status === undefined) {
+      if (!interactive) {
+        io.err('planmo task: --status is required when not running interactively');
+        io.err('  usage: planmo task <id> --status <value> [--dir <path>]');
+        return 1;
+      }
       // DONE first and recommended: closing the task is what the loop needs, and
       // it is the overwhelmingly common case.
       const ordered = ['DONE', ...TASK_STATUSES.filter((value) => value !== 'DONE')];

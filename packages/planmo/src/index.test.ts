@@ -269,6 +269,20 @@ describe('planmo generate', () => {
   });
 });
 
+describe('planmo task — CLI', () => {
+  const wizard = silentWizard();
+
+  it('fails fast with usage when a prompt is needed but stdin is not a terminal', async () => {
+    const root = await tempRoot();
+    await run(['init', root, '--yes'], capture().io, wizard);
+    // vitest's stdin is not a TTY. Before the guard this hung forever on a prompt
+    // that could never be answered.
+    const { io, err } = capture();
+    expect(await run(['task', 'P00-01', '--dir', root], io)).toBe(1);
+    expect(err.join('\n')).toContain('--status is required');
+  });
+});
+
 describe('planmo init — planning workspace', () => {
   const wizard = silentWizard();
 
