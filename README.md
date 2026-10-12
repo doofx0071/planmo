@@ -174,7 +174,7 @@ scripts/      build, boundary and end-to-end verification scripts
 
 - [`docs/`](docs/) — architecture, CLI, packs, design engine, agent engine,
   workflows, security, testing, engineering, research, ADRs.
-- [`docs/12-adrs/`](docs/12-adrs/) — the decision record (ADR-0001 … ADR-0025).
+- [`docs/12-adrs/`](docs/12-adrs/) — the decision record (ADR-0001 … ADR-0028).
 - [`ROADMAP.md`](ROADMAP.md) — what comes after v1.
 - [`AGENTS.md`](AGENTS.md) — the contract for contributors and coding agents.
 - [`CHANGELOG.md`](CHANGELOG.md) — release history.

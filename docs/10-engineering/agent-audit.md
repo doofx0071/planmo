@@ -125,3 +125,73 @@ a third-party index and is contradicted by the registry. No version changed.
   scanning covers it and a third-party scanner was out of scope. Tracked.
 - **Wizard/agent backlog** — specified in
   [`wizard-and-agent-roadmap.md`](wizard-and-agent-roadmap.md) (W-01...W-13).
+
+## 5. Package inventory and dependency graph
+
+13 packages, verified by `scripts/check-inventory.mjs` (which also checks declared
+vs imported internal edges, entry-point validity, `files` coverage, cycles and
+README agreement).
+
+| Package | Version | Role |
+| --- | --- | --- |
+| `planmo` | 1.14.0 | the CLI (unscoped, owns `bin`) |
+| `@planmo/shared` | 1.1.0 | shared utilities |
+| `@planmo/schema` | 1.2.0 | versioned zod project model |
+| `@planmo/core` | 1.0.5 | safe writer, status, paths |
+| `@planmo/scanner` | 1.0.8 | repository adoption, injection isolation |
+| `@planmo/packs` | 1.0.3 | declarative pack resolution |
+| `@planmo/generator` | 1.4.0 | artifact generation, ownership manifest |
+| `@planmo/design-engine` | 1.0.3 | DTCG tokens, styles, a11y |
+| `@planmo/agent-bridge` | 1.3.4 | adapters, context bundles |
+| `@planmo/ai` | 1.3.0 | model-provider abstraction |
+| `@planmo/adapters` | 1.0.1 | per-agent adapters |
+| `@planmo/workflow` | 1.1.5 | phases, packets, leases, gates |
+| `@planmo/trace` | 1.2.2 | trace graph, validate, doctor |
+
+Dependency direction — the enforced graph (`scripts/check-boundaries.mjs`):
+
+```text
+shared, ai         -> (leaf)
+schema             -> shared
+core               -> shared, schema
+packs              -> core, shared, schema
+generator          -> core, shared, schema, packs
+scanner            -> core, shared, schema
+adapters           -> core, shared
+agent-bridge       -> core, shared, schema, adapters
+workflow           -> core, shared, schema, agent-bridge
+trace              -> core, shared, schema, workflow
+design-engine      -> core, shared, schema
+planmo (the CLI)   -> ai, shared, schema, core, trace, scanner, packs,
+                      generator, adapters, agent-bridge, workflow
+```
+
+Acyclic; every declared internal edge is imported and every internal import is
+declared (F-04).
+
+## 6. Command inventory
+
+Taken from the real router (`packages/planmo/src/index.ts`, `run()`), never from
+the README alone.
+
+| Command | Handler | Backing module |
+| --- | --- | --- |
+| `init` | `runInit` | `@planmo/core` init + `generate.ts` |
+| `status` | `runStatus` | `@planmo/core` status |
+| `adopt` | `runAdopt` | `detect.ts`, `adopt-write.ts` |
+| `plan` | `runPlanCommand` | `plan.ts`, `plan-build.ts`, `@planmo/ai` |
+| `generate` | `runGenerate` | `generate.ts` |
+| `diff` | `runDiff` | `diff.ts` |
+| `validate` | `runValidate` | `validate.ts` |
+| `doctor` | `runDoctorCommand` | `doctor.ts` |
+| `next` | `runNext` | `next.ts` |
+| `task` | `runTask` | `task.ts` |
+| `trace` | `runTrace` | `trace.ts` |
+| `handoff` | `runHandoff` | `handoff.ts` |
+| `pack` | `runPack` | `pack.ts` |
+| `agent init` / `agent list` | `runAgent` | `agent.ts` |
+| `agent apply` | `runAgentApply` | `apply.ts` |
+| `--version` / `--help` | inline | `version.ts`, `USAGE` |
+
+Exit contract: `0` ok · `1` error · `2` collision refused · `3` no project found
+(ADR-0028).
