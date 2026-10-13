@@ -14,6 +14,7 @@ import {
 import { runNext, runTask, runTrace, runHandoff, runPack } from './commands/tasks.js';
 import { runPlanCommand } from './commands/plan.js';
 import { runAgent } from './commands/agent.js';
+import { runProviderCommand } from './commands/provider.js';
 
 /**
  * PlanMo CLI — the real command surface (ADR-0010).
@@ -66,6 +67,7 @@ const COMMAND_FLAGS: Readonly<Record<string, readonly string[]>> = Object.freeze
   handoff: ['dir', 'dry-run', 'force'],
   pack: ['dir', 'source', 'dry-run'],
   agent: ['agent', 'dir', 'global', 'yes', 'force', 'dry-run'],
+  provider: [],
 });
 
 /** Every `--flag` (and `--flag=value`) in `argv` that `allowed` does not list. */
@@ -156,6 +158,8 @@ export async function run(
         return await runPack(argv.slice(1), io);
       case 'agent':
         return await runAgent(argv.slice(1), io, wizard);
+      case 'provider':
+        return runProviderCommand(argv.slice(1), io);
       default:
         // Unreachable: `allowed` above proves `command` is one of the keys.
         io.err(`${PRODUCT_SLUG}: unknown command '${command}'`);
