@@ -45,8 +45,8 @@
     "@clack/prompts": "^1.8.1",
     "@planmo/adapters": "workspace:*",
     "@planmo/agent-bridge": "workspace:*",
-    "@planmo/core": "workspace:*",
     "@planmo/ai": "workspace:*",
+    "@planmo/core": "workspace:*",
     "@planmo/generator": "workspace:*",
     "@planmo/packs": "workspace:*",
     "@planmo/scanner": "workspace:*",
@@ -55,5 +55,8 @@
     "@planmo/trace": "workspace:*",
     "@planmo/workflow": "workspace:*",
     "yaml": "2.9.1"
+  },
+  "optionalDependencies": {
+    "@napi-rs/keyring": "2.1.1"
   }
 }
