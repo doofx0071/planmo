@@ -52,6 +52,15 @@ describe('AiUserConfigSchema', () => {
     expect(result.data).toEqual(validConfig());
   });
 
+  it('rejects a named provider profile with a non-null base URL', () => {
+    const config = {
+      ...validConfig(),
+      profiles: [{ ...validConfig().profiles[0], baseUrl: 'https://api.example.test/v1' }],
+    };
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
   it('rejects unknown keys and plaintext API-key fields', () => {
     const schema = userConfigSchema();
     const rootKey = { ...validConfig(), apiKey: 'synthetic-not-a-real-key' };
@@ -161,6 +170,16 @@ describe('AiUserConfigSchema', () => {
     expect(userConfigSchema().safeParse(config).success).toBe(false);
   });
 
+  it('returns success false without throwing for a malformed custom URL', () => {
+    const schema = userConfigSchema();
+    let result: ParseResult | undefined;
+
+    expect(() => {
+      result = schema.safeParse(customEndpointConfig('https://%'));
+    }).not.toThrow();
+    expect(result?.success).toBe(false);
+  });
+
   it('rejects non-loopback HTTP custom endpoints', () => {
     const config = customEndpointConfig('http://api.example.test/v1');
 
@@ -186,6 +205,20 @@ describe('AiUserConfigSchema', () => {
     };
 
     expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('omits rejected endpoint userinfo secrets from error diagnostics', () => {
+    const syntheticSecret = 'synthetic-url-secret-do-not-leak';
+    const config = customEndpointConfig(
+      `https://synthetic-user:${syntheticSecret}@example.test/v1`,
+    );
+    const result = userConfigSchema().safeParse(config);
+
+    expect(result.success).toBe(false);
+    const error = result.error as Error & { issues?: unknown };
+
+    expect(error.message).not.toContain(syntheticSecret);
+    expect(JSON.stringify(error.issues)).not.toContain(syntheticSecret);
   });
 
   it('rejects a single raw backslash before endpoint URL normalization', () => {
