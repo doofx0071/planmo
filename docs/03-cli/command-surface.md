@@ -2,27 +2,32 @@
 
 Implemented:
 
-- `planmo init [dir]` — create a workspace; compiles the planning tree with it
+- `planmo init [dir]` — create a workspace and compile its planning tree
+- `planmo status` — validate and summarize the workspace
+- `planmo adopt [dir]` — analyze a repository, then offer to record reports and create the workspace
 - `planmo plan "<idea>"` — author `.planmo/plan.yml` with a model, once (ADR-0027)
 - `planmo generate` — recompile the planning documents from the project model
 - `planmo diff` — show what `generate` would change, writing nothing
-- `planmo validate` — validate the workspace documents and invariants (the CI gate)
+- `planmo validate` — validate workspace documents and invariants (the CI gate)
 - `planmo doctor` — report environment and workspace health
-- `planmo next` — print the task to work next, and the documents to read first
+- `planmo next` — print the next task and the documents to read first
+- `planmo task [id]` — record a task's status (interactive without an id)
 - `planmo trace [id]` — render the requirements → tasks → tests trace graph
 - `planmo handoff` — record the current phase's handoff document (refuses to overwrite one you own)
 - `planmo pack` — inspect the pack catalog and reconcile `.planmo/lock.yml`
 - `planmo agent init` — detect your coding agent and install command files (guided)
-- `planmo agent list` — every supported agent, its directory and its format
-- `planmo agent apply <proposal.json>` — validate an agent proposal and record it (ADR-0026)
-- `planmo status` — validate and summarize the workspace
-- `planmo adopt [dir]` — read-only analysis of an existing repository
+- `planmo agent list` — list supported agents, their directories, and formats
+- `planmo provider list` — list runtime provider presets and required API-key environment names
+- `planmo setup` — configure one saved default AI profile
+- `planmo model [<model-id>]` — change the saved default profile model
+- `planmo auth status` — show saved profile credential availability
+- `planmo auth remove <profile-id>` — remove a profile and any attached OS keyring credential; leave provider environment variables unchanged
+- `planmo agent apply <proposal.json>` — validate and record an agent proposal (ADR-0026)
 - `planmo --version` / `planmo --help`
 
-Not yet wired:
-
-- (none — every command listed above is wired; `planmo plan` ships with the
-  `@planmo/ai` engine)
+`--help` is the source of truth for implemented commands. `usage.ts` is the
+single list the help text is checked against, and
+`scripts/e2e-phase12-pilots.mjs` (pilot 7) asserts that it matches.
 
 `planmo pack` reads a catalog only from a local directory of `pack.yml` files
 (`--source <dir>`). There is no remote registry and no bundled catalog, so with no
@@ -33,10 +38,30 @@ Later:
 - `planmo change`
 - `planmo upgrade`
 - `planmo export github`
-- direct AI provider commands
 
-`--help` is the source of truth: it lists exactly the implemented commands, and
-`scripts/e2e-phase12-pilots.mjs` (pilot 7) asserts that it does.
+## AI profiles and model behavior
+
+`planmo setup` configures the saved default profile. `--model <id>` supplies a
+model id manually and makes no discovery request. Credentials may come from the
+provider-named environment variable or a masked prompt saved in the OS keyring.
+A nonblank provider environment key takes precedence over a saved keyring key;
+the keyring is used only when that variable is blank.
+
+`planmo plan "<idea>"` uses the saved default profile's provider, model, endpoint,
+and keyring reference. Without a saved default, it detects a configured provider
+from the environment. Explicit `--provider`, `--model`, and `--base-url` flags
+override saved fields; explicitly choosing a different provider does not reuse
+the saved model, endpoint, or keyring reference. A nonblank environment key for
+the selected provider takes precedence over the profile's keyring credential.
+`planmo generate` remains model-free and never calls a provider.
+
+`planmo model [<model-id>]` directly saves a supplied id without network access.
+With no id, it requires a terminal and requests models only when the default
+profile's provider declares a list endpoint and a credential resolves from the
+environment or saved keyring; otherwise it falls back to manual entry.
+Provider-reported ids are not guaranteed to be PlanMo-compatible. The command
+changes only the default profile's model id; use `planmo setup` when no default
+profile is configured.
 
 ## Flags
 
@@ -52,8 +77,9 @@ interactive prompt, and the intended write never happened.
 
 ## Interactive commands
 
-`init`, `adopt`, `task` (with no id), and `agent init` (with no `--agent`) prompt
-when a value was not supplied on the command line. On a pipe, a CI runner, or a
-redirected stdin there is nobody to answer, so each fails with exit 1 and says why
-instead of waiting forever. Pass the documented flags — `--yes` accepts the
-documented defaults — to run any of them without a terminal.
+`init`, `adopt`, `task` (with no id), `agent init` (with no `--agent`), and
+`setup` prompt when required values are missing. `model` with no id requires a
+terminal; `auth remove` asks for confirmation unless `--yes` is supplied. On a
+pipe, CI runner, or redirected stdin, commands that need a prompt fail with exit
+1 and explain why instead of waiting forever. Supply required values and use
+`--yes` where supported to run non-interactively.

@@ -77,6 +77,69 @@ describe('AiUserConfigSchema', () => {
     expect(result.data).toEqual(validConfig());
   });
 
+  it.each([
+    ['control character', String.fromCharCode(0x0001)],
+    ['bidi override', String.fromCharCode(0x202e)],
+    ['Unicode line separator', String.fromCharCode(0x2028)],
+    ['Unicode paragraph separator', String.fromCharCode(0x2029)],
+  ])('rejects model ids containing a %s character', (_kind, character) => {
+    const config = {
+      ...validConfig(),
+      profiles: [{ ...validConfig().profiles[0], modelId: `model${character}id` }],
+    };
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it.each([
+    ['leading line feed', String.fromCharCode(0x000a), 'leading'],
+    ['trailing line feed', String.fromCharCode(0x000a), 'trailing'],
+    ['leading line separator', String.fromCharCode(0x2028), 'leading'],
+    ['trailing line separator', String.fromCharCode(0x2028), 'trailing'],
+    ['leading paragraph separator', String.fromCharCode(0x2029), 'leading'],
+    ['trailing paragraph separator', String.fromCharCode(0x2029), 'trailing'],
+    ['leading format character', String.fromCharCode(0xfeff), 'leading'],
+    ['trailing format character', String.fromCharCode(0xfeff), 'trailing'],
+  ] as const)('rejects %s in the raw model id before trimming', (_edge, character, edge) => {
+    const modelId = edge === 'leading' ? `${character}model` : `model${character}`;
+    const config = {
+      ...validConfig(),
+      profiles: [{ ...validConfig().profiles[0], modelId }],
+    };
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('accepts Unicode model ids and trims ordinary edge spaces', () => {
+    const modelId = '  mødel-模型  ';
+    const config = {
+      ...validConfig(),
+      profiles: [{ ...validConfig().profiles[0], modelId }],
+    };
+    const result = userConfigSchema().safeParse(config);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual({
+      ...validConfig(),
+      profiles: [{ ...validConfig().profiles[0], modelId: 'mødel-模型' }],
+    });
+  });
+
+  it('rejects an option-like canonical model id without echoing it', () => {
+    const modelId = ` ${['--api-key', 'synthetic'].join('=')}`;
+    const config = {
+      ...validConfig(),
+      profiles: [{ ...validConfig().profiles[0], modelId }],
+    };
+    const result = userConfigSchema().safeParse(config);
+
+    expect(result.success).toBe(false);
+    const error = result.error as { issues?: unknown };
+    const issues = JSON.stringify(error.issues);
+    expect(issues).toContain('model id must not begin with an option prefix');
+    expect(issues).not.toContain(modelId.trim());
+  });
+
   it('rejects a named provider profile with a non-null base URL', () => {
     const config = {
       ...validConfig(),

@@ -4,6 +4,15 @@ import { NonEmptyString, SCHEMA_VERSION } from './common.js';
 const canonicalUuidIdentity = (value: string): string => value.toLowerCase();
 const Uuid = z.string().uuid().transform(canonicalUuidIdentity);
 const ProviderId = z.string().regex(/^[a-z][a-z0-9-]*$/);
+const ModelId = z
+  .string()
+  .refine((value) => !/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u.test(value), {
+    message: 'model id must not contain control, format, or line separator characters',
+  })
+  .pipe(NonEmptyString)
+  .refine((value) => !value.startsWith('--'), {
+    message: 'model id must not begin with an option prefix',
+  });
 
 export const AiEndpointUrlSchema = z.string().superRefine((value, context) => {
   if (value.includes(String.fromCharCode(92))) {
@@ -56,7 +65,7 @@ export const AiProfileSchema = z.strictObject({
   id: Uuid,
   /** Runtime preset id; checked against @planmo/ai at use time. */
   providerId: ProviderId,
-  modelId: NonEmptyString,
+  modelId: ModelId,
   /** Null for named presets; required for the generic custom endpoint. */
   baseUrl: AiEndpointUrlSchema.nullable(),
   /** Opaque keyring account reference; null means environment-only auth. */

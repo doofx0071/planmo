@@ -375,6 +375,22 @@ describe('USAGE', () => {
     );
   });
 
+  it('documents planmo model and its saved-default model-id behavior', () => {
+    expect(USAGE).toContain('planmo model [<model-id>]');
+    expect(usageFor('model')).toContain('model options:');
+    expect(usageFor('model')).toContain('saved default profile');
+    expect(usageFor('model').toLowerCase()).toContain('provider-reported');
+  });
+
+  it('prints model help before command dispatch and without requiring profile state', async () => {
+    const { io, out, err } = capture();
+    const code = await run(['model', '--help'], io, noPromptWizard());
+
+    expect(code).toBe(0);
+    expect(out.join('\\n')).toContain('model options:');
+    expect(err).toEqual([]);
+  });
+
   it('documents auth removal side effects and confirmation behavior', () => {
     const authUsage = usageFor('auth');
     expect(authUsage).toContain('remove <profile-id>');
@@ -465,6 +481,56 @@ describe('planmo setup — CLI route', () => {
     ]);
     expect(err.join('\\n')).not.toContain(value);
     expect(out).toEqual([]);
+  });
+});
+
+describe('planmo model — unknown option handling', () => {
+  const flagShapedSecret = ['--SYNTHETIC', 'SECRET'].join('-');
+  const plainSecret = ['SYNTHETIC', 'PLAIN'].join('-');
+  const equalsSecret = ['--SYNTHETIC', 'EQUALS'].join('-');
+
+  it.each([
+    {
+      kind: 'an API-key option',
+      args: ['--api-key', flagShapedSecret],
+      undisclosed: ['--api-key', flagShapedSecret],
+    },
+    {
+      kind: 'an option with a plain operand',
+      args: ['--api-key', plainSecret],
+      undisclosed: ['--api-key', plainSecret],
+    },
+    {
+      kind: 'an option with an equals-form operand',
+      args: [`--api-key=${equalsSecret}`],
+      undisclosed: ['--api-key', `--api-key=${equalsSecret}`, equalsSecret],
+    },
+    {
+      kind: 'a generic option with a flag-shaped operand',
+      args: ['--unsupported-option', ['--SYNTHETIC', 'OPERAND'].join('-')],
+      undisclosed: ['--unsupported-option', ['--SYNTHETIC', 'OPERAND'].join('-')],
+    },
+  ])('rejects $kind without echoing input or writing config', async ({ args, undisclosed }) => {
+    let configWrites = 0;
+    const { io, out, err } = capture();
+
+    const code = await run(['model', ...args], io, noPromptWizard(), {
+      model: {
+        writeConfig: async () => {
+          configWrites += 1;
+        },
+      },
+    });
+
+    const output = `${out.join('\n')}\n${err.join('\n')}`;
+    expect(code).toBe(1);
+    expect(err).toEqual([
+      'planmo model: unknown option.',
+      "Run 'planmo model --help' for the options it accepts.",
+    ]);
+    for (const token of undisclosed) expect(output).not.toContain(token);
+    expect(out).toEqual([]);
+    expect(configWrites).toBe(0);
   });
 });
 

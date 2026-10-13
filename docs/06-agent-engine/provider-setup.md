@@ -11,11 +11,11 @@ This table describes the eight runtime presets currently declared in `packages/a
 | `anthropic` | `https://api.anthropic.com/v1` | Anthropic Messages | `ANTHROPIC_API_KEY` | `GET https://api.anthropic.com/v1/models` (API key + `anthropic-version`; paginated; documented) | API key |
 | `deepseek` | `https://api.deepseek.com/v1` | OpenAI-compatible | `DEEPSEEK_API_KEY` | `GET https://api.deepseek.com/models` (root-level bearer endpoint; documented) | API key |
 | `moonshot` | `https://api.moonshot.ai/v1` | OpenAI-compatible | `MOONSHOT_API_KEY` | `GET https://api.moonshot.ai/v1/models` (bearer key; documented) | API key |
-| `xai` | `https://api.x.ai/v1` | OpenAI-compatible | `XAI_API_KEY` | `GET https://api.x.ai/v1/models` (bearer key; documented) | API key |
-| `openrouter` | `https://openrouter.ai/api/v1` | OpenAI-compatible | `OPENROUTER_API_KEY` | `GET https://openrouter.ai/api/v1/models?limit=500` (bearer key; documented) | API key |
-| `custom` | User-supplied HTTPS endpoint | OpenAI-compatible | `PLANMO_AI_API_KEY` | Not assumed; manual model id unless the endpoint is explicitly verified | API key / compatible endpoint |
+| `xai` | `https://api.x.ai/v1` | OpenAI-compatible | `XAI_API_KEY` | `GET https://api.x.ai/v1/language-models` (bearer key; `models[].id`, text-output entries only; documented) | API key |
+| `openrouter` | `https://openrouter.ai/api/v1` | OpenAI-compatible | `OPENROUTER_API_KEY` | `GET https://openrouter.ai/api/v1/models?limit=500` (bearer key; continuation reported but not followed) | API key |
+| `custom` | User-supplied HTTPS endpoint | OpenAI-compatible | `PLANMO_AI_API_KEY` | No declared list endpoint; manual model id only | API key / compatible endpoint |
 
-Every model-list response is untrusted metadata. The implementation must bound response bytes and item count, validate the response shape, display ids rather than trusting provider-supplied instructions, and fall back to manual model entry when a route is unavailable or malformed. For Anthropic, send the required `x-api-key` and `anthropic-version` headers; do not treat its Messages protocol as OpenAI-compatible.
+Every model-list response is untrusted metadata. The client reads a bounded stream (1 MB maximum), validates each response shape, accepts only model ids up to 256 characters that are nonblank, unpadded, and free of control, Unicode format, and line/paragraph separator characters, and returns at most 500 ids. It ignores provider names/descriptions/instructions and shows only provider-reported ids; that does not guarantee PlanMo compatibility. Unavailable, malformed, oversized, timed-out, or failed requests fall back to ordinary manual model entry. Anthropic uses `x-api-key` plus `anthropic-version: 2023-06-01`, requests pages of 100, and exposes truncation after at most five pages. Do not treat its Messages protocol as OpenAI-compatible. OpenRouter uses the documented `limit=500` request and reports a declared `links.next` continuation as truncated without following or validating its URL.
 
 ## Official references for the model-list routes
 
@@ -24,11 +24,11 @@ Every model-list response is untrusted metadata. The implementation must bound r
 - Anthropic: [List models](https://platform.claude.com/docs/en/api/models/list)
 - DeepSeek: [List models](https://api-docs.deepseek.com/api/list-models/)
 - Moonshot/Kimi: [List models](https://platform.kimi.ai/docs/api/list-models)
-- xAI: [List inference models](https://docs.x.ai/developers/rest-api-reference/inference/models)
+- xAI: [List language models](https://docs.x.ai/developers/rest-api-reference/inference/models.md)
 - OpenRouter: [List models and properties](https://openrouter.ai/docs/api/api-reference/models/list-all-models-and-their-properties)
 - Custom: no universal model-list contract; inspect the endpoint owner documentation.
 
-The base URLs and environment-variable names above remain pinned by `packages/ai/src/providers.test.ts`. Model-list URLs must be declared separately from inference base URLs: DeepSeek's documented `/models` route is root-level even though its inference preset base URL includes `/v1`. OpenRouter's documented list request includes a bearer API key and `limit=500`; do not assume the catalog is public. A documented list route does not imply that PlanMo has implemented or tested a model-list client yet.
+Every `ProviderPreset` explicitly declares its exact model-list URL, method, auth, response shape, and pagination; custom has a null capability. The list client uses only that declaration and never derives a route from the inference `baseUrl`: DeepSeek's documented `/models` route is root-level even though its inference preset includes `/v1`. OpenRouter's documented request uses a bearer key and `limit=500`; a declared response-supplied `links.next` is reported as truncation, never followed or URL-validated. The client and route are unit-tested with injected fetch responses; no live provider request is implied, and a provider-reported id is not a PlanMo compatibility guarantee.
 
 ## Counts and non-provider inventories
 

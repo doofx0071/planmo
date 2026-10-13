@@ -75,6 +75,72 @@ describe('provider presets', () => {
     });
   });
 
+  it('declares exact model-list endpoints, auth, response shapes, and pagination', () => {
+    expect(
+      Object.fromEntries(PROVIDER_PRESETS.map((preset) => [preset.id, preset.modelList])),
+    ).toEqual({
+      tokenharbor: {
+        endpoint: 'https://tokenharbor.ai/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      openai: {
+        endpoint: 'https://api.openai.com/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      anthropic: {
+        endpoint: 'https://api.anthropic.com/v1/models',
+        method: 'GET',
+        auth: {
+          type: 'header',
+          credentialHeader: 'x-api-key',
+          headers: { 'anthropic-version': '2023-06-01' },
+        },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'anthropic-cursor', limit: 100, maxPages: 5 },
+      },
+      deepseek: {
+        endpoint: 'https://api.deepseek.com/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      moonshot: {
+        endpoint: 'https://api.moonshot.ai/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      xai: {
+        endpoint: 'https://api.x.ai/v1/language-models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: {
+          collection: 'models',
+          idField: 'id',
+          outputModalitiesField: 'output_modalities',
+          includesOutputModality: 'text',
+        },
+        pagination: { type: 'none' },
+      },
+      openrouter: {
+        endpoint: 'https://openrouter.ai/api/v1/models?limit=500',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id', continuationLink: 'links.next' },
+        pagination: { type: 'none' },
+      },
+      custom: null,
+    });
+  });
+
   it('looks up a preset by id and returns undefined for an unknown id', () => {
     expect(providerPreset('openai')?.id).toBe('openai');
     expect(providerPreset('nope')).toBeUndefined();
