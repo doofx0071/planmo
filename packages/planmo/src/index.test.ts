@@ -94,6 +94,44 @@ describe('planmo CLI — version/help', () => {
     expect(err.join('\n')).toContain('--help');
     expect(out).toHaveLength(0);
   });
+
+  it('prints per-command help for `<command> --help` and never runs the command', async () => {
+    // The flag used to be ignored below the top level, so `init --help` ran the
+    // init wizard and `adopt --help` scanned the whole repository before asking.
+    const root = await tempRoot();
+    const { io, out } = capture();
+    const code = await run(['init', root, '--help'], io, noPromptWizard());
+    expect(code).toBe(0);
+    expect(out.join('\n')).toContain('init options:');
+    // Nothing ran: no workspace was created.
+    await expect(readdir(join(root, '.planmo'))).rejects.toThrow();
+  });
+
+  it('rejects an option the command does not accept', async () => {
+    // An ignored flag made a typo (`task P00-02 --stauts DONE`) indistinguishable
+    // from a deliberate no-op: the write silently never happened.
+    const root = await tempRoot();
+    const { io, err } = capture();
+    const code = await run(['init', root, '--yes', '--bogus'], io, noPromptWizard());
+    expect(code).toBe(1);
+    expect(err.join('\n')).toContain('unknown option --bogus');
+  });
+
+  it('turns a prompt that cannot be answered into a normal failure', async () => {
+    // On a pipe the wizard throws. Without the router's catch this escaped as an
+    // unsettled top-level await and Node exited 13 with an internal warning.
+    const root = await tempRoot();
+    const { io, err } = capture();
+    const exploding = {
+      ...silentWizard(),
+      prompt: async () => {
+        throw new Error('needs a terminal');
+      },
+    };
+    const code = await run(['init', root], io, exploding);
+    expect(code).toBe(1);
+    expect(err.join('\n')).toContain('needs a terminal');
+  });
 });
 
 describe('planmo init', () => {
@@ -164,6 +202,28 @@ describe('planmo init', () => {
     expect(code).toBe(2);
     expect(err.join('\n')).toContain('collision');
     expect(err.join('\n')).toContain('--force');
+  });
+
+  it('does not claim the workspace was initialized when every write collided', async () => {
+    const root = await tempRoot();
+    await run(['init', root, '--yes'], capture().io, silentWizard());
+    const { io, out, err } = capture();
+    const code = await run(['init', root, '--yes'], io, silentWizard());
+    expect(code).toBe(2);
+    expect(out.join('\n')).not.toContain('workspace initialized');
+    expect(err.join('\n')).toContain('already has a workspace');
+  });
+
+  it('dry-run reports the planning tree it would compile, not just .planmo/', async () => {
+    const root = await tempRoot();
+    const { io, out } = capture();
+    const code = await run(['init', root, '--yes', '--dry-run'], io, silentWizard());
+    expect(code).toBe(0);
+    // `init` compiles the planning workspace in the same run, so a dry run that
+    // listed only the three `.planmo/` files under-reported the write set by
+    // roughly thirty documents.
+    expect(out.join('\n')).toContain('write planning/ROADMAP.md');
+    expect(out.filter((line) => line.startsWith('  write ')).length).toBeGreaterThan(3);
   });
 
   it('overwrites existing files with --force', async () => {

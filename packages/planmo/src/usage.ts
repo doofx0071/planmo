@@ -131,3 +131,41 @@ export const USAGE = [
   '',
   'Exit codes: 0 ok · 1 error · 2 collision refused · 3 no project found',
 ].join('\n');
+
+/** A per-command option block heading inside `USAGE`, e.g. `init options:`. */
+const SECTION_HEADING = /^[a-z][a-z-]* options:$/;
+
+/**
+ * The help text for ONE command: the usage line, its entry in the command list,
+ * and its own option block.
+ *
+ * This is what makes `planmo <command> --help` safe. Before it existed the flag
+ * was not understood at any level below the top, so `init --help` ran the init
+ * wizard and `adopt --help` scanned the whole repository before prompting —
+ * a help flag that performs the destructive work it should describe.
+ */
+export function usageFor(command: string): string {
+  const lines = USAGE.split('\n');
+  const start = lines.indexOf(`${command} options:`);
+  if (start < 0) return USAGE;
+
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    const line = lines[i]!;
+    if (SECTION_HEADING.test(line) || line.startsWith('Exit codes:')) {
+      end = i;
+      break;
+    }
+  }
+  const section = lines.slice(start, end);
+  while (section.length > 0 && section[section.length - 1]!.trim() === '') section.pop();
+
+  const commandLine = lines.find(
+    (line) =>
+      line.trimStart().startsWith(`${PRODUCT_SLUG} ${command} `) ||
+      line.trimStart() === `${PRODUCT_SLUG} ${command}`,
+  );
+  return [lines[0]!, '', ...(commandLine === undefined ? [] : [commandLine, '']), ...section].join(
+    '\n',
+  );
+}

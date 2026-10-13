@@ -1,6 +1,8 @@
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readStatus } from '@planmo/core';
+import { ManifestSchema } from '@planmo/schema';
 import { validatorEngine, type Diagnostic } from '@planmo/trace';
 
 /**
@@ -10,6 +12,10 @@ import { validatorEngine, type Diagnostic } from '@planmo/trace';
  * hand them to the engine, and report what it returns. No validation logic lives
  * here — the engine owns the invariants and is pure, so the same workspace
  * always produces the same report, and the report is safe to gate CI on.
+ *
+ * The one check that cannot live in the engine is the manifest checksum audit
+ * (VLD-007): the engine is pure and only sees document text, while verifying a
+ * recorded sha256 means reading the artifact off disk.
  */
 export interface ValidateOptions {
   root: string;
@@ -30,6 +36,77 @@ async function readIfPresent(path: string): Promise<string | undefined> {
   } catch {
     return undefined;
   }
+}
+
+/**
+ * Ownership modes whose bytes are PlanMo's, not the user's.
+ *
+ * `seeded` and `user` documents are the user's from the moment they exist, so a
+ * difference between them and their recorded checksum is normal and must not be
+ * reported. The legacy aliases are included so pre-CHG-001 manifests behave the
+ * same as current ones.
+ */
+const PLANMO_OWNED_MODES: ReadonlySet<string> = new Set([
+  'generated',
+  'managed',
+  'merged',
+  'merge',
+]);
+
+const SEVERITY_RANK: Record<string, number> = { error: 0, warning: 1, info: 2 };
+
+/**
+ * VLD-007: a generated document that no longer matches the checksum recorded for
+ * it in `.planmo/manifest.json`.
+ *
+ * Every manifest entry has carried a sha256 of its artifact since P05-03, and
+ * nothing ever read one back — so a hand-edited generated document passed
+ * `validate` untouched and the recorded checksum was dead data. This is a
+ * warning rather than an error: `generate` owns those files and will overwrite
+ * the edit, so drift is information, not a broken workspace.
+ */
+async function checksumDiagnostics(
+  root: string,
+  manifestRaw: string | undefined,
+): Promise<Diagnostic[]> {
+  if (manifestRaw === undefined) return [];
+
+  let entries: readonly {
+    path: string;
+    checksum: { algorithm: string; digest: string };
+    ownershipMode: string;
+  }[];
+  try {
+    entries = ManifestSchema.parse(JSON.parse(manifestRaw)).entries;
+  } catch {
+    // A manifest that does not parse is VLD-004's finding, not this one.
+    return [];
+  }
+
+  const diagnostics: Diagnostic[] = [];
+  for (const entry of entries) {
+    if (!PLANMO_OWNED_MODES.has(entry.ownershipMode)) continue;
+    if (entry.checksum.algorithm !== 'sha256') continue;
+
+    let bytes: Buffer;
+    try {
+      bytes = await readFile(join(root, entry.path));
+    } catch {
+      // A missing file is not drift; `diff`/`generate` report that separately.
+      continue;
+    }
+    if (createHash('sha256').update(bytes).digest('hex') === entry.checksum.digest) continue;
+
+    diagnostics.push({
+      code: 'VLD-007',
+      severity: 'warning',
+      target: entry.path,
+      message: `${entry.path} no longer matches the checksum recorded for it in .planmo/manifest.json — it was edited after generation`,
+      remediation:
+        'Run `planmo generate` to restore it, or move the text into a document you own (planning/DECISIONS.md, OPEN-QUESTIONS.md, RISKS.md).',
+    });
+  }
+  return diagnostics;
 }
 
 export async function validateWorkspace(opts: ValidateOptions): Promise<ValidateOutcome> {
@@ -55,10 +132,25 @@ export async function validateWorkspace(opts: ValidateOptions): Promise<Validate
     ...(status.state !== null ? { state: status.state } : {}),
   });
 
+  const diagnostics = [...report.diagnostics, ...(await checksumDiagnostics(status.root, manifest))]
+    .slice()
+    .sort(
+      (a, b) =>
+        (SEVERITY_RANK[a.severity] ?? 9) - (SEVERITY_RANK[b.severity] ?? 9) ||
+        a.code.localeCompare(b.code) ||
+        a.target.localeCompare(b.target),
+    );
+
+  const counts = {
+    error: diagnostics.filter((d) => d.severity === 'error').length,
+    warning: diagnostics.filter((d) => d.severity === 'warning').length,
+    info: diagnostics.filter((d) => d.severity === 'info').length,
+  };
+
   return {
     root: status.root,
-    diagnostics: report.diagnostics,
-    counts: report.counts,
-    ok: report.counts.error === 0,
+    diagnostics,
+    counts,
+    ok: counts.error === 0,
   };
 }

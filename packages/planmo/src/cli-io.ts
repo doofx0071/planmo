@@ -78,8 +78,25 @@ export interface WizardIO {
   out: (line: string) => void;
 }
 
+/**
+ * A prompt can only be answered on a real terminal.
+ *
+ * On a pipe, a CI runner, or a redirected stdin there is nobody to answer, and
+ * `@clack/prompts` simply leaves its promise pending — so Node reports
+ * "Detected unsettled top-level await" and exits 13, which says nothing about
+ * the missing terminal or about what to pass instead. Name the problem and the
+ * way out, and let the router turn it into a normal exit 1.
+ */
+function requireTerminal(action: string): void {
+  if (nodeStdin.isTTY === true && nodeStdout.isTTY === true) return;
+  throw new Error(
+    `${action} needs a terminal and stdin/stdout is not one — pass the documented flags (or --yes) to run without prompts`,
+  );
+}
+
 export const terminalWizard: WizardIO = {
   prompt: async (question: string, dflt?: string) => {
+    requireTerminal('this prompt');
     const rl = createInterface({ input: nodeStdin, output: nodeStdout });
     try {
       const suffix = dflt !== undefined ? ` [${dflt}]` : '';
@@ -93,6 +110,7 @@ export const terminalWizard: WizardIO = {
     question: string,
     choices: WizardChoice<T>[],
   ): Promise<T | undefined> => {
+    requireTerminal('this prompt');
     // clack types its options as `Option<Value>`, a conditional type over `Value`
     // that TypeScript cannot reduce while `Value` is still a type parameter. The
     // shapes are identical, so the list passes through unchanged.
@@ -107,6 +125,7 @@ export const terminalWizard: WizardIO = {
     choices: WizardChoice<T>[],
     initial: readonly T[],
   ): Promise<T[] | undefined> => {
+    requireTerminal('this prompt');
     const opts = {
       message: question,
       options: choices,
@@ -117,6 +136,7 @@ export const terminalWizard: WizardIO = {
     return clack.isCancel(answer) ? undefined : answer;
   },
   confirm: async (question: string, dflt: boolean): Promise<boolean | undefined> => {
+    requireTerminal('this prompt');
     const answer = await clack.confirm({ message: question, initialValue: dflt });
     return clack.isCancel(answer) ? undefined : answer;
   },

@@ -175,8 +175,11 @@ presence — and exits `1` when the report contains an error. A freshly generate
 workspace validates clean. Every diagnostic carries a stable code (`VLD-001`
 phase gap, `VLD-002` blocked task with no row, `VLD-003` handoff next-phase,
 `VLD-004` document fails schema parse, `VLD-005` task id is not `P<NN>-<NN>`,
-`VLD-006` task id phase disagrees with its phase column) plus an actionable
-remediation line.
+`VLD-006` task id phase disagrees with its phase column, `VLD-007` a generated
+document no longer matches the checksum recorded for it in `.planmo/manifest.json`)
+plus an actionable remediation line. `VLD-007` is a warning rather than an error:
+it reports that a file `generate` owns was edited after generation, which is
+information about drift, not a broken workspace, so the gate stays green.
 
 ## 5. The session brief: `planmo next`
 

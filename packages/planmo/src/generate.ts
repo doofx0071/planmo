@@ -1,4 +1,5 @@
 import { readStatus } from '@planmo/core';
+import type { ProjectConfig } from '@planmo/schema';
 import { buildIr, compileWorkspace } from '@planmo/generator';
 import { readPlanDocument } from './plan.js';
 import { compilePlanningProfile, resolvePacks, selectStandards } from '@planmo/packs';
@@ -89,5 +90,36 @@ export async function generatePlanningWorkspace(opts: GenerateOptions): Promise<
       reason: change.reason,
     })),
     contents: Object.fromEntries(result.artifacts.map((a) => [a.path, a.content])),
+  };
+}
+
+/**
+ * The planning documents a workspace WOULD compile, without writing anything.
+ *
+ * `init` writes `.planmo/*` and then compiles the whole planning tree in the same
+ * run, so an `init --dry-run` that listed only the three `.planmo/` files
+ * under-reported the write set by roughly thirty documents. This runs the same IR
+ * build and the same compile preview the real generation uses, so the list it
+ * returns is the real one rather than a hand-maintained copy that can drift.
+ */
+export async function previewPlanningWorkspace(
+  project: ProjectConfig,
+  opts: { root: string; planmoVersion: string },
+): Promise<{ written: string[]; diagnostics: string[] }> {
+  const resolution = resolvePacks([], [...(project.packs ?? [])]);
+  const ir = buildIr({
+    project,
+    resolution,
+    lockfile: { planmoVersion: opts.planmoVersion, packs: [] },
+    profile: compilePlanningProfile(project.planning?.depth ?? 'standard'),
+    standards: selectStandards(resolution.packs, { risk: project.project.risk }),
+    // A workspace being initialized has no recorded plan yet, so the preview is
+    // the deterministic spine — exactly what the real run compiles.
+    plan: null,
+  });
+  const result = await compileWorkspace(ir, { root: opts.root, dryRun: true });
+  return {
+    written: result.artifacts.map((artifact) => artifact.path),
+    diagnostics: resolution.diagnostics.map((d) => `${d.code}: ${d.message}`),
   };
 }

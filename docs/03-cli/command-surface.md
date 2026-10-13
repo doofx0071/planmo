@@ -37,3 +37,23 @@ Later:
 
 `--help` is the source of truth: it lists exactly the implemented commands, and
 `scripts/e2e-phase12-pilots.mjs` (pilot 7) asserts that it does.
+
+## Flags
+
+Every command accepts `--help`, which prints that command's options and nothing
+else — it never runs the command. `planmo <command> --help` is the reliable way to
+learn a command's flags; `usage.ts` is the single list they are checked against.
+
+An option a command does not accept is a usage error (exit 1), never silence.
+Flags used to be parsed into a map and ignored when a handler never read them,
+which made a typo (`task P00-02 --stauts DONE`) indistinguishable from a
+deliberate no-op: the status flag was dropped, the command fell through to its
+interactive prompt, and the intended write never happened.
+
+## Interactive commands
+
+`init`, `adopt`, `task` (with no id), and `agent init` (with no `--agent`) prompt
+when a value was not supplied on the command line. On a pipe, a CI runner, or a
+redirected stdin there is nobody to answer, so each fails with exit 1 and says why
+instead of waiting forever. Pass the documented flags — `--yes` accepts the
+documented defaults — to run any of them without a terminal.

@@ -73,4 +73,26 @@ describe('validateWorkspace', () => {
     const empty = await mkdtemp(join(tmpdir(), 'planmo-validate-empty-'));
     await expect(validateWorkspace({ root: empty })).rejects.toThrow();
   });
+
+  it('warns when a generated document no longer matches its manifest checksum (VLD-007)', async () => {
+    const root = await freshWorkspace();
+    const target = join(root, 'planning', 'architecture', 'ARCHITECTURE.md');
+    await writeFile(target, `${await readFile(target, 'utf8')}\n<!-- hand edit -->\n`, 'utf8');
+
+    const result = await validateWorkspace({ root });
+    expect(result.diagnostics.map((d) => d.code)).toContain('VLD-007');
+    // Drift is information, not a broken workspace: `generate` owns the file and
+    // will overwrite the edit, so the gate stays green.
+    expect(result.counts.error).toBe(0);
+    expect(result.ok).toBe(true);
+  });
+
+  it('does not warn for a document the user owns (seeded)', async () => {
+    const root = await freshWorkspace();
+    const target = join(root, 'planning', 'DECISIONS.md');
+    await writeFile(target, `${await readFile(target, 'utf8')}\n- a decision I recorded\n`, 'utf8');
+
+    const result = await validateWorkspace({ root });
+    expect(result.diagnostics.map((d) => d.code)).not.toContain('VLD-007');
+  });
 });

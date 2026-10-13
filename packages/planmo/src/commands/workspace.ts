@@ -16,7 +16,7 @@ import { analyzeRepository, nodeFileReader, DEFAULT_EXCLUDES } from '@planmo/sca
 import { parseArgs, type CliIO, type WizardIO } from '../cli-io.js';
 import { cliVersion } from '../version.js';
 import { renderAdoptArtifacts } from '../adopt-write.js';
-import { generatePlanningWorkspace } from '../generate.js';
+import { generatePlanningWorkspace, previewPlanningWorkspace } from '../generate.js';
 import { validateWorkspace } from '../validate.js';
 import { detectForInit } from '../detect.js';
 import { diffWorkspace, renderDiff } from '../diff.js';
@@ -251,6 +251,21 @@ export async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Prom
       io.out(`[dry-run] would initialize PlanMo workspace in ${result.root}`);
       for (const w of result.written) io.out(`  write ${w}`);
       for (const c of result.collisions) io.out(`  collision   ${c} (existing, refused)`);
+      // `init` compiles the whole planning tree in the same run, so the dry run
+      // has to report those documents too. Listing only the three `.planmo/`
+      // files under-reported the write set by roughly thirty documents.
+      if (result.collisions.length === 0) {
+        try {
+          const preview = await previewPlanningWorkspace(result.project, {
+            root: result.root,
+            planmoVersion: cliVersion(),
+          });
+          for (const w of preview.written) io.out(`  write ${w}`);
+          for (const d of preview.diagnostics) io.out(`  note ${d}`);
+        } catch (err) {
+          io.out(`  note: planning preview unavailable — ${(err as Error).message}`);
+        }
+      }
       if (result.diff) io.out(result.diff);
       return 0;
     }
@@ -258,27 +273,33 @@ export async function runInit(argv: string[], io: CliIO, wizard: WizardIO): Prom
     for (const w of result.written) io.out(`✓ wrote ${w}`);
     for (const c of result.collisions)
       io.err(`✗ collision  ${c} (existing, refused — use --force to overwrite)`);
+
+    // Nothing was initialized when the marker files already exist: claiming
+    // "initialized" contradicted both the ✗ lines above and the exit code.
+    if (result.collisions.length > 0) {
+      io.err(`planmo init: ${result.root} already has a workspace — nothing was initialized`);
+      return 2;
+    }
+
     io.out(`PlanMo workspace initialized in ${result.root}`);
 
     // A fresh workspace is useless without its planning documents: compile them
-    // in the same run. `.planmo/` collisions abort above, so this only runs for
-    // a workspace we just wrote (or were explicitly allowed to overwrite).
-    if (result.collisions.length === 0) {
-      try {
-        const generated = await generatePlanningWorkspace({
-          root: result.root,
-          planmoVersion: cliVersion(),
-          ...(flags.has('force') ? { allowOverwrite: true } : {}),
-        });
-        for (const w of generated.written) io.out(`✓ wrote ${w}`);
-        for (const d of generated.diagnostics) io.err(`note: ${d}`);
-      } catch (err) {
-        io.err(`planmo init: planning generation failed — ${(err as Error).message}`);
-        return 1;
-      }
+    // in the same run. `.planmo/` collisions returned above, so this only runs
+    // for a workspace we just wrote (or were explicitly allowed to overwrite).
+    try {
+      const generated = await generatePlanningWorkspace({
+        root: result.root,
+        planmoVersion: cliVersion(),
+        ...(flags.has('force') ? { allowOverwrite: true } : {}),
+      });
+      for (const w of generated.written) io.out(`✓ wrote ${w}`);
+      for (const d of generated.diagnostics) io.err(`note: ${d}`);
+    } catch (err) {
+      io.err(`planmo init: planning generation failed — ${(err as Error).message}`);
+      return 1;
     }
 
-    return result.collisions.length > 0 ? 2 : 0;
+    return 0;
   } catch (err) {
     io.err(`planmo init: ${(err as Error).message}`);
     return 1;
@@ -302,8 +323,21 @@ export async function runStatus(argv: string[], io: CliIO): Promise<number> {
       );
     }
     if (status.healthy) {
-      io.out('status: HEALTHY');
-      return 0;
+      // `status` is documented as "validate and summarize the workspace", but it
+      // only ever inspected the three `.planmo/` documents — a `planning/tasks.csv`
+      // that does not parse left it reporting HEALTHY while `validate` reported
+      // FAILED on the very same workspace. Ask the same engine, report the same
+      // verdict.
+      const parseIssues = await documentParseIssues(status.root);
+      if (parseIssues.length === 0) {
+        io.out('status: HEALTHY');
+        return 0;
+      }
+      for (const issue of parseIssues) {
+        io.err(`${issue.level}: ${issue.doc} — ${issue.message}`);
+      }
+      io.err(`status: ${parseIssues.length} issue(s)`);
+      return 1;
     }
     for (const issue of status.issues) {
       io.err(`${issue.level}: ${issue.doc} — ${issue.message}`);
@@ -314,6 +348,28 @@ export async function runStatus(argv: string[], io: CliIO): Promise<number> {
     io.err(`planmo status: ${(err as Error).message}`);
     return 3;
   }
+}
+
+/**
+ * The document-parse failures `status` used to miss.
+ *
+ * `status` inspects only the three `.planmo/` documents, so a `planning/tasks.csv`
+ * that does not parse left it reporting HEALTHY while `validate` reported FAILED
+ * on the same workspace. Same engine, same verdict — filtered to the
+ * document-parse errors so the summary stays a summary.
+ */
+async function documentParseIssues(
+  root: string,
+): Promise<{ level: string; doc: string; message: string }[]> {
+  const report = await validateWorkspace({ root }).catch(() => null);
+  if (report === null) return [];
+  return report.diagnostics
+    .filter((diagnostic) => diagnostic.code === 'VLD-004' && diagnostic.severity === 'error')
+    .map((diagnostic) => ({
+      level: 'error',
+      doc: diagnostic.target ?? 'document',
+      message: diagnostic.message,
+    }));
 }
 
 /**
