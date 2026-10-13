@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import * as schemaModule from './index.js';
 
 type ParseResult = { success: boolean; data?: unknown; error?: unknown };
@@ -30,6 +30,20 @@ function validConfig() {
   };
 }
 
+function customEndpointConfig(baseUrl: string) {
+  return {
+    ...validConfig(),
+    profiles: [
+      {
+        ...validConfig().profiles[0],
+        providerId: 'custom',
+        baseUrl,
+        credentialRef: null,
+      },
+    ],
+  };
+}
+
 describe('AiUserConfigSchema', () => {
   it('accepts a versioned user profile with only an opaque credential reference', () => {
     const result = userConfigSchema().safeParse(validConfig());
@@ -54,6 +68,165 @@ describe('AiUserConfigSchema', () => {
     const config = { ...validConfig(), defaultProfileId: 'd69cb393-b276-4c14-a077-8b5a34f5706d' };
 
     expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('resolves a case-varied default profile id to the same UUID identity', () => {
+    const config = { ...validConfig(), defaultProfileId: PROFILE_ID.toUpperCase() };
+    const result = userConfigSchema().safeParse(config);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(validConfig());
+  });
+
+  it('canonicalizes uppercase UUIDs in parsed profile identity fields', () => {
+    const config = {
+      ...validConfig(),
+      profiles: [
+        {
+          ...validConfig().profiles[0],
+          id: PROFILE_ID.toUpperCase(),
+          credentialRef: CREDENTIAL_REF.toUpperCase(),
+        },
+      ],
+      defaultProfileId: PROFILE_ID.toUpperCase(),
+    };
+    const result = userConfigSchema().safeParse(config);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(validConfig());
+  });
+
+  it('rejects duplicate profile UUIDs that differ only by case', () => {
+    const profile = validConfig().profiles[0];
+    const config = {
+      ...validConfig(),
+      profiles: [profile, { ...profile, id: PROFILE_ID.toUpperCase(), credentialRef: null }],
+    };
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('rejects a credential reference shared by multiple profiles', () => {
+    const profile = validConfig().profiles[0];
+    const config = {
+      ...validConfig(),
+      profiles: [profile, { ...profile, id: 'd69cb393-b276-4c14-a077-8b5a34f5706d' }],
+    };
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('allows multiple profiles without a credential reference', () => {
+    const profile = { ...validConfig().profiles[0], credentialRef: null };
+    const config = {
+      ...validConfig(),
+      profiles: [profile, { ...profile, id: 'd69cb393-b276-4c14-a077-8b5a34f5706d' }],
+    };
+
+    expect(userConfigSchema().safeParse(config).success).toBe(true);
+  });
+
+  it('accepts more than 32 distinct profiles', () => {
+    const profiles = Array.from({ length: 33 }, (_, index) => ({
+      ...validConfig().profiles[0],
+      id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+      credentialRef: null,
+    }));
+    const config = { ...validConfig(), profiles, defaultProfileId: null };
+
+    expect(userConfigSchema().safeParse(config).success).toBe(true);
+  });
+
+  it('rejects custom endpoint query parameters', () => {
+    const config = customEndpointConfig('https://api.example.test/v1?model=latest');
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('rejects an empty endpoint query delimiter', () => {
+    const config = customEndpointConfig('https://api.example.test/v1?');
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('rejects custom endpoint fragments', () => {
+    const config = customEndpointConfig('https://api.example.test/v1#models');
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('rejects an empty endpoint fragment delimiter', () => {
+    const config = customEndpointConfig('https://api.example.test/v1#');
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('rejects non-loopback HTTP custom endpoints', () => {
+    const config = customEndpointConfig('http://api.example.test/v1');
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('accepts loopback HTTP custom endpoints', () => {
+    const config = customEndpointConfig('http://localhost:4317/v1');
+
+    expect(userConfigSchema().safeParse(config).success).toBe(true);
+  });
+
+  it('rejects an empty userinfo delimiter in an endpoint authority', () => {
+    const config = {
+      ...validConfig(),
+      profiles: [
+        {
+          ...validConfig().profiles[0],
+          providerId: 'custom',
+          baseUrl: 'https://@example.test/v1',
+        },
+      ],
+    };
+
+    expect(userConfigSchema().safeParse(config).success).toBe(false);
+  });
+
+  it('rejects a single raw backslash before endpoint URL normalization', () => {
+    const backslash = String.fromCharCode(92);
+    const malformed = 'https:' + backslash + '@example.test/v1';
+    const backslashCount = [...malformed].filter((character) => character === backslash).length;
+
+    expect(backslashCount).toBe(1);
+    expect(userConfigSchema().safeParse(customEndpointConfig(malformed)).success).toBe(false);
+  });
+
+  it('rejects a raw backslash before invoking URL parsers', () => {
+    const backslash = String.fromCharCode(92);
+    const malformed = 'https:' + backslash + '@example.test/v1';
+    const backslashCount = [...malformed].filter((character) => character === backslash).length;
+    const parserCalls = { construction: 0, canParse: 0 };
+    const nativeURL = globalThis.URL;
+    const instrumentedURL = new Proxy(nativeURL, {
+      construct(target, argumentsList, newTarget) {
+        parserCalls.construction += 1;
+        return Reflect.construct(target, argumentsList, newTarget);
+      },
+      get(target, property, receiver) {
+        if (property === 'canParse') {
+          return (...args: Parameters<typeof URL.canParse>) => {
+            parserCalls.canParse += 1;
+            return Reflect.apply(target.canParse, target, args);
+          };
+        }
+        return Reflect.get(target, property, receiver);
+      },
+    });
+
+    vi.stubGlobal('URL', instrumentedURL);
+    try {
+      expect(backslashCount).toBe(1);
+      expect(userConfigSchema().safeParse(customEndpointConfig(malformed)).success).toBe(false);
+      expect(parserCalls).toEqual({ construction: 0, canParse: 0 });
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('requires a URL only for custom endpoints and rejects endpoint userinfo', () => {
