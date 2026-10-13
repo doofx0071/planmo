@@ -2,7 +2,14 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it, afterEach } from 'vitest';
+import { describe, expect, it, afterEach, beforeEach, vi } from 'vitest';
+import { createMockProvider } from '@planmo/ai';
+import type { HttpProviderConfig } from '@planmo/ai';
+import { PLAN_PATH } from '@planmo/schema';
+import type { PlanCommandDependencies } from './commands/plan.js';
+import type { CredentialStore } from './credential-store.js';
+import type { CliIO, WizardIO } from './cli-io.js';
+import { mockPlanResponse } from './plan-build.js';
 
 /**
  * A wizard double for tests.
@@ -38,7 +45,35 @@ const noPromptWizard = () => ({
   },
 });
 
-import { run, USAGE } from './index.js';
+import { run, USAGE, usageFor } from './index.js';
+
+vi.mock('./keyring-credential-store.js', () => ({
+  KeyringCredentialStore: class {
+    async get() {
+      throw new Error('real keyring access is disabled in plan tests');
+    }
+    async set() {
+      throw new Error('real keyring access is disabled in plan tests');
+    }
+    async remove() {
+      throw new Error('real keyring access is disabled in plan tests');
+    }
+    async has() {
+      throw new Error('real keyring access is disabled in plan tests');
+    }
+  },
+}));
+
+type PlanRouteTestDependencies = PlanCommandDependencies;
+
+type PlanRouteTestCli = (
+  argv: string[],
+  io: CliIO,
+  wizard: WizardIO,
+  dependencies: { plan?: PlanRouteTestDependencies },
+) => Promise<number>;
+
+const runWithPlanDependencies = run as unknown as PlanRouteTestCli;
 
 function capture() {
   const out: string[] = [];
@@ -57,7 +92,13 @@ async function tempRoot(prefix = 'planmo-cli-'): Promise<string> {
   return dir;
 }
 
+beforeEach(() => {
+  // Keep any missing provider-factory route offline, even when credentials exist in the host env.
+  vi.stubGlobal('fetch', async () => new Response(null, { status: 401 }));
+});
+
 afterEach(async () => {
+  vi.unstubAllGlobals();
   const { rm } = await import('node:fs/promises');
   while (tempDirs.length > 0) await rm(tempDirs.pop()!, { recursive: true, force: true });
 });
@@ -290,6 +331,114 @@ describe('USAGE', () => {
 
   it('documents the generate command', () => {
     expect(USAGE).toContain('generate');
+  });
+
+  it('documents setup and its supported configuration flags', () => {
+    expect(USAGE).toContain('planmo setup');
+    expect(usageFor('setup')).toContain('setup options:');
+    expect(usageFor('setup')).toContain('--provider <id>');
+    expect(usageFor('setup')).toContain('--model <id>');
+    expect(usageFor('setup')).toContain('--base-url <url>');
+    expect(usageFor('setup')).toContain(
+      'nonblank provider environment variable takes precedence over any saved keyring entry',
+    );
+    expect(usageFor('setup')).toContain(
+      'keyring credential is used only when the variable is blank',
+    );
+  });
+
+  it('documents saved-profile defaults, environment-key precedence, and no-profile auto-detection', () => {
+    const planUsage = usageFor('plan');
+    expect(planUsage).toContain('saved default profile');
+    expect(planUsage).toContain('Explicit --provider, --model, and --base-url flags override');
+    expect(planUsage).toContain(
+      'environment key takes precedence over the profile keyring credential',
+    );
+    expect(planUsage).toContain(
+      'Without a saved default profile, provider selection is auto-detected from the environment',
+    );
+  });
+});
+
+describe('planmo plan — dependency route', () => {
+  it('routes injected config, env, store, and provider factory through run()', async () => {
+    const root = await tempRoot('planmo-plan-route-workspace-');
+    expect(await run(['init', root, '--yes'], capture().io, noPromptWizard())).toBe(0);
+    const configDir = await tempRoot('planmo-plan-route-config-');
+    const idea = 'Build a routed plan';
+    const secret = 'synthetic-route-environment-key';
+    const factoryCalls: HttpProviderConfig[] = [];
+    const storeReads: string[] = [];
+    const store: CredentialStore = {
+      async get(ref) {
+        storeReads.push(ref);
+        return null;
+      },
+      async set() {},
+      async remove() {},
+      async has() {
+        return false;
+      },
+    };
+    const { io, out } = capture();
+
+    const code = await runWithPlanDependencies(
+      ['plan', idea, '--dir', root, '--model', 'gpt-route-model'],
+      io,
+      noPromptWizard(),
+      {
+        plan: {
+          configDir,
+          env: { OPENAI_API_KEY: secret },
+          store,
+          providerFactory: (config) => {
+            factoryCalls.push(config);
+            return createMockProvider({ text: mockPlanResponse(idea) });
+          },
+        },
+      },
+    );
+
+    expect(code).toBe(0);
+    expect(factoryCalls).toEqual([
+      {
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: secret,
+        model: 'gpt-route-model',
+        wireFormat: 'openai',
+      },
+    ]);
+    expect(storeReads).toEqual([]);
+    expect(out.join('\n')).toContain('author: openai / gpt-route-model');
+    expect(await readFile(join(root, PLAN_PATH), 'utf8')).not.toContain(secret);
+  });
+});
+
+describe('planmo setup — CLI route', () => {
+  it('handles per-command help before dispatching a setup wizard', async () => {
+    const { io, out, err } = capture();
+    const code = await run(['setup', '--help'], io, noPromptWizard());
+
+    expect(code).toBe(0);
+    expect(out.join('\\n')).toContain('setup options:');
+    expect(err).toEqual([]);
+  });
+
+  const sensitive = ['SYNTHETIC', 'SECRET'].join('-');
+  it.each([
+    { kind: 'flag-like', args: ['--api-key', `--${sensitive}`], value: `--${sensitive}` },
+    { kind: 'plain', args: ['--api-key', sensitive], value: sensitive },
+    { kind: 'equals', args: [`--api-key=${sensitive}`], value: sensitive },
+  ])('rejects --api-key without echoing a $kind operand', async ({ args, value }) => {
+    const { io, out, err } = capture();
+    const code = await run(['setup', ...args], io, noPromptWizard());
+
+    expect(code).toBe(1);
+    expect(err).toEqual([
+      'planmo setup: --api-key is forbidden; use the masked prompt or a provider environment variable.',
+    ]);
+    expect(err.join('\\n')).not.toContain(value);
+    expect(out).toEqual([]);
   });
 });
 

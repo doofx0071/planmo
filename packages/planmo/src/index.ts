@@ -12,9 +12,10 @@ import {
   runDoctorCommand,
 } from './commands/workspace.js';
 import { runNext, runTask, runTrace, runHandoff, runPack } from './commands/tasks.js';
-import { runPlanCommand } from './commands/plan.js';
+import { runPlanCommand, type PlanCommandDependencies } from './commands/plan.js';
 import { runAgent } from './commands/agent.js';
 import { runProviderCommand } from './commands/provider.js';
+import { runSetupCommand, type SetupCommandDependencies } from './commands/setup.js';
 
 /**
  * PlanMo CLI — the real command surface (ADR-0010).
@@ -68,6 +69,7 @@ const COMMAND_FLAGS: Readonly<Record<string, readonly string[]>> = Object.freeze
   pack: ['dir', 'source', 'dry-run'],
   agent: ['agent', 'dir', 'global', 'yes', 'force', 'dry-run'],
   provider: [],
+  setup: ['provider', 'model', 'base-url'],
 });
 
 /** Every `--flag` (and `--flag=value`) in `argv` that `allowed` does not list. */
@@ -86,6 +88,7 @@ export async function run(
   argv: string[],
   io: CliIO = defaultIO,
   wizard: WizardIO = terminalWizard,
+  dependencies: { plan?: PlanCommandDependencies; setup?: SetupCommandDependencies } = {},
 ): Promise<number> {
   const [command] = argv;
 
@@ -112,6 +115,16 @@ export async function run(
   if (argv.includes('--help') || argv.includes('-h')) {
     io.out(usageFor(command));
     return 0;
+  }
+
+  if (
+    command === 'setup' &&
+    argv.slice(1).some((arg) => arg === '--api-key' || arg.startsWith('--api-key='))
+  ) {
+    io.err(
+      `${PRODUCT_SLUG} setup: --api-key is forbidden; use the masked prompt or a provider environment variable.`,
+    );
+    return 1;
   }
 
   const unknown = unknownFlags(argv.slice(1), allowed);
@@ -149,7 +162,7 @@ export async function run(
       case 'next':
         return await runNext(argv.slice(1), io);
       case 'plan':
-        return await runPlanCommand(argv.slice(1), io);
+        return await runPlanCommand(argv.slice(1), io, dependencies.plan);
       case 'trace':
         return await runTrace(argv.slice(1), io);
       case 'handoff':
@@ -160,6 +173,8 @@ export async function run(
         return await runAgent(argv.slice(1), io, wizard);
       case 'provider':
         return runProviderCommand(argv.slice(1), io);
+      case 'setup':
+        return await runSetupCommand(argv.slice(1), io, wizard, dependencies.setup);
       default:
         // Unreachable: `allowed` above proves `command` is one of the keys.
         io.err(`${PRODUCT_SLUG}: unknown command '${command}'`);

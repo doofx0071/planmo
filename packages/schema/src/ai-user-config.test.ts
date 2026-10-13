@@ -11,6 +11,13 @@ function userConfigSchema(): ParseSchema {
   return schema;
 }
 
+function endpointUrlSchema(): ParseSchema {
+  const schema = Reflect.get(schemaModule, 'AiEndpointUrlSchema') as ParseSchema | undefined;
+  expect(schema, 'AiEndpointUrlSchema must be exported from @planmo/schema').toBeDefined();
+  if (schema === undefined) throw new Error('AiEndpointUrlSchema is not exported');
+  return schema;
+}
+
 const PROFILE_ID = '4c87c4cb-6127-4a13-8ec9-0c8d138a2701';
 const CREDENTIAL_REF = '2c26598f-60b9-49fb-83d0-632587691258';
 
@@ -43,6 +50,24 @@ function customEndpointConfig(baseUrl: string) {
     ],
   };
 }
+
+describe('AiEndpointUrlSchema', () => {
+  it('exports the same strict URL rules used by saved profiles', () => {
+    const schema = endpointUrlSchema();
+
+    expect(schema.safeParse('https://api.example.test/v1').success).toBe(true);
+    expect(schema.safeParse('http://localhost:4317/v1').success).toBe(true);
+    expect(schema.safeParse('http://127.0.0.1:11434/v1').success).toBe(true);
+    expect(schema.safeParse('http://[::1]:4317/v1').success).toBe(true);
+    expect(schema.safeParse('http://api.example.test/v1').success).toBe(false);
+    expect(schema.safeParse('https://user:secret@api.example.test/v1').success).toBe(false);
+    expect(schema.safeParse('https://api.example.test/v1?token=synthetic').success).toBe(false);
+    expect(schema.safeParse('https://api.example.test/v1#fragment').success).toBe(false);
+
+    const backslash = String.fromCharCode(92);
+    expect(schema.safeParse(`https:${backslash}/api.example.test/v1`).success).toBe(false);
+  });
+});
 
 describe('AiUserConfigSchema', () => {
   it('accepts a versioned user profile with only an opaque credential reference', () => {

@@ -5,7 +5,7 @@ const canonicalUuidIdentity = (value: string): string => value.toLowerCase();
 const Uuid = z.string().uuid().transform(canonicalUuidIdentity);
 const ProviderId = z.string().regex(/^[a-z][a-z0-9-]*$/);
 
-const SafeBaseUrl = z.string().superRefine((value, context) => {
+export const AiEndpointUrlSchema = z.string().superRefine((value, context) => {
   if (value.includes(String.fromCharCode(92))) {
     context.addIssue({
       code: 'custom',
@@ -58,7 +58,7 @@ export const AiProfileSchema = z.strictObject({
   providerId: ProviderId,
   modelId: NonEmptyString,
   /** Null for named presets; required for the generic custom endpoint. */
-  baseUrl: SafeBaseUrl.nullable(),
+  baseUrl: AiEndpointUrlSchema.nullable(),
   /** Opaque keyring account reference; null means environment-only auth. */
   credentialRef: Uuid.nullable(),
 });
