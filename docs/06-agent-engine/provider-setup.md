@@ -6,13 +6,13 @@ This table describes the eight runtime presets currently declared in `packages/a
 
 | Provider id | API base URL | Wire format | Key source | Model discovery | PlanMo auth status |
 | --- | --- | --- | --- | --- | --- |
-| `tokenharbor` | `https://tokenharbor.ai/v1` | OpenAI-compatible | `TOKENHARBOR_KEY` | `GET /models` (effective URL `/v1/models`; bearer key; documented) | API key |
-| `openai` | `https://api.openai.com/v1` | OpenAI-compatible | `OPENAI_API_KEY` | `GET /models` (effective URL `/v1/models`; documented) | API key |
-| `anthropic` | `https://api.anthropic.com/v1` | Anthropic Messages | `ANTHROPIC_API_KEY` | `GET /models` (effective URL `/v1/models`; API key + `anthropic-version`; documented) | API key |
-| `deepseek` | `https://api.deepseek.com/v1` | OpenAI-compatible | `DEEPSEEK_API_KEY` | `GET /models` (effective URL `/v1/models`; bearer key; documented) | API key |
-| `moonshot` | `https://api.moonshot.ai/v1` | OpenAI-compatible | `MOONSHOT_API_KEY` | `GET /models` (effective URL `/v1/models`; bearer key; documented) | API key |
-| `xai` | `https://api.x.ai/v1` | OpenAI-compatible | `XAI_API_KEY` | `GET /models` (effective URL `/v1/models`; bearer key; documented) | API key |
-| `openrouter` | `https://openrouter.ai/api/v1` | OpenAI-compatible | `OPENROUTER_API_KEY` | `GET /models` (effective URL `/api/v1/models`; public catalog; documented) | API key for inference; catalog can be listed without it |
+| `tokenharbor` | `https://tokenharbor.ai/v1` | OpenAI-compatible | `TOKENHARBOR_KEY` | `GET https://tokenharbor.ai/v1/models` (bearer key; documented) | API key |
+| `openai` | `https://api.openai.com/v1` | OpenAI-compatible | `OPENAI_API_KEY` | `GET https://api.openai.com/v1/models` (bearer key; documented) | API key |
+| `anthropic` | `https://api.anthropic.com/v1` | Anthropic Messages | `ANTHROPIC_API_KEY` | `GET https://api.anthropic.com/v1/models` (API key + `anthropic-version`; paginated; documented) | API key |
+| `deepseek` | `https://api.deepseek.com/v1` | OpenAI-compatible | `DEEPSEEK_API_KEY` | `GET https://api.deepseek.com/models` (root-level bearer endpoint; documented) | API key |
+| `moonshot` | `https://api.moonshot.ai/v1` | OpenAI-compatible | `MOONSHOT_API_KEY` | `GET https://api.moonshot.ai/v1/models` (bearer key; documented) | API key |
+| `xai` | `https://api.x.ai/v1` | OpenAI-compatible | `XAI_API_KEY` | `GET https://api.x.ai/v1/models` (bearer key; documented) | API key |
+| `openrouter` | `https://openrouter.ai/api/v1` | OpenAI-compatible | `OPENROUTER_API_KEY` | `GET https://openrouter.ai/api/v1/models?limit=500` (bearer key; documented) | API key |
 | `custom` | User-supplied HTTPS endpoint | OpenAI-compatible | `PLANMO_AI_API_KEY` | Not assumed; manual model id unless the endpoint is explicitly verified | API key / compatible endpoint |
 
 Every model-list response is untrusted metadata. The implementation must bound response bytes and item count, validate the response shape, display ids rather than trusting provider-supplied instructions, and fall back to manual model entry when a route is unavailable or malformed. For Anthropic, send the required `x-api-key` and `anthropic-version` headers; do not treat its Messages protocol as OpenAI-compatible.
@@ -28,7 +28,7 @@ Every model-list response is untrusted metadata. The implementation must bound r
 - OpenRouter: [List models and properties](https://openrouter.ai/docs/api/api-reference/models/list-all-models-and-their-properties)
 - Custom: no universal model-list contract; inspect the endpoint owner documentation.
 
-The base URLs and environment-variable names above remain pinned by `packages/ai/src/providers.test.ts`. A documented list route does not imply that PlanMo has implemented or tested a model-list client yet.
+The base URLs and environment-variable names above remain pinned by `packages/ai/src/providers.test.ts`. Model-list URLs must be declared separately from inference base URLs: DeepSeek's documented `/models` route is root-level even though its inference preset base URL includes `/v1`. OpenRouter's documented list request includes a bearer API key and `limit=500`; do not assume the catalog is public. A documented list route does not imply that PlanMo has implemented or tested a model-list client yet.
 
 ## Counts and non-provider inventories
 
