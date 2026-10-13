@@ -1,6 +1,6 @@
 # AI provider capability inventory
 
-This table describes the eight runtime presets currently declared in `packages/ai/src/providers.ts`; it does not claim that every provider method or account plan is supported by PlanMo. PlanMo v1 authenticates these presets with an API key (from the OS keyring or that provider's documented environment variable). OAuth, consumer subscription logins, and account-plan flows are not implemented.
+This table describes the eight runtime presets currently declared in `packages/ai/src/providers.ts`; it does not claim that every provider method or account plan is supported by PlanMo. PlanMo v1 authenticates these presets with an API key (from the OS keyring or that provider's documented environment variable). When both are available, a nonblank environment variable takes precedence; the keyring is used only when the environment variable is blank. OAuth, consumer subscription logins, and account-plan flows are not implemented.
 
 ## Current PlanMo runtime presets
 
