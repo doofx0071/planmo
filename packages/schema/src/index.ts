@@ -38,6 +38,10 @@ export {
 // The plan document (step 4) — what an AI authors once, deterministically compiled after
 export { PlanTask, PlanPhase, PlanDocument, PLAN_PATH, planIdProblems } from './plan.js';
 
+// User-level non-secret AI profiles
+export { AiProfileSchema, AiUserConfigSchema } from './ai-user-config.js';
+export type { AiProfile, AiUserConfig } from './ai-user-config.js';
+
 // Versioning + migrations
 export {
   UnsupportedSchemaVersionError,
