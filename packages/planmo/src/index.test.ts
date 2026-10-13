@@ -75,6 +75,22 @@ type PlanRouteTestCli = (
 
 const runWithPlanDependencies = run as unknown as PlanRouteTestCli;
 
+type AuthRouteTestCli = (
+  argv: string[],
+  io: CliIO,
+  wizard: WizardIO,
+  dependencies: {
+    auth?: {
+      env?: Readonly<Record<string, string | undefined>>;
+      configDir?: string;
+      store?: CredentialStore;
+      interactive?: boolean;
+    };
+  },
+) => Promise<number>;
+
+const runWithAuthDependencies = run as unknown as AuthRouteTestCli;
+
 function capture() {
   const out: string[] = [];
   const err: string[] = [];
@@ -358,6 +374,16 @@ describe('USAGE', () => {
       'Without a saved default profile, provider selection is auto-detected from the environment',
     );
   });
+
+  it('documents auth removal side effects and confirmation behavior', () => {
+    const authUsage = usageFor('auth');
+    expect(authUsage).toContain('remove <profile-id>');
+    expect(authUsage).toContain('keyring credential only if one is attached');
+    expect(authUsage).toContain('provider environment variables are unchanged');
+    expect(authUsage).toContain('skip interactive confirmation');
+    expect(authUsage).toContain('required when no TTY is available');
+    expect(USAGE).toContain('leave provider environment variables unchanged');
+  });
 });
 
 describe('planmo plan — dependency route', () => {
@@ -559,5 +585,65 @@ describe('planmo adopt', () => {
     expect(code).toBe(0);
     expect(out.join('\n')).toContain('Dry run: yes');
     expect(await readdir(join(root, '.planmo')).catch(() => [])).toEqual([]);
+  });
+});
+
+describe('planmo auth routing', () => {
+  it('routes auth status with injected user config and credential-store dependencies', async () => {
+    const configDir = await tempRoot();
+    const keyringCalls: string[] = [];
+    const store: CredentialStore = {
+      async get() {
+        throw new Error('status must not retrieve credentials');
+      },
+      async set() {},
+      async remove() {},
+      async has(ref) {
+        keyringCalls.push(ref);
+        return false;
+      },
+    };
+    const { io, out, err } = capture();
+
+    const code = await runWithAuthDependencies(['auth', 'status'], io, noPromptWizard(), {
+      auth: { env: {}, configDir, store, interactive: false },
+    });
+
+    expect(code).toBe(0);
+    expect(out.join('\n')).toContain('No saved AI profiles');
+    expect(err).toEqual([]);
+    expect(keyringCalls).toEqual([]);
+  });
+
+  it('prints auth-specific help without reading config or prompting', async () => {
+    const { io, out, err } = capture();
+
+    const code = await run(['auth', '--help'], io, noPromptWizard());
+
+    expect(code).toBe(0);
+    expect(out.join('\n')).toContain('auth options:');
+    expect(out.join('\n')).toContain('remove <profile-id>');
+    expect(out.join('\n')).toContain('--yes');
+    expect(err).toEqual([]);
+  });
+
+  it('rejects unknown auth options without echoing a flag-shaped operand', async () => {
+    const syntheticFlag = ['--', 'SYNTHETIC-SECRET'].join('');
+    const { io, err } = capture();
+
+    const code = await runWithAuthDependencies(
+      ['auth', 'status', syntheticFlag],
+      io,
+      noPromptWizard(),
+      { auth: { env: {}, configDir: await tempRoot(), interactive: false } },
+    );
+
+    expect(code).toBe(1);
+    expect(err).toEqual([
+      'planmo auth: unknown option.',
+      "Run 'planmo auth --help' for the options it accepts.",
+    ]);
+    expect(err.join('\n')).not.toContain(syntheticFlag);
+    expect(err.join('\n')).not.toContain('SYNTHETIC-SECRET');
   });
 });

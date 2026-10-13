@@ -16,6 +16,7 @@ import { runPlanCommand, type PlanCommandDependencies } from './commands/plan.js
 import { runAgent } from './commands/agent.js';
 import { runProviderCommand } from './commands/provider.js';
 import { runSetupCommand, type SetupCommandDependencies } from './commands/setup.js';
+import { runAuthCommand, type AuthCommandDependencies } from './commands/auth.js';
 
 /**
  * PlanMo CLI — the real command surface (ADR-0010).
@@ -70,6 +71,7 @@ const COMMAND_FLAGS: Readonly<Record<string, readonly string[]>> = Object.freeze
   agent: ['agent', 'dir', 'global', 'yes', 'force', 'dry-run'],
   provider: [],
   setup: ['provider', 'model', 'base-url'],
+  auth: ['yes'],
 });
 
 /** Every `--flag` (and `--flag=value`) in `argv` that `allowed` does not list. */
@@ -88,7 +90,11 @@ export async function run(
   argv: string[],
   io: CliIO = defaultIO,
   wizard: WizardIO = terminalWizard,
-  dependencies: { plan?: PlanCommandDependencies; setup?: SetupCommandDependencies } = {},
+  dependencies: {
+    plan?: PlanCommandDependencies;
+    setup?: SetupCommandDependencies;
+    auth?: AuthCommandDependencies;
+  } = {},
 ): Promise<number> {
   const [command] = argv;
 
@@ -128,6 +134,11 @@ export async function run(
   }
 
   const unknown = unknownFlags(argv.slice(1), allowed);
+  if (command === 'auth' && unknown.length > 0) {
+    io.err(`${PRODUCT_SLUG} auth: unknown option.`);
+    io.err(`Run '${PRODUCT_SLUG} auth --help' for the options it accepts.`);
+    return 1;
+  }
   if (unknown.length > 0) {
     io.err(
       `${PRODUCT_SLUG} ${command}: unknown option${unknown.length > 1 ? 's' : ''} ` +
@@ -175,6 +186,8 @@ export async function run(
         return runProviderCommand(argv.slice(1), io);
       case 'setup':
         return await runSetupCommand(argv.slice(1), io, wizard, dependencies.setup);
+      case 'auth':
+        return await runAuthCommand(argv.slice(1), io, wizard, dependencies.auth);
       default:
         // Unreachable: `allowed` above proves `command` is one of the keys.
         io.err(`${PRODUCT_SLUG}: unknown command '${command}'`);
