@@ -62,6 +62,8 @@ interface WizardChoice<T extends WizardValue> {
 
 export interface WizardIO {
   prompt: (question: string, dflt?: string) => Promise<string>;
+  /** Masked secret input. `undefined` means the user cancelled. */
+  password: (question: string) => Promise<string | undefined>;
   /** Arrow-key single select. `undefined` means the user cancelled. */
   select: <T extends WizardValue>(
     question: string,
@@ -105,6 +107,11 @@ export const terminalWizard: WizardIO = {
     } finally {
       rl.close();
     }
+  },
+  password: async (question: string): Promise<string | undefined> => {
+    requireTerminal('this prompt');
+    const answer = await clack.password({ message: question });
+    return clack.isCancel(answer) ? undefined : answer;
   },
   select: async <T extends WizardValue>(
     question: string,

@@ -13,6 +13,8 @@ import { describe, expect, it, afterEach } from 'vitest';
  */
 const silentWizard = (prompt: (q: string, dflt?: string) => Promise<string> = async () => 'x') => ({
   prompt,
+  // Secret prompts are cancelled unless a test explicitly exercises them.
+  password: async () => undefined,
   // Selects go through the same scripted answers as free-text prompts, so a test
   // drives both without caring which prompt style a question happens to use. An
   // answer that is not one of the choices falls back to the first choice, which is
@@ -27,10 +29,14 @@ const silentWizard = (prompt: (q: string, dflt?: string) => Promise<string> = as
 });
 
 /** A wizard that fails the test if anything is asked at all. */
-const noPromptWizard = () =>
-  silentWizard(async () => {
+const noPromptWizard = () => ({
+  ...silentWizard(async () => {
     throw new Error('should not prompt');
-  });
+  }),
+  password: async () => {
+    throw new Error('should not prompt');
+  },
+});
 
 import { run, USAGE } from './index.js';
 
