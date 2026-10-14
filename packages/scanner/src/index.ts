@@ -28,6 +28,10 @@ export { stackDetector } from './detect/stack-detector.js';
 // Security layer (P10-03): immutable prompt-injection isolation policy.
 export { promptIsolation, classify, policy } from './security/prompt-isolation.js';
 
+// Suggestion secret policy (AI-setup Plan T14).
+export { isSuggestionExcludedPath, redactSuggestionContent } from './security/suggest-policy.js';
+export type { SuggestionRedactionResult } from './security/suggest-policy.js';
+
 // Adoption layer (P10-04): dry-run planning engine.
 export { adopt } from './adopt/adopt.js';
 
