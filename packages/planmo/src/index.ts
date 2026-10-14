@@ -18,6 +18,7 @@ import { runProviderCommand } from './commands/provider.js';
 import { runSetupCommand, type SetupCommandDependencies } from './commands/setup.js';
 import { runAuthCommand, type AuthCommandDependencies } from './commands/auth.js';
 import { runModelCommand, type ModelCommandDependencies } from './commands/model.js';
+import { runSuggestCommand, type SuggestCommandDependencies } from './commands/suggest.js';
 
 /**
  * PlanMo CLI — the real command surface (ADR-0010).
@@ -60,6 +61,7 @@ const COMMAND_FLAGS: Readonly<Record<string, readonly string[]>> = Object.freeze
   status: ['dir'],
   adopt: ['dir', 'yes', 'dry-run'],
   plan: ['idea', 'dir', 'provider', 'model', 'base-url', 'dry-run', 'force'],
+  suggest: ['dir', 'dry-run', 'allow-upload', 'json', 'output', 'provider', 'model', 'base-url'],
   generate: ['dir', 'dry-run', 'force'],
   diff: ['dir', 'exit-code'],
   validate: ['dir'],
@@ -97,6 +99,7 @@ export async function run(
     setup?: SetupCommandDependencies;
     auth?: AuthCommandDependencies;
     model?: ModelCommandDependencies;
+    suggest?: SuggestCommandDependencies;
   } = {},
 ): Promise<number> {
   const [command] = argv;
@@ -182,6 +185,8 @@ export async function run(
         return await runNext(argv.slice(1), io);
       case 'plan':
         return await runPlanCommand(argv.slice(1), io, dependencies.plan);
+      case 'suggest':
+        return await runSuggestCommand(argv.slice(1), io, wizard, dependencies.suggest);
       case 'trace':
         return await runTrace(argv.slice(1), io);
       case 'handoff':

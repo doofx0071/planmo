@@ -400,6 +400,29 @@ describe('USAGE', () => {
     expect(authUsage).toContain('required when no TTY is available');
     expect(USAGE).toContain('leave provider environment variables unchanged');
   });
+
+  it('documents planmo suggest and its consent/output flags', () => {
+    expect(USAGE).toContain('planmo suggest');
+    const suggestUsage = usageFor('suggest');
+    expect(suggestUsage).toContain('suggest options:');
+    expect(suggestUsage).toContain('--dir <path>');
+    expect(suggestUsage).toContain('--dry-run');
+    expect(suggestUsage).toContain('--allow-upload');
+    expect(suggestUsage).toContain('--json');
+    expect(suggestUsage).toContain('--output <path>');
+    expect(suggestUsage).toContain('--provider <id>');
+    expect(suggestUsage).toContain('--model <slug>');
+    expect(suggestUsage).toContain('--base-url <url>');
+    expect(suggestUsage).toContain('refuses to overwrite an existing file');
+  });
+
+  it('prints suggest help before dispatch without a workspace or a provider', async () => {
+    const { io, out, err } = capture();
+    const code = await run(['suggest', '--help'], io, noPromptWizard());
+    expect(code).toBe(0);
+    expect(out.join('\n')).toContain('suggest options:');
+    expect(err).toEqual([]);
+  });
 });
 
 describe('planmo plan — dependency route', () => {
