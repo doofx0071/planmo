@@ -3,6 +3,7 @@
 PlanMo uses SemVer.
 
 ## Unreleased
+- AI setup and codebase suggestions: user-level non-secret AI profiles with OS-keyring credentials and environment-variable precedence, `planmo setup`/`provider list`/`auth status|remove`/`model`, saved-profile defaults in `planmo plan`, and a read-only, consent-gated `planmo suggest` that scans safely, excludes and redacts secrets, bounds context, validates an evidence-backed report, and never applies a suggestion. `generate` remains model-free.
 - Defined CLI-first + agent-native architecture.
 - Defined canonical model, pack system, design engine, workflow engine, traceability, testing, and security plans.
 - Phase 00 complete: product thesis + non-goals locked; npm naming verified (`planmo`, `@planmo/*`, fallback `planmo-cli`); private repo `doofx0071/planmo` created; support matrix locked (generic + OpenCode + Claude Code agents, Windows/macOS/Linux on Node 24 LTS, 8 design styles, npm-only distribution); research baseline refreshed 2026-09-19; licensing criteria recorded (final license deferred to Phase 12).

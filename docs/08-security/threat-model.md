@@ -6,6 +6,7 @@
 - PlanMo state/manifest;
 - project requirements/decisions;
 - secrets accidentally in repos;
+- OS-keyring AI credentials (API keys/OAuth tokens) and the non-secret user AI profile;
 - remote pack metadata/content;
 - agent integration configuration.
 
@@ -16,6 +17,9 @@
 4. remote pack/catalog -> resolver
 5. generator -> filesystem
 6. adapter -> coding agent
+7. user credential store -> model provider
+8. scanned repo content -> model provider (after exclusion, redaction, and consent)
+9. model output -> validated suggestion report
 
 ## Priority threats
 
@@ -57,3 +61,15 @@ Control: project-scoped cache; no global sensitive-content cache.
 
 ### T-012 Malicious UI registry
 Control: trust metadata, review warnings, explicit high-assurance approval.
+
+### T-013 Credential exposure via AI setup
+A provider key leaks through argv, logs, or a plaintext store.
+Control: masked prompt, OS-keyring storage with an environment-variable fallback, no `--api-key` flag, and secrets never serialized to `config.json`, reports, logs, or project state.
+
+### T-014 Secret leakage in a suggestion upload
+A secret-bearing file is sent to the model provider.
+Control: `isSuggestionExcludedPath` gates every path before any content read (`.env` values are never read), deterministic redaction, and per-run upload consent.
+
+### T-015 Untrusted model output
+A model returns fabricated evidence or injection-shaped text.
+Control: strict report schema, evidence path/line verified against the real scan, repository text treated as data, and suggestions are advisory and never executed.

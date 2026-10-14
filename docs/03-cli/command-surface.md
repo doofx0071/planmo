@@ -6,6 +6,7 @@ Implemented:
 - `planmo status` — validate and summarize the workspace
 - `planmo adopt [dir]` — analyze a repository, then offer to record reports and create the workspace
 - `planmo plan "<idea>"` — author `.planmo/plan.yml` with a model, once (ADR-0027)
+- `planmo suggest` — read-only, consent-gated codebase suggestions (advisory; upload opt-in)
 - `planmo generate` — recompile the planning documents from the project model
 - `planmo diff` — show what `generate` would change, writing nothing
 - `planmo validate` — validate workspace documents and invariants (the CI gate)
@@ -41,6 +42,13 @@ Later:
 
 ## AI profiles and model behavior
 
+`planmo provider list` lists exactly the eight runtime presets — `tokenharbor`,
+`openai`, `anthropic`, `deepseek`, `moonshot`, `xai`, `openrouter`, and the
+`custom` endpoint profile — with each one's API-key environment name, and says
+that OAuth/account-plan sign-in is not supported by this release.
+`@planmo/agent-bridge` coding-agent targets are not inference providers and never
+appear in this list.
+
 `planmo setup` configures the saved default profile. `--model <id>` supplies a
 model id manually and makes no discovery request. Credentials may come from the
 provider-named environment variable or a masked prompt saved in the OS keyring.
@@ -63,6 +71,29 @@ Provider-reported ids are not guaranteed to be PlanMo-compatible. The command
 changes only the default profile's model id; use `planmo setup` when no default
 profile is configured.
 
+## Codebase suggestions
+
+`planmo suggest` is advisory and read-only. It scans the current repository with
+the safe scanner, reads no excluded secret-bearing path (`.env` and its variants,
+`.npmrc`, credential directories, private keys and certificates), redacts detected
+secret patterns from the content it keeps, and bounds context to an estimated
+32,000 input tokens per run and 8,000 per request. It never edits an application
+file, never creates or rewrites `.planmo/`, never touches `.planmo/plan.yml`, and
+never applies a suggestion.
+
+An interactive run prints the upload size and asks for consent before the first
+provider request; a non-TTY run requires `--allow-upload`. `--dry-run` scans
+locally and prints the coverage and cost preview without resolving a provider, so
+it makes zero provider calls. The validated report goes to stdout by default,
+`--json` emits it as JSON, and `--output <path>` writes it through the managed
+writer, which refuses to overwrite an existing file. Model output is validated
+against the strict report schema and every evidence path and line range is
+checked against the real scan; a run that fails writes nothing and exits 1.
+Outside a workspace the command exits 3, like `plan`. Coverage may be partial —
+scanner caps, binary or oversize files, and the token budget can omit content —
+and truncation is reported rather than hidden. Results are suggestions, not
+verified defects.
+
 ## Flags
 
 Every command accepts `--help`, which prints that command's options and nothing
@@ -79,7 +110,8 @@ interactive prompt, and the intended write never happened.
 
 `init`, `adopt`, `task` (with no id), `agent init` (with no `--agent`), and
 `setup` prompt when required values are missing. `model` with no id requires a
-terminal; `auth remove` asks for confirmation unless `--yes` is supplied. On a
+terminal; `auth remove` asks for confirmation unless `--yes` is supplied, and
+`suggest` asks for upload consent unless `--allow-upload` is supplied. On a
 pipe, CI runner, or redirected stdin, commands that need a prompt fail with exit
 1 and explain why instead of waiting forever. Supply required values and use
 `--yes` where supported to run non-interactively.

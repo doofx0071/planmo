@@ -31,8 +31,12 @@ This file tracks what comes **after** v1. It is a direction, not a commitment.
   baseline; its blind spot (ranking by id order rather than query relevance) is
   measured in `scripts/eval-context-retrieval.mjs`. Embeddings or a hosted/graph
   service belong behind an optional adapter, never in the deterministic core.
-- **Direct LLM adapters.** v1 is deliberately agent-adapter-first and needs no API
-  key. Direct provider calls are an open question.
+- **Direct LLM adapters.** Shipped as a saved user-level AI profile: `planmo setup`
+  stores non-secret preferences and an OS-keyring credential, `planmo plan` authors
+  the plan with a model once, and the read-only, consent-gated `planmo suggest`
+  produces evidence-backed advisory reports. `generate` stays model-free. Provider
+  expansion beyond the eight runtime presets remains gated (see the checklist in
+  `docs/PLAN-ai-setup-and-codebase-suggestions.md`).
 - **Remote pack publishing and a hosted registry.** v1 packs are declarative and
   local; remote content requires trust metadata, checksums and pinning first.
 - **GitHub integration depth.** Export prototype exists; deeper integration is

@@ -23,7 +23,13 @@ Examples:
 - phase prompts contain hard stops;
 - business logic changes require tests;
 - malicious repository instructions do not alter PlanMo authority;
-- context bundle contains required invariants but stays within budget.
+- context bundle contains required invariants but stays within budget;
+- `suggest` coverage numbers match the scan, with omissions and truncation
+  reported rather than hidden;
+- every suggestion cites an evidence path/line that exists in the scanned inventory;
+- a fabricated evidence path or line range fails the whole report;
+- no `.env` or credential content reaches the model prompt;
+- `--dry-run` makes zero provider calls.
 
 ## Baselines
 
