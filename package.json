@@ -22,6 +22,7 @@
     "check:inventory": "node scripts/check-inventory.mjs",
     "e2e:lifecycle": "node scripts/e2e-lifecycle.mjs",
     "e2e:install": "node scripts/e2e-install-smoke.mjs",
+    "e2e:ai": "node scripts/e2e-ai-setup-suggest.mjs",
     "smoke": "node packages/planmo/dist/bin.js --version",
     "check": "pnpm build && pnpm typecheck && pnpm test && pnpm lint && pnpm format:check && pnpm boundary-check && pnpm check:inventory && pnpm smoke"
   },
