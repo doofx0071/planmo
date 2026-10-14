@@ -19,9 +19,9 @@
  * EVIDENCE IS VERIFIED AGAINST THE SCAN, NOT RE-READ. Every suggestion must cite
  * files and line ranges that actually exist in the inventory the T15 engine
  * produced (`files` + `skipped`), and the line range must fit the file's real
- * line count derived from the content that was already scanned. The reader is
- * never consulted again: re-reading would let a file change between the scan the
- * model saw and the check that is supposed to ground it.
+ * (pre-truncation) line count from that scan. The reader is never consulted
+ * again: re-reading would let a file change between the scan the model saw and
+ * the check that is supposed to ground it.
  *
  * WHY THE WHOLE REPORT IS REJECTED (not the offending suggestion): a fabricated
  * citation is the single most important signal a reviewer needs. Dropping just
@@ -125,6 +125,12 @@ export interface SuggestRunOptions {
   /** Repository root passed to the context engine. Default `''`. */
   readonly root?: string;
   readonly context?: SuggestionContextOptions;
+  /**
+   * A context result the caller already built (e.g. to show a consent summary).
+   * When present it is used as-is and the repository is NOT scanned again, so the
+   * numbers a user consented to are exactly the bytes that ship.
+   */
+  readonly prebuiltContext?: SuggestionContextResult;
   readonly maxOutputTokens?: number;
   readonly timeoutMs?: number;
   readonly signal?: AbortSignal;
@@ -139,18 +145,19 @@ type InventoryEntry =
   | { readonly kind: 'included'; readonly lineCount: number }
   | { readonly kind: 'skipped'; readonly reason: SuggestionSkipReason };
 
-/** Number of lines in a file's content (a trailing newline does not add a line). */
-function countLines(content: string): number {
-  if (content === '') return 0;
-  const body = content.endsWith('\n') ? content.slice(0, -1) : content;
-  return body.split('\n').length;
-}
-
-/** The path -> knowledge map the T15 result implies. Never re-reads the reader. */
+/**
+ * The path -> knowledge map the T15 result implies. Never re-reads the reader.
+ *
+ * The line count is the T15 file's PRE-truncation `lineCount`, not the line
+ * count of the (possibly cut-off) content, so a truncated file does not reject
+ * a citation that lies within the original file. It is still the real file
+ * length, so a citation past the end of the file remains a `SUG-105` failure —
+ * the fail-closed property is unchanged.
+ */
 function buildInventory(context: SuggestionContextResult): Map<string, InventoryEntry> {
   const inventory = new Map<string, InventoryEntry>();
   for (const file of context.files) {
-    inventory.set(file.path, { kind: 'included', lineCount: countLines(file.content) });
+    inventory.set(file.path, { kind: 'included', lineCount: file.lineCount });
   }
   for (const skipped of context.skipped) {
     if (!inventory.has(skipped.path)) {
@@ -328,11 +335,12 @@ const ZERO_USAGE: ModelUsage = { inputTokens: 0, outputTokens: 0 };
 export async function runSuggest(options: SuggestRunOptions): Promise<SuggestRunResult> {
   const { provider, reader } = options;
 
-  const context = await suggestionContextEngine().build(
-    options.root ?? '',
-    reader,
-    options.context,
-  );
+  // A caller that already built the context (to show a consent summary) passes
+  // it in; re-scanning here would let the repository change between the numbers
+  // the user consented to and the bytes that actually ship.
+  const context =
+    options.prebuiltContext ??
+    (await suggestionContextEngine().build(options.root ?? '', reader, options.context));
   const identity: SuggestProviderIdentity = { id: provider.id, model: provider.model };
 
   const request = buildSuggestRequest({

@@ -257,7 +257,7 @@ describe('renderSuggestionReport', () => {
     expect(first).not.toMatch(/\u001b\[/);
   });
 
-  it('never fabricates source context for a hostile report and echoes fields verbatim', () => {
+  it('never fabricates source context for a hostile report and renders safe fields unchanged', () => {
     const secret = 'sk-live-EXAMPLE-9f3a2b1c';
     const hostile = report({
       summary: 'One credential-like string was found.',
@@ -313,7 +313,7 @@ describe('renderSuggestionReport', () => {
 
     const output = renderSuggestionReport(hostile);
 
-    // Echoes report fields verbatim, adding no invented source context.
+    // Renders already-safe fields unchanged, adding no invented source context.
     expect(output).toBe(expected);
     expect(output.split(secret)).toHaveLength(3); // appears in title and rationale only
     expect(output).not.toContain('```');
@@ -347,5 +347,105 @@ describe('renderSuggestionReport', () => {
     expect(source).not.toMatch(/node:fs|node:net|node:http|node:https|node:child_process/);
     expect(source).not.toMatch(/\brequire\(/);
     expect(source).not.toMatch(/readFile|readdir|createReadStream|fetch\(/);
+  });
+});
+
+/**
+ * Terminal/output injection (defence in depth behind the schema). The renderer
+ * receives an already-validated report, but it is the last gate before bytes
+ * reach a terminal or an `--output` file, so it must sanitize every
+ * report-derived string: a hostile report whose prose carries ESC, ANSI
+ * sequences, C1 controls, format characters, or embedded newlines must not be
+ * able to emit an escape sequence or forge a report line.
+ */
+describe('renderSuggestionReport — hostile prose cannot inject terminal control', () => {
+  const ESC = String.fromCharCode(0x1b);
+  const C1_CSI = String.fromCharCode(0x9b);
+  const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
+  const LINE_SEPARATOR = String.fromCharCode(0x2028);
+
+  /** Every character below U+0020 except LF, and the whole C1 range. */
+  const FORBIDDEN_BYTES = /[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/;
+
+  function hostileReport(): SuggestionReport {
+    return {
+      schemaVersion: 1,
+      provider: { id: 'openai', model: 'gpt-4o-mini' },
+      summary: `Looks clean.\nPASS suggest dry-run (0 provider calls)\n${ESC}[2J${ESC}[31mForged${ESC}[0m`,
+      coverage: FULL_COVERAGE,
+      limitations: ['Only the default branch was reviewed.\nPASS mock report validated'],
+      suggestions: [
+        {
+          id: 'SUG-001',
+          kind: 'risk',
+          category: 'security',
+          title: `Unvalidated${ESC}[31m redirect${ESC}[0m target`,
+          rationale: `The target\nis taken from user input.${C1_CSI}2J`,
+          recommendation: 'Validate the redirect\tagainst an allowlist.',
+          impact: 'high',
+          effort: 'small',
+          confidence: 0.82,
+          evidence: [{ path: 'src/example.ts', startLine: 10, endLine: 18 }],
+        },
+      ],
+    };
+  }
+
+  it('renders a hostile report with no escapes, no C1, and no forged line', () => {
+    const expected = lines(
+      header(),
+      ['Summary', '-------', 'Looks clean. PASS suggest dry-run (0 provider calls) Forged', ''],
+      coverageBlock(FULL_COVERAGE),
+      [
+        '',
+        'Limitations',
+        '-----------',
+        '- Only the default branch was reviewed. PASS mock report validated',
+        '',
+      ],
+      [
+        'Suggestions (1)',
+        '---------------',
+        '1. SUG-001 — Unvalidated redirect target',
+        '   Kind: risk',
+        '   Category: security',
+        '   Impact: high',
+        '   Effort: small',
+        '   Confidence: 0.82',
+        '   Rationale: The target is taken from user input. 2J',
+        '   Recommendation: Validate the redirect against an allowlist.',
+        '   Evidence: src/example.ts:10-18',
+        '',
+      ],
+      [FOOTER],
+    );
+
+    const output = renderSuggestionReport(hostileReport());
+
+    expect(output).toBe(expected);
+    // No byte below U+0020 except the renderer's own LF, and no C1 range.
+    expect(output).not.toMatch(FORBIDDEN_BYTES);
+    expect(output).not.toMatch(/\r/);
+    // No injected line can pass itself off as a report line or a test result.
+    expect(output.split('\n').filter((line) => line.startsWith('PASS '))).toEqual([]);
+    expect(output.split('\n').filter((line) => line === SUGGEST_REPORT_TITLE)).toHaveLength(1);
+    expect(output.split('\n').filter((line) => line.startsWith('Provider: '))).toHaveLength(1);
+  });
+
+  it('neutralizes separator and format characters in structural fields too', () => {
+    const base = hostileReport();
+    const suggestion = base.suggestions[0];
+    if (suggestion === undefined) throw new Error('hostile fixture has no suggestion');
+
+    const output = renderSuggestionReport({
+      ...base,
+      provider: { id: 'openai', model: `gpt${LINE_SEPARATOR}4o${ZERO_WIDTH_SPACE}mini` },
+      suggestions: [{ ...suggestion, id: `SUG${LINE_SEPARATOR}001` }],
+    });
+
+    expect(output).not.toMatch(FORBIDDEN_BYTES);
+    expect(output).not.toMatch(/[\u2028\u200B]/);
+    expect(output).toContain('Provider: openai (gpt 4o mini)');
+    expect(output).toContain('1. SUG 001 — Unvalidated redirect target');
   });
 });

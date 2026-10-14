@@ -1,4 +1,4 @@
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import {
   createHttpProvider,
   createMockProvider,
@@ -17,6 +17,7 @@ import type { AiProfile, AiUserConfig } from '@planmo/schema';
 import { nodeFileReader, suggestionContextEngine } from '@planmo/scanner';
 import type {
   FileReader,
+  SuggestionContextEngine,
   SuggestionContextOptions,
   SuggestionContextResult,
 } from '@planmo/scanner';
@@ -42,17 +43,26 @@ import { readAiUserConfig } from '../user-config.js';
  *     that (exit 3) rather than told to set an API key;
  *  3. it PREVIEWS the upload and obtains consent before the first provider
  *     request (`--dry-run` never asks and never calls; a non-TTY run needs
- *     `--allow-upload`, which skips ONLY the prompt, never the checks);
+ *     `--allow-upload`, which skips ONLY the prompt, never the checks). Consent
+ *     is granted by a bare `--allow-upload` or an explicit truthy value
+ *     (`true`/`1`/`yes`); `--allow-upload=false`/`0`/`no` is NOT consent;
  *  4. it chooses where the report goes (stdout by default, `--json`, or an
- *     explicit `--output` path that REFUSES to overwrite an existing file);
+ *     explicit `--output` path that REFUSES to overwrite an existing file and
+ *     REFUSES any target inside a `.planmo/` directory);
  *  5. it maps the T18 result to an exit code and prints the T18 diagnostics on
  *     failure. A failed run writes nothing at all.
  *
+ * The context is built exactly ONCE per run and that single result drives both
+ * the consent summary and the upload, so a repository change cannot make the
+ * numbers a user consented to diverge from what ships.
+ *
  * WRITE DISCIPLINE: the only path this module writes through is the managed
  * writer (`@planmo/core`), and only when the user passes `--output`. It never
- * creates `.planmo/`, never touches `.planmo/plan.yml`, and never modifies any
- * file in the scanned project — the scan is read-only and the report is
- * rendered from the validated model output, not from re-read source.
+ * creates `.planmo/`, never touches `.planmo/plan.yml` (or any other workspace
+ * marker), and never modifies any file in the scanned project — the scan is
+ * read-only and the report is rendered from the validated model output, not from
+ * re-read source. A valued flag with no value (`--output` with nothing after it)
+ * is a usage error, not a write to a file named `true`.
  *
  * `exactOptionalPropertyTypes` is ON: optional fields are omitted, never `undefined`.
  */
@@ -72,11 +82,51 @@ export interface SuggestCommandDependencies {
   interactive?: boolean;
   /** Context-engine overrides (e.g. a smaller token budget in tests). */
   context?: SuggestionContextOptions;
+  /** Context-engine seam for tests; production uses the real T15 engine. */
+  contextEngine?: SuggestionContextEngine;
 }
 
 /** A real terminal is required to ask a question (mirrors `model`). */
 function hasTerminal(): boolean {
   return process.stdin.isTTY === true && process.stdout.isTTY === true;
+}
+
+/**
+ * The suggest flags that TAKE a value. A bare or empty one (`--output` with
+ * nothing after it) is a usage error, never an implicit default: `parseArgs`
+ * stores a valueless flag as the literal `'true'`, so treating it as a path
+ * would write a file named `true` and treating it as a provider would resolve a
+ * provider named `true`.
+ */
+const VALUED_SUGGEST_FLAGS = ['dir', 'provider', 'model', 'base-url', 'output'] as const;
+
+/**
+ * The only values that affirmatively grant upload consent. Anything else —
+ * including `false`, `0`, `no`, or an unrecognized value — is NOT consent. A
+ * bare `--allow-upload` (no `=value`) is consent and is recognized separately
+ * through the parser's `valueless` set.
+ */
+const AFFIRMATIVE_FLAG_VALUES: ReadonlySet<string> = new Set(['true', '1', 'yes']);
+
+/** Whether `--allow-upload` grants consent. */
+function consentGranted(valueless: ReadonlySet<string>, value: string | undefined): boolean {
+  if (valueless.has('allow-upload')) return true;
+  return value !== undefined && AFFIRMATIVE_FLAG_VALUES.has(value.trim().toLowerCase());
+}
+
+/**
+ * True when an `--output` target resolves inside a `.planmo/` directory.
+ *
+ * `.planmo/` is PlanMo's own workspace state — the `project.yml` / `state.yml` /
+ * `manifest.json` markers and everything derived from them. `planmo suggest` is
+ * read-only with respect to the workspace, so it refuses any target under a
+ * `.planmo/` directory (at the root or nested). Absolute and traversal paths
+ * that escape the root are still rejected by the managed writer below.
+ */
+function resolvesIntoWorkspaceState(root: string, output: string): boolean {
+  const absoluteRoot = resolve(root);
+  const relativePath = relative(absoluteRoot, resolve(absoluteRoot, output));
+  return relativePath.split(/[\\/]+/).includes('.planmo');
 }
 
 /** The saved default profile, or undefined when none is configured. */
@@ -194,6 +244,14 @@ async function writeReport(
   output: string,
   content: string,
 ): Promise<number> {
+  if (resolvesIntoWorkspaceState(root, output)) {
+    io.err(
+      `planmo suggest: refusing --output '${output}': it resolves inside .planmo/, PlanMo's own workspace state; nothing was written.`,
+    );
+    io.err('  choose a path outside .planmo/ (e.g. review.md).');
+    return 1;
+  }
+
   const parent = parentDirectory(output);
   let collisions: readonly string[];
   try {
@@ -224,7 +282,18 @@ export async function runSuggestCommand(
   wizard: WizardIO,
   dependencies: SuggestCommandDependencies = {},
 ): Promise<number> {
-  const { flags } = parseArgs(argv);
+  const { flags, valueless } = parseArgs(argv);
+
+  // A valued flag with no value is a usage error, never an implicit default.
+  // This runs before the workspace check: `--output` with nothing after it must
+  // fail loudly here, not be treated as the literal path `true`.
+  for (const name of VALUED_SUGGEST_FLAGS) {
+    if (valueless.has(name) || flags.get(name) === '') {
+      io.err(`planmo suggest: --${name} needs a value; nothing was written.`);
+      return 1;
+    }
+  }
+
   const root = resolve(flags.get('dir') ?? process.cwd());
 
   // The workspace check comes BEFORE provider resolution, deliberately — the
@@ -251,17 +320,21 @@ export async function runSuggestCommand(
   }
 
   const reader = dependencies.reader ?? nodeFileReader();
+  const contextEngine = dependencies.contextEngine ?? suggestionContextEngine();
 
   // A dry run previews the upload and returns; it never resolves a provider and
   // never asks for consent, so it makes ZERO provider calls by construction.
   if (flags.has('dry-run')) {
-    const preview = await suggestionContextEngine().build(root, reader, dependencies.context);
+    const preview = await contextEngine.build(root, reader, dependencies.context);
     io.out(renderDryRunSummary(root, preview));
     return 0;
   }
 
   const interactive = dependencies.interactive ?? hasTerminal();
-  const allowUpload = flags.has('allow-upload');
+  // Only a bare `--allow-upload`, or an explicit truthy value (`true`/`1`/`yes`),
+  // grants consent. `--allow-upload=false` (or `0`, `no`, anything else) is NOT
+  // consent: on a non-TTY it exits 1 and on a TTY it still prompts.
+  const allowUpload = consentGranted(valueless, flags.get('allow-upload'));
 
   // A run that uploads repository content needs explicit consent. With no
   // terminal to ask, `--allow-upload` is the documented way to consent.
@@ -380,12 +453,16 @@ export async function runSuggestCommand(
     modelId = effectiveModel;
   }
 
+  // The context is built ONCE and used for BOTH the consent summary and the
+  // upload. Building it again inside `runSuggest` would let a repository change
+  // between the numbers the user consented to and the bytes that actually ship.
+  const context = await contextEngine.build(root, reader, dependencies.context);
+
   // Consent is asked AFTER the provider is chosen (so the question names the real
   // destination) but BEFORE the first request. `--allow-upload` skips only this
   // prompt — never the workspace, endpoint, or credential checks above.
   if (interactive && !allowUpload) {
-    const preview = await suggestionContextEngine().build(root, reader, dependencies.context);
-    const confirmed = await wizard.confirm(consentQuestion(preview, providerId, modelId), false);
+    const confirmed = await wizard.confirm(consentQuestion(context, providerId, modelId), false);
     if (confirmed !== true) {
       io.out('planmo suggest: upload declined — nothing was sent and nothing was written.');
       return 0;
@@ -396,7 +473,7 @@ export async function runSuggestCommand(
     provider,
     reader,
     root,
-    ...(dependencies.context !== undefined ? { context: dependencies.context } : {}),
+    prebuiltContext: context,
   });
 
   if (!outcome.ok || outcome.report === null) {

@@ -17,6 +17,13 @@ import { NonEmptyString, SCHEMA_VERSION } from './common.js';
  *   which the plan forbids ("Do not persist quoted source snippets").
  * - No field can carry raw source: the shape simply has no `snippet`/`code`
  *   slot, and strict objects reject them if a model adds one.
+ * - Model-authored prose (`summary`, each `limitations[]` entry, and each
+ *   suggestion's `title`/`rationale`/`recommendation`) is additionally checked
+ *   for terminal/output-injection characters (see `ProseText`): C0 controls
+ *   other than tab/LF/CR, the C1 range, Unicode format characters, and the
+ *   line/paragraph separators are rejected, so prose cannot emit escape
+ *   sequences or forge report lines when it is echoed. Tab/LF/CR stay legal
+ *   because a legitimate multi-paragraph summary uses plain LF.
  * - Evidence paths are relative POSIX repo paths (see
  *   `SuggestionEvidencePathSchema`) with a verified line range.
  * - `suggestions` may be empty: a clean or unremarkable repository can honestly
@@ -56,6 +63,32 @@ export type SuggestionEffort = (typeof SUGGESTION_EFFORTS)[number];
 
 /** Control (`Cc`) and format (`Cf`) characters, including bidi overrides. */
 const ControlOrFormatCharacter = /[\p{Cc}\p{Cf}]/u;
+
+/**
+ * Characters that must never appear in model-authored prose: C0 controls other
+ * than tab/LF/CR, the whole C1 range (U+007F-U+009F), Unicode format characters
+ * (`Cf`, e.g. zero-width and bidi controls), and the line/paragraph separators
+ * (`Zl`/`Zp`, e.g. U+2028). A report is echoed to a terminal, so an escape or an
+ * invisible break in prose could forge a report line or drive the terminal.
+ */
+const ProseForbiddenCharacter =
+  /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\p{Cf}\p{Zl}\p{Zp}]/u;
+
+/**
+ * A non-empty free-text field authored by the model, safe to render to a
+ * terminal. Tab, LF, and CR stay legal — a legitimate multi-paragraph summary
+ * uses plain LF — while every other control, C1, format, or line/paragraph
+ * separator character is rejected. This is the fail-closed gate; the renderer
+ * sanitizes the same fields again as defence in depth.
+ */
+const ProseText = NonEmptyString.superRefine((value, context) => {
+  if (ProseForbiddenCharacter.test(value)) {
+    context.addIssue({
+      code: 'custom',
+      message: 'must not contain control, format, or line-separator characters',
+    });
+  }
+});
 
 /** A Windows drive-letter prefix, e.g. `C:`. */
 const WindowsDrivePrefix = /^[A-Za-z]:/;
@@ -143,9 +176,9 @@ export const SuggestionSchema = z.strictObject({
   id: NonEmptyString,
   kind: z.enum(SUGGESTION_KINDS),
   category: z.enum(SUGGESTION_CATEGORIES),
-  title: NonEmptyString,
-  rationale: NonEmptyString,
-  recommendation: NonEmptyString,
+  title: ProseText,
+  rationale: ProseText,
+  recommendation: ProseText,
   impact: z.enum(SUGGESTION_IMPACTS),
   effort: z.enum(SUGGESTION_EFFORTS),
   confidence: Confidence,
@@ -181,9 +214,9 @@ export type SuggestionCoverage = z.infer<typeof SuggestionCoverageSchema>;
 export const SuggestionReportSchema = z.strictObject({
   schemaVersion: z.literal(SCHEMA_VERSION),
   provider: SuggestionProviderSchema,
-  summary: NonEmptyString,
+  summary: ProseText,
   coverage: SuggestionCoverageSchema,
-  limitations: z.array(NonEmptyString),
+  limitations: z.array(ProseText),
   suggestions: z.array(SuggestionSchema),
 });
 export type SuggestionReport = z.infer<typeof SuggestionReportSchema>;

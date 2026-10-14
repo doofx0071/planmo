@@ -20,9 +20,14 @@ Rules:
 - `planmo suggest` gates every path through `isSuggestionExcludedPath` before any
   content read, so `.env` and its variants (except `.example`/`.sample`/`.template`),
   `.npmrc`, credential directories, and private keys/certificates are never read;
-- redaction of detected secret patterns is deterministic defense-in-depth and
-  cannot guarantee it finds every secret, so coverage and truncation are reported
-  rather than claimed complete;
+- redaction of detected secret patterns is deterministic heuristic
+  defense-in-depth: it cannot guarantee it finds every secret, so redaction
+  coverage and truncation are reported as partial rather than claimed complete;
 - repository content leaves the machine only after per-run consent (an interactive
-  prompt, or explicit `--allow-upload` for non-TTY), and only redacted context is sent;
+  prompt, or explicit `--allow-upload` for non-TTY), and only context that has
+  passed that redaction heuristic is sent; because the redaction is best-effort,
+  a secret in an unrecognized shape can still reach the provider prompt, so the
+  upload is described as redacted, never as guaranteed secret-free;
+- path exclusion (above) is the only hard guarantee: excluded paths are never
+  read at all, whereas redaction only rewrites content that is already read;
 - direct-provider privacy implications are documented here and in ADR-0029.

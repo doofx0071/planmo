@@ -3,6 +3,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HttpProviderConfig, ModelProvider } from '@planmo/ai';
+import { suggestionContextEngine } from '@planmo/scanner';
+import type {
+  FileReader,
+  SuggestionContextEngine,
+  SuggestionContextOptions,
+} from '@planmo/scanner';
 import { SuggestionReportSchema } from '@planmo/schema';
 import type { CliIO, WizardIO } from '../cli-io.js';
 import type { CredentialStore } from '../credential-store.js';
@@ -142,6 +148,20 @@ function textProvider(text: string, id = 'openai', model = 'gpt-test'): Recordin
     },
   };
   return { provider, state };
+}
+
+/** A context engine that counts how many times the repository is scanned. */
+function countingContextEngine(): { engine: SuggestionContextEngine; builds: () => number } {
+  const inner = suggestionContextEngine();
+  let builds = 0;
+  const engine: SuggestionContextEngine = {
+    name: 'suggestion-context',
+    build: (root: string, reader: FileReader, options?: SuggestionContextOptions) => {
+      builds += 1;
+      return inner.build(root, reader, options);
+    },
+  };
+  return { engine, builds: () => builds };
 }
 
 /** `src/app.ts` is 3 lines long — the evidence range below is load-bearing. */
@@ -329,6 +349,148 @@ describe('planmo suggest — consent', () => {
     expect(recording.state.calls).toBe(0);
     expect(out.join('\n')).not.toContain('PlanMo codebase suggestions');
   });
+
+  it.each(['false', '0', 'no', 'nope'])(
+    'treats --allow-upload=%s as NOT consent (non-TTY exits 1, no provider call)',
+    async (value) => {
+      const root = await suggestWorkspace();
+      const configDir = await temporaryDirectory('planmo-suggest-config-');
+      const recording = textProvider(reportJson());
+      const { io, out, err } = capture();
+
+      const code = await runSuggestCli(
+        [
+          'suggest',
+          '--dir',
+          root,
+          '--provider',
+          'openai',
+          '--model',
+          'gpt-test',
+          `--allow-upload=${value}`,
+        ],
+        io,
+        noPromptWizard(),
+        dependencies(configDir, { providerFactory: () => recording.provider, interactive: false }),
+      );
+
+      expect(code).toBe(1);
+      expect(err.join('\n')).toContain('--allow-upload');
+      expect(recording.state.calls).toBe(0);
+      expect(out.join('\n')).not.toContain('PlanMo codebase suggestions');
+    },
+  );
+
+  it.each(['true', '1', 'yes'])(
+    'treats --allow-upload=%s as consent (non-TTY uploads once)',
+    async (value) => {
+      const root = await suggestWorkspace();
+      const configDir = await temporaryDirectory('planmo-suggest-config-');
+      const recording = textProvider(reportJson());
+      const { io, out } = capture();
+
+      const code = await runSuggestCli(
+        [
+          'suggest',
+          '--dir',
+          root,
+          '--provider',
+          'openai',
+          '--model',
+          'gpt-test',
+          `--allow-upload=${value}`,
+        ],
+        io,
+        noPromptWizard(),
+        dependencies(configDir, { providerFactory: () => recording.provider, interactive: false }),
+      );
+
+      expect(code).toBe(0);
+      expect(recording.state.calls).toBe(1);
+      expect(out.join('\n')).toContain('PlanMo codebase suggestions');
+    },
+  );
+
+  it('prompts (and does not upload) when --allow-upload=false on an interactive terminal', async () => {
+    const root = await suggestWorkspace();
+    const configDir = await temporaryDirectory('planmo-suggest-config-');
+    const recording = textProvider(reportJson());
+    let confirmCalls = 0;
+    const wizard: WizardIO = {
+      ...noPromptWizard(),
+      confirm: async () => {
+        confirmCalls += 1;
+        return false;
+      },
+    };
+    const { io } = capture();
+
+    const code = await runSuggestCli(
+      [
+        'suggest',
+        '--dir',
+        root,
+        '--provider',
+        'openai',
+        '--model',
+        'gpt-test',
+        '--allow-upload=false',
+      ],
+      io,
+      wizard,
+      dependencies(configDir, { providerFactory: () => recording.provider, interactive: true }),
+    );
+
+    expect(code).toBe(0);
+    expect(confirmCalls).toBe(1);
+    expect(recording.state.calls).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Valued flags require a value
+// ---------------------------------------------------------------------------
+
+describe('planmo suggest — valued flags require a value', () => {
+  it.each(['--dir', '--provider', '--model', '--base-url', '--output'])(
+    'rejects %s with no value as a usage error',
+    async (flag) => {
+      const { io, err } = capture();
+
+      const code = await runSuggestCli(
+        ['suggest', flag],
+        io,
+        noPromptWizard(),
+        dependencies('unused'),
+      );
+
+      expect(code).not.toBe(0);
+      expect(err.join('\n')).toContain(flag);
+      expect(err.join('\n')).toContain('needs a value');
+    },
+  );
+
+  it('--output with no value exits non-zero and writes no file named "true"', async () => {
+    const root = await suggestWorkspace();
+    const configDir = await temporaryDirectory('planmo-suggest-config-');
+    const before = await snapshot(root);
+    const recording = textProvider(reportJson());
+    const { io, out, err } = capture();
+
+    const code = await runSuggestCli(
+      ['suggest', '--dir', root, '--provider', 'mock', '--allow-upload', '--output'],
+      io,
+      noPromptWizard(),
+      dependencies(configDir, { env: {}, store: fakeCredentialStore().store }),
+    );
+
+    expect(code).not.toBe(0);
+    expect(err.join('\n')).toContain('--output');
+    expect(out.join('\n')).not.toContain('wrote suggestion report');
+    expect(recording.state.calls).toBe(0);
+    expect(await snapshot(root)).toEqual(before);
+    await expect(stat(join(root, 'true'))).rejects.toThrow();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -449,6 +611,128 @@ describe('planmo suggest — output', () => {
     expect(code).not.toBe(0);
     expect(err.join('\n')).toContain('refus');
     expect(await readFile(target, 'utf8')).toBe('MINE\n');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// --output never writes into the workspace
+// ---------------------------------------------------------------------------
+
+describe('planmo suggest — --output refuses workspace state', () => {
+  it.each(['.planmo/plan.yml', '.planmo/state.yml', 'nested/.planmo/report.md'])(
+    'refuses --output %s and leaves the workspace unchanged',
+    async (target) => {
+      const root = await suggestWorkspace();
+      const configDir = await temporaryDirectory('planmo-suggest-config-');
+      const before = await snapshot(root);
+      const recording = textProvider(reportJson());
+      const { io, out, err } = capture();
+
+      const code = await runSuggestCli(
+        ['suggest', '--dir', root, '--provider', 'mock', '--allow-upload', '--output', target],
+        io,
+        noPromptWizard(),
+        dependencies(configDir, { env: {}, store: fakeCredentialStore().store }),
+      );
+
+      expect(code).not.toBe(0);
+      expect(err.join('\n')).toContain('.planmo');
+      expect(out.join('\n')).not.toContain('wrote suggestion report');
+      expect(await snapshot(root)).toEqual(before);
+    },
+  );
+
+  it('still refuses an --output path that escapes the project root', async () => {
+    const root = await suggestWorkspace();
+    const configDir = await temporaryDirectory('planmo-suggest-config-');
+    const before = await snapshot(root);
+    const { io, out, err } = capture();
+
+    const code = await runSuggestCli(
+      [
+        'suggest',
+        '--dir',
+        root,
+        '--provider',
+        'mock',
+        '--allow-upload',
+        '--output',
+        '../escape.md',
+      ],
+      io,
+      noPromptWizard(),
+      dependencies(configDir, { env: {}, store: fakeCredentialStore().store }),
+    );
+
+    expect(code).not.toBe(0);
+    expect(out.join('\n')).not.toContain('wrote suggestion report');
+    expect(err.join('\n')).toContain('inside the project root');
+    expect(await snapshot(root)).toEqual(before);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// One context build per run (no consent TOCTOU / double scan)
+// ---------------------------------------------------------------------------
+
+describe('planmo suggest — single scan', () => {
+  it('builds the context once and uses that same result for consent and upload', async () => {
+    const root = await suggestWorkspace();
+    const configDir = await temporaryDirectory('planmo-suggest-config-');
+    const recording = textProvider(reportJson());
+    const counting = countingContextEngine();
+    let question = '';
+    const wizard: WizardIO = {
+      ...noPromptWizard(),
+      confirm: async (prompt) => {
+        question = prompt;
+        return true;
+      },
+    };
+    const { io, out } = capture();
+
+    const code = await runSuggestCli(
+      ['suggest', '--dir', root, '--provider', 'openai', '--model', 'gpt-test', '--json'],
+      io,
+      wizard,
+      dependencies(configDir, {
+        providerFactory: () => recording.provider,
+        interactive: true,
+        contextEngine: counting.engine,
+      }),
+    );
+
+    expect(code).toBe(0);
+    expect(counting.builds()).toBe(1);
+    expect(recording.state.calls).toBe(1);
+
+    const report = SuggestionReportSchema.parse(JSON.parse(out.join('\n')));
+    expect(question).toContain('Upload');
+    const consentFiles = Number(/Upload (\d+) file/.exec(question)?.[1]);
+    expect(consentFiles).toBe(report.coverage.submittedFiles);
+  });
+
+  it('builds the context exactly once on a non-interactive --allow-upload run', async () => {
+    const root = await suggestWorkspace();
+    const configDir = await temporaryDirectory('planmo-suggest-config-');
+    const recording = textProvider(reportJson());
+    const counting = countingContextEngine();
+    const { io } = capture();
+
+    const code = await runSuggestCli(
+      ['suggest', '--dir', root, '--provider', 'openai', '--model', 'gpt-test', '--allow-upload'],
+      io,
+      noPromptWizard(),
+      dependencies(configDir, {
+        providerFactory: () => recording.provider,
+        interactive: false,
+        contextEngine: counting.engine,
+      }),
+    );
+
+    expect(code).toBe(0);
+    expect(counting.builds()).toBe(1);
+    expect(recording.state.calls).toBe(1);
   });
 });
 

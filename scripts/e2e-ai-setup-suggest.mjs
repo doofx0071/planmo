@@ -20,7 +20,12 @@
  *     the run writes;
  *   - every provider call goes through `--provider mock`, and a preload module
  *     replaces `globalThis.fetch` with a thrower, so a network call fails the run
- *     loudly instead of silently succeeding.
+ *     loudly instead of silently succeeding. That preload is proven two ways:
+ *     a direct probe asserts `fetch` throws its sentinel, and a deliberate
+ *     real-provider run (`suggest --provider openai --allow-upload`) must FAIL
+ *     with the `transport` diagnostic and a non-zero exit — the HTTP provider
+ *     rewraps the blocked call as `ProviderError('transport', 'provider request
+ *     failed (network)')`, which is what proves the block is live.
  *
  * Asserts: the mock path was used and no other provider key is present, the
  * report parses and matches the canonical report shape, the project tree is
@@ -29,7 +34,7 @@
  * all output and every written file.
  *
  * Usage: node scripts/e2e-ai-setup-suggest.mjs
- * Exit 0 = passed; stdout carries exactly the five PASS lines below.
+ * Exit 0 = passed; stdout carries exactly the six PASS lines below.
  * Non-zero = a check failed, with the reason on stderr.
  *
  * Diagnostics go to stderr on purpose, so stdout is exactly:
@@ -37,6 +42,7 @@
  *   PASS model
  *   PASS suggest dry-run (0 provider calls)
  *   PASS mock report validated
+ *   PASS network blocked
  *   PASS project unchanged
  */
 import { spawnSync } from 'node:child_process';
@@ -114,6 +120,20 @@ const NO_NETWORK_MODULE = `// e2e-ai-setup-suggest: fail loudly if any code path
 globalThis.fetch = () => {
   throw new Error('NETWORK_BLOCKED: the credential-free AI e2e must not perform network I/O');
 };
+`;
+
+/**
+ * A direct probe of the preload, run in its own `node -e` process. It proves
+ * the block itself is live — independent of whether the sandbox happens to have
+ * network — by asserting that `fetch` throws the `NETWORK_BLOCKED` sentinel
+ * rather than returning a promise.
+ */
+const NO_NETWORK_PROBE = `try {
+  globalThis.fetch('https://example.invalid/');
+  process.exit(3);
+} catch (error) {
+  process.exit(String(error && error.message).includes('NETWORK_BLOCKED') ? 0 : 4);
+}
 `;
 
 function fail(message) {
@@ -402,7 +422,36 @@ async function main() {
     validateReportShape(report);
     console.log('PASS mock report validated');
 
-    // 6. The project tree must be byte-identical: every file hashed, compared.
+    // 6. Prove the no-network preload is live AND the real provider fails closed.
+    //    The direct probe shows the block itself works (independent of whether
+    //    this sandbox has network); the real-provider run shows the CLI turns a
+    //    blocked call into the `transport` diagnostic and a non-zero exit.
+    const probe = spawnSync(
+      process.execPath,
+      ['--import', pathToFileURL(preload).href, '-e', NO_NETWORK_PROBE],
+      { env, encoding: 'utf8', windowsHide: true },
+    );
+    expect(
+      probe.status === 0,
+      `the no-network preload did not block fetch (probe exit ${probe.status}): ${(probe.stderr ?? '').trim()}`,
+    );
+
+    const real = run(['suggest', '--provider', SETUP_PROVIDER, '--allow-upload']);
+    expect(
+      real.code !== 0,
+      `a real-provider run with the network blocked exited 0; it must fail closed: ${real.out.trim()}`,
+    );
+    expect(
+      real.err.includes('the provider failed (transport)'),
+      `a real-provider run did not report the transport failure: ${real.err.trim()}`,
+    );
+    expect(
+      real.err.includes('provider request failed (network)'),
+      `a real-provider run did not report the blocked network call: ${real.err.trim()}`,
+    );
+    console.log('PASS network blocked');
+
+    // 7. The project tree must be byte-identical: every file hashed, compared.
     const after = await hashTree(project);
     expect(before.join('\n') === after.join('\n'), describeTreeDiff(before, after));
     // `planmo plan` owns `.planmo/plan.yml`; a suggestion run must never create it.
@@ -412,17 +461,12 @@ async function main() {
     );
     console.log('PASS project unchanged');
 
-    // 7. No network call escaped the mock path, and no fake secret leaked.
-    const networkAttempt = transcripts.find((t) => `${t.out}${t.err}`.includes('NETWORK_BLOCKED'));
-    expect(
-      networkAttempt === undefined,
-      `a network call was attempted during \`planmo ${networkAttempt?.args.join(' ')}\``,
-    );
+    // 8. The synthetic credential must not appear in any output or written file.
     const leaked = await findSecret(transcripts, [project, configDir]);
     expect(leaked === null, `the synthetic credential leaked into ${leaked}`);
 
     note(
-      'e2e-ai: OK (setup, model, dry run, mock report, unchanged tree; no credential, no network)',
+      'e2e-ai: OK (setup, model, dry run, mock report, network blocked, unchanged tree; no credential)',
     );
   } finally {
     await rm(tempRoot, { recursive: true, force: true });

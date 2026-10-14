@@ -19,11 +19,16 @@
  * - Advisory framing: the output is labelled as suggestions, not verified
  *   defects, and states the model may be wrong.
  * - No raw source or secrets are ever rendered: the report schema has no
- *   snippet field and this module never reads a file to add one. Prose fields
- *   (`summary`, `title`, `rationale`, `recommendation`, `limitations`) are
- *   echoed verbatim. Only structural single-line fields (`provider.id`,
- *   `provider.model`, suggestion `id`, evidence `path`) are collapsed to one
- *   line so an embedded newline cannot forge an extra report line.
+ *   snippet field and this module never reads a file to add one. Every
+ *   report-derived string (prose, ids, provider id/model, evidence paths,
+ *   limitation lines) is sanitized before it is emitted: ANSI escape sequences
+ *   are stripped, and tabs, CR, LF, any other control character, format
+ *   character, or line/paragraph separator is collapsed to a single space. The
+ *   rendered output therefore contains no character below U+0020 except the
+ *   `\n` line breaks this renderer emits itself, and no character in
+ *   U+007F-U+009F — so a hostile report cannot emit terminal escapes or forge a
+ *   report line. This is defence in depth: the schema (`ProseText`) already
+ *   rejects such prose.
  * - Coverage is reported honestly: a partial-coverage notice is shown whenever
  *   the scan was truncated or files were excluded, redacted, or omitted.
  *
@@ -43,6 +48,34 @@ export const SUGGEST_REPORT_TITLE = 'PlanMo codebase suggestions';
 /** Matches runs of digits and runs of non-digits, for natural-order ids. */
 const ID_CHUNKS = /\d+|\D+/g;
 
+/**
+ * A complete ANSI escape sequence: CSI (`ESC [ … final`), OSC (`ESC ] … BEL` or
+ * `ESC \`), or a two-character Fe escape (`ESC @`-`ESC _`). Stripped outright so
+ * a `ESC[2J` clear-screen cannot reach the terminal.
+ */
+const ANSI_ESCAPE_SEQUENCE =
+  /\u001B\[[0-?]*[ -/]*[@-~]|\u001B\][^\u0007\u001B]*(?:\u0007|\u001B\\)|\u001B[@-Z\\-_]/g;
+
+/**
+ * Any run of characters that must not survive into the rendered output: C0
+ * controls (including tab, CR, and LF), the C1 range, Unicode format characters
+ * (`Cf`, e.g. zero-width and bidi controls), and the line/paragraph separators
+ * (`Zl`/`Zp`). Collapsed to a single space.
+ */
+const CONTROL_OR_FORMAT_RUN = /[\u0000-\u001F\u007F-\u009F\p{Cf}\p{Zl}\p{Zp}]+/gu;
+
+/**
+ * Sanitize one report-derived string for terminal output.
+ *
+ * Strips ANSI escape sequences, then collapses tabs, CR, LF, any remaining
+ * control character, format character, or line/paragraph separator to a single
+ * space. The result is a single line with no escape bytes, so a hostile report
+ * cannot forge a report line or drive the terminal.
+ */
+function sanitizeText(value: string): string {
+  return value.replace(ANSI_ESCAPE_SEQUENCE, '').replace(CONTROL_OR_FORMAT_RUN, ' ');
+}
+
 /** Section underline that matches the header length. */
 function underline(header: string): string {
   return '-'.repeat(header.length);
@@ -53,14 +86,9 @@ function section(header: string): [string, string] {
   return [header, underline(header)];
 }
 
-/** Collapse embedded newlines so a value cannot forge an extra report line. */
-function oneLine(value: string): string {
-  return value.replace(/[\r\n]+/g, ' ');
-}
-
 /** Render one evidence reference as `path:start-end`, or `path:start` if single. */
 function formatEvidence(evidence: SuggestionEvidence): string {
-  const path = oneLine(evidence.path);
+  const path = sanitizeText(evidence.path);
   return evidence.startLine === evidence.endLine
     ? `${path}:${evidence.startLine}`
     : `${path}:${evidence.startLine}-${evidence.endLine}`;
@@ -121,14 +149,14 @@ function partialCoverageNotice(coverage: SuggestionCoverage): string[] {
 /** Render one suggestion (1-based position) as its own block of lines. */
 function renderSuggestion(suggestion: Suggestion, position: number): string[] {
   return [
-    `${position}. ${oneLine(suggestion.id)} — ${suggestion.title}`,
+    `${position}. ${sanitizeText(suggestion.id)} — ${sanitizeText(suggestion.title)}`,
     `   Kind: ${suggestion.kind}`,
     `   Category: ${suggestion.category}`,
     `   Impact: ${suggestion.impact}`,
     `   Effort: ${suggestion.effort}`,
     `   Confidence: ${suggestion.confidence}`,
-    `   Rationale: ${suggestion.rationale}`,
-    `   Recommendation: ${suggestion.recommendation}`,
+    `   Rationale: ${sanitizeText(suggestion.rationale)}`,
+    `   Recommendation: ${sanitizeText(suggestion.recommendation)}`,
     `   Evidence: ${suggestion.evidence.map(formatEvidence).join(', ')}`,
   ];
 }
@@ -141,7 +169,9 @@ export function renderSuggestionReport(report: SuggestionReport): string {
   const lines: string[] = [];
 
   lines.push(SUGGEST_REPORT_TITLE, '');
-  lines.push(`Provider: ${oneLine(report.provider.id)} (${oneLine(report.provider.model)})`);
+  lines.push(
+    `Provider: ${sanitizeText(report.provider.id)} (${sanitizeText(report.provider.model)})`,
+  );
   lines.push(`Schema version: ${report.schemaVersion}`);
   lines.push('');
   lines.push(
@@ -151,7 +181,7 @@ export function renderSuggestionReport(report: SuggestionReport): string {
   lines.push('');
 
   lines.push(...section('Summary'));
-  lines.push(report.summary);
+  lines.push(sanitizeText(report.summary));
   lines.push('');
 
   lines.push(...section('Coverage'));
@@ -175,7 +205,7 @@ export function renderSuggestionReport(report: SuggestionReport): string {
     lines.push('None reported.');
   } else {
     for (const limitation of report.limitations) {
-      lines.push(`- ${limitation}`);
+      lines.push(`- ${sanitizeText(limitation)}`);
     }
   }
   lines.push('');

@@ -48,6 +48,16 @@ const EFFORTS = ['small', 'medium', 'large'] as const;
 const BACKSLASH = String.fromCharCode(92);
 const NUL = String.fromCharCode(0);
 const BIDI_OVERRIDE = String.fromCharCode(0x202e);
+/** Terminal escape introducer (C0 `ESC`). */
+const ESC = String.fromCharCode(0x1b);
+/** C1 8-bit control introducer (the C1 CSI). */
+const C1_CSI = String.fromCharCode(0x9b);
+/** Unicode line separator (`Zl`) — a line break a terminal may honour. */
+const LINE_SEPARATOR = String.fromCharCode(0x2028);
+/** Zero-width space (`Cf`) — invisible, so it can hide or spoof content. */
+const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
+/** Bidi isolate (`Cf`) — invisible directionality control. */
+const BIDI_ISOLATE = String.fromCharCode(0x2066);
 
 function reportSchema(): ParseSchema {
   const schema = Reflect.get(schemaModule, 'SuggestionReportSchema') as ParseSchema | undefined;
@@ -694,5 +704,117 @@ describe('SuggestionReportSchema — suggestion shape', () => {
 
   it.each(cases)('rejects a suggestion with %s', (_label, transform) => {
     expect(parseSuccess(withSuggestion(transform))).toBe(false);
+  });
+});
+
+/**
+ * Terminal/output injection. The report is echoed to a terminal (stdout or a
+ * `--output` file), so model-authored prose must not be able to emit escape
+ * sequences, C1 controls, invisible format characters, or extra line breaks
+ * that could forge a report line. Tab, LF, and CR stay legal: a legitimate
+ * multi-paragraph summary uses plain LF.
+ */
+describe('SuggestionReportSchema — model prose cannot carry terminal control', () => {
+  const proseCases: Array<[string, (report: LooseReport) => LooseReport]> = [
+    [
+      'an ESC in the summary',
+      (report) => {
+        report.summary = `overview ${ESC}[2J`;
+        return report;
+      },
+    ],
+    [
+      'a C1 control (U+009B) in the summary',
+      (report) => {
+        report.summary = `overview ${C1_CSI}2J`;
+        return report;
+      },
+    ],
+    [
+      'a U+2028 line separator in the summary',
+      (report) => {
+        report.summary = `one${LINE_SEPARATOR}two`;
+        return report;
+      },
+    ],
+    [
+      'a U+202E bidi override in the summary',
+      (report) => {
+        report.summary = `one${BIDI_OVERRIDE}two`;
+        return report;
+      },
+    ],
+    [
+      'a U+200B zero-width space in the summary',
+      (report) => {
+        report.summary = `one${ZERO_WIDTH_SPACE}two`;
+        return report;
+      },
+    ],
+    [
+      'an ESC in a limitation',
+      (report) => {
+        report.limitations = [`limited ${ESC}[31m`];
+        return report;
+      },
+    ],
+    [
+      'a NUL in a limitation',
+      (report) => {
+        report.limitations = [`limited ${NUL}`];
+        return report;
+      },
+    ],
+  ];
+
+  it.each(proseCases)('rejects %s', (_label, transform) => {
+    expect(parseSuccess(transform(validReport()))).toBe(false);
+  });
+
+  const suggestionCases: Array<[string, (suggestion: LooseSuggestion) => LooseSuggestion]> = [
+    [
+      'an ESC in the title',
+      (suggestion) => {
+        suggestion.title = `Title ${ESC}[2J`;
+        return suggestion;
+      },
+    ],
+    [
+      'a C1 control in the rationale',
+      (suggestion) => {
+        suggestion.rationale = `because ${C1_CSI}`;
+        return suggestion;
+      },
+    ],
+    [
+      'a bidi isolate (U+2066) in the recommendation',
+      (suggestion) => {
+        suggestion.recommendation = `${BIDI_ISOLATE}do this`;
+        return suggestion;
+      },
+    ],
+  ];
+
+  it.each(suggestionCases)('rejects %s', (_label, transform) => {
+    expect(parseSuccess(withSuggestion(transform))).toBe(false);
+  });
+
+  it('accepts a multi-paragraph summary that uses plain LF', () => {
+    const report = withReport((value) => {
+      value.summary = 'First paragraph.\n\nSecond paragraph.\nA third line.';
+      return value;
+    });
+
+    expect(parseSuccess(report)).toBe(true);
+  });
+
+  it('accepts prose that uses tab and CR', () => {
+    const report = withReport((value) => {
+      value.summary = 'Column\tone\r\nColumn two';
+      value.limitations = ['first\tsecond'];
+      return value;
+    });
+
+    expect(parseSuccess(report)).toBe(true);
   });
 });

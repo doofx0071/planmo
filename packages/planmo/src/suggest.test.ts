@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ProviderError, type ModelProvider, type ProviderErrorKind } from '@planmo/ai';
-import { constructorReader } from '@planmo/scanner';
+import { constructorReader, suggestionContextEngine } from '@planmo/scanner';
 import type { FileReader, VirtualTree } from '@planmo/scanner';
 
 import { runSuggest } from './suggest.js';
@@ -344,5 +344,81 @@ describe('runSuggest — coverage and determinism', () => {
     const first = await run(reportJson());
     const second = await run(reportJson());
     expect(first.result).toEqual(second.result);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A caller-provided context is used as-is (no second scan)
+// ---------------------------------------------------------------------------
+
+describe('runSuggest — a caller-provided context', () => {
+  it('uses the provided context and never re-scans the repository', async () => {
+    const reads: string[] = [];
+    const inner = readerFor(TREE);
+    const reader: FileReader = {
+      readDir: (path) => inner.readDir(path),
+      readFile: (path) => {
+        reads.push(path);
+        return inner.readFile(path);
+      },
+      stat: (path) => inner.stat(path),
+      exists: (path) => inner.exists(path),
+    };
+    const context = await suggestionContextEngine().build('', readerFor(TREE));
+    reads.length = 0;
+    const recorded = textProvider(reportJson());
+
+    const result = await runSuggest({
+      provider: recorded.provider,
+      reader,
+      prebuiltContext: context,
+    });
+
+    expect(result.ok).toBe(true);
+    // The exact same coverage object the caller consented to — not a rebuild.
+    expect(result.coverage).toBe(context.coverage);
+    expect(reads).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Truncated files keep their real (pre-truncation) line count
+// ---------------------------------------------------------------------------
+
+describe('runSuggest — truncated files keep their real line count', () => {
+  // 20,000 lines of `x\n` = 40,000 chars > the 8k-token per-request budget, so
+  // the upload is cut to 16,000 lines while the file really has 20,000.
+  const bigTree: VirtualTree = { 'big.ts': 'x\n'.repeat(20_000) };
+
+  it('accepts evidence within the pre-truncation length of a truncated file', async () => {
+    const recorded = textProvider(
+      reportJson({
+        suggestions: [
+          suggestion({ evidence: [{ path: 'big.ts', startLine: 18_000, endLine: 18_001 }] }),
+        ],
+      }),
+    );
+
+    const result = await runSuggest({ provider: recorded.provider, reader: readerFor(bigTree) });
+
+    expect(result.ok).toBe(true);
+    expect(result.validation).toBe('valid');
+  });
+
+  it('still rejects evidence past the full file length (fail closed)', async () => {
+    const recorded = textProvider(
+      reportJson({
+        suggestions: [
+          suggestion({ evidence: [{ path: 'big.ts', startLine: 20_001, endLine: 20_001 }] }),
+        ],
+      }),
+    );
+
+    const result = await runSuggest({ provider: recorded.provider, reader: readerFor(bigTree) });
+
+    expect(result.ok).toBe(false);
+    expect(result.report).toBeNull();
+    expect(result.validation).toBe('evidence-invalid');
+    expect(result.diagnostics[0]?.code).toBe('SUG-105');
   });
 });

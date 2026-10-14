@@ -71,6 +71,13 @@ export interface SuggestionContextFile {
   path: string;
   /** Redacted content (never the raw secret-bearing text). */
   content: string;
+  /**
+   * Line count of the file's content BEFORE any per-request truncation — the
+   * real length of the file, not the length of the (possibly cut-off) upload.
+   * Evidence ranges are validated against this so a truncated file does not
+   * spuriously reject a citation that lies within the original file.
+   */
+  lineCount: number;
   estimatedTokens: number;
   /** Redactions applied to this file's content. */
   redactionCount: number;
@@ -179,6 +186,18 @@ const MANIFEST_BASENAMES: ReadonlySet<string> = new Set([
  */
 export function estimateSuggestionTokens(content: string): number {
   return Math.ceil(content.length / 4);
+}
+
+/**
+ * Number of lines in a text (a trailing newline does not add a line). Measured
+ * on the content BEFORE truncation so a cut-off upload still reports the file's
+ * real length for evidence validation. Redaction preserves CR/LF terminators, so
+ * this is the same count the original file would yield.
+ */
+export function countSuggestionLines(content: string): number {
+  if (content === '') return 0;
+  const body = content.endsWith('\n') ? content.slice(0, -1) : content;
+  return body.split('\n').length;
 }
 
 /** Lexicographic comparator (code-point order — locale-independent). */
@@ -291,6 +310,7 @@ async function build(
     }
 
     const redacted = redactSuggestionContent(raw);
+    const lineCount = countSuggestionLines(redacted.content);
     let content = redacted.content;
     let estimatedTokens = estimateSuggestionTokens(content);
     let truncated = false;
@@ -317,6 +337,7 @@ async function build(
     currentFiles.push({
       path: entry.path,
       content,
+      lineCount,
       estimatedTokens,
       redactionCount: redacted.redactionCount,
       truncated,

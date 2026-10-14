@@ -266,6 +266,20 @@ describe('suggestionContextEngine.build — token budgeting', () => {
     expect(result.coverage.truncatedFiles).toBe(1);
     expect(result.coverage.truncated).toBe(true);
   });
+
+  it('exposes the PRE-truncation line count of a truncated file', async () => {
+    // 20,000 lines of `y\n` = 40,000 chars > the 8k-token per-request budget, so
+    // the uploaded content is cut to 16,000 lines while the file has 20,000.
+    const result = await build({ 'huge.ts': 'y\n'.repeat(20_000) });
+    const file = result.files[0];
+    expect(file?.truncated).toBe(true);
+    expect(file?.lineCount).toBe(20_000);
+  });
+
+  it('reports the line count for ordinary (untruncated) files too', async () => {
+    const result = await build({ 'a.ts': 'one\ntwo\nthree\n' });
+    expect(result.files[0]?.lineCount).toBe(3);
+  });
 });
 
 // ---------------------------------------------------------------------------
