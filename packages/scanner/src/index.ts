@@ -42,6 +42,26 @@ export { symbolIndex } from './context/symbol-index.js';
 export { lexicalContext, MAX_TOKENS_PER_FILE } from './context/lexical-context.js';
 export { memoryBootstrap } from './context/memory-bootstrap.js';
 
+// Suggestion context batching (AI-setup Plan T15): deterministic, redacted,
+// token-budgeted repository context batches for consent-gated AI review.
+export {
+  suggestionContextEngine,
+  estimateSuggestionTokens,
+  SUGGESTION_CONTEXT_DEFAULTS,
+  SUGGESTION_SKIP_REASONS,
+} from './context/suggestion-context.js';
+export type {
+  SuggestionContextEngine,
+  SuggestionContextOptions,
+  SuggestionContextResult,
+  SuggestionContextCoverage,
+  SuggestionContextFile,
+  SuggestionBatch,
+  SuggestionSkippedFile,
+  SuggestionSkipReason,
+  SuggestionLexicalEntry,
+} from './context/suggestion-context.js';
+
 // Fixtures (P10-05, P10-11): realistic untrusted brownfield + poisoning trees.
 export {
   brownfieldFixture,
