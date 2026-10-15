@@ -188,6 +188,63 @@ describe('provider model-list client', () => {
     expect(new Headers(calls[0]?.init?.headers).get('authorization')).toBe(`Bearer ${SECRET}`);
   });
 
+  it('reads the Groq, Cortecs and Chutes lists from their declared endpoints', async () => {
+    const list = listingFunction();
+    if (list === undefined) return;
+    // Each payload is the shape its own endpoint actually returned (Groq's is the
+    // documented example response; Cortecs and Chutes were read live).
+    const cases = [
+      {
+        providerId: 'groq',
+        endpoint: 'https://api.groq.com/openai/v1/models',
+        body: {
+          object: 'list',
+          data: [{ id: 'gemma2-9b-it', object: 'model', created: 1693721698, owned_by: 'Google' }],
+        },
+      },
+      {
+        providerId: 'cortecs',
+        endpoint: 'https://api.cortecs.ai/v1/models',
+        body: {
+          object: 'list',
+          data: [
+            { id: 'gemini-4-argon', object: 'model', created: 1791963482, owned_by: 'Google' },
+          ],
+        },
+      },
+      {
+        providerId: 'chutes',
+        endpoint: 'https://llm.chutes.ai/v1/models',
+        body: {
+          object: 'list',
+          data: [
+            {
+              id: 'google/gemma-4-31B-turbo-TEE',
+              root: 'nvidia/Gemma-4-31B-IT-NVFP4',
+              object: 'model',
+              created: 1792107130,
+              owned_by: 'sglang',
+            },
+          ],
+        },
+      },
+    ] as const;
+
+    for (const testCase of cases) {
+      const { fetcher, calls } = responseFetcher([jsonResponse(testCase.body)]);
+      const result = await list({
+        providerId: testCase.providerId,
+        credential: SECRET,
+        fetcher,
+      });
+
+      expect(result.modelIds, testCase.providerId).toEqual([testCase.body.data[0]?.id]);
+      expect(calls, testCase.providerId).toHaveLength(1);
+      expect(calls[0]?.url, testCase.providerId).toBe(testCase.endpoint);
+      expect(new Headers(calls[0]?.init?.headers).get('authorization')).toBe(`Bearer ${SECRET}`);
+    }
+  });
+
   it('uses Anthropic headers and follows its declared after_id pagination', async () => {
     const list = listingFunction();
     if (list === undefined) return;

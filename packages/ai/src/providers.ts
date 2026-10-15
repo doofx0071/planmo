@@ -227,6 +227,62 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = deepFreeze([
     },
   },
   {
+    // Groq. Its docs state the API is "mostly OpenAI compatible" and give
+    // `base_url = https://api.groq.com/openai/v1`; the list route and its
+    // `{object, data[]}` response are documented in the same reference. The
+    // endpoint answers 401 without a key, so it really is bearer-gated.
+    id: 'groq',
+    label: 'Groq',
+    baseUrl: 'https://api.groq.com/openai/v1',
+    wireFormat: 'openai',
+    credentialEnv: 'GROQ_API_KEY',
+    docs: 'https://console.groq.com/docs/openai',
+    modelList: {
+      endpoint: 'https://api.groq.com/openai/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
+  },
+  {
+    // Cortecs. Verified live: `GET https://api.cortecs.ai/v1/models` returns
+    // `{object: 'list', data: [{id, …}]}` with no continuation marker. The list
+    // route is readable without a key, but the declared auth is still bearer so
+    // a configured credential is sent rather than silently dropped.
+    id: 'cortecs',
+    label: 'Cortecs',
+    baseUrl: 'https://api.cortecs.ai/v1',
+    wireFormat: 'openai',
+    credentialEnv: 'CORTECS_API_KEY',
+    docs: 'https://api.cortecs.ai/v1/models',
+    modelList: {
+      endpoint: 'https://api.cortecs.ai/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
+  },
+  {
+    // Chutes. Verified live: `GET https://llm.chutes.ai/v1/models` returns
+    // `{object: 'list', data: [{id, …}]}` with no continuation marker, and
+    // answers 401 under an invalid bearer key, so the route is genuinely gated.
+    id: 'chutes',
+    label: 'Chutes',
+    baseUrl: 'https://llm.chutes.ai/v1',
+    wireFormat: 'openai',
+    credentialEnv: 'CHUTES_API_KEY',
+    docs: 'https://llm.chutes.ai/v1/models',
+    modelList: {
+      endpoint: 'https://llm.chutes.ai/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
+  },
+  {
     // Any OpenAI-compatible endpoint (self-hosted, a private gateway, or a vendor
     // not listed above). It has NO default base URL — supply one with
     // `resolveProvider({ preset: 'custom', baseUrl })`. Its credential name is
