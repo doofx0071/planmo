@@ -21,6 +21,7 @@ const REQUIRED_IDS = [
   'moonshot',
   'xai',
   'openrouter',
+  'opencode',
   'custom',
 ] as const;
 
@@ -72,6 +73,11 @@ describe('provider presets', () => {
     expect(providerPreset('openai')).toMatchObject({
       baseUrl: 'https://api.openai.com/v1',
       credentialEnv: 'OPENAI_API_KEY',
+    });
+    expect(providerPreset('opencode')).toMatchObject({
+      wireFormat: 'openai',
+      baseUrl: 'https://opencode.ai/inference/v1',
+      credentialEnv: 'OPENCODE_API_KEY',
     });
   });
 
@@ -135,6 +141,13 @@ describe('provider presets', () => {
         method: 'GET',
         auth: { type: 'bearer' },
         response: { collection: 'data', idField: 'id', continuationLink: 'links.next' },
+        pagination: { type: 'none' },
+      },
+      opencode: {
+        endpoint: 'https://opencode.ai/inference/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
         pagination: { type: 'none' },
       },
       custom: null,

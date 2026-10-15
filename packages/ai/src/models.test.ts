@@ -165,6 +165,29 @@ describe('provider model-list client', () => {
     expect(new Headers(calls[0]?.init?.headers).get('authorization')).toBe(`Bearer ${SECRET}`);
   });
 
+  it('reads the OpenCode Console list from its declared endpoint with bearer auth', async () => {
+    const list = listingFunction();
+    if (list === undefined) return;
+    // Shape taken from the live endpoint: object/data with id/object/created/owned_by.
+    const { fetcher, calls } = responseFetcher([
+      jsonResponse({
+        object: 'list',
+        data: [
+          { id: 'big-pickle', object: 'model', created: 1792082707, owned_by: 'opencode' },
+          { id: 'gpt-6-astra', object: 'model', created: 1792082707, owned_by: 'opencode' },
+        ],
+      }),
+    ]);
+
+    const result = await list({ providerId: 'opencode', credential: SECRET, fetcher });
+
+    expect(result).toEqual({ modelIds: ['big-pickle', 'gpt-6-astra'], truncated: false });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.url).toBe('https://opencode.ai/inference/v1/models');
+    expect(calls[0]?.init?.method).toBe('GET');
+    expect(new Headers(calls[0]?.init?.headers).get('authorization')).toBe(`Bearer ${SECRET}`);
+  });
+
   it('uses Anthropic headers and follows its declared after_id pagination', async () => {
     const list = listingFunction();
     if (list === undefined) return;

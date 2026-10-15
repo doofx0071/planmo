@@ -206,6 +206,27 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = deepFreeze([
     },
   },
   {
+    // OpenCode Console (pay-as-you-go). It is a multi-protocol gateway: its docs
+    // route each model to `/chat/completions`, `/responses` or `/messages`. This
+    // preset declares the OpenAI Chat Completions route only, so it reaches the
+    // models OpenCode publishes as OpenAI-compatible and not the `/responses` or
+    // Anthropic-Messages ones. The list endpoint was verified live: 200 with
+    // `{"object":"list","data":[{"id":…}]}`, and 401 under an invalid bearer key.
+    id: 'opencode',
+    label: 'OpenCode Console',
+    baseUrl: 'https://opencode.ai/inference/v1',
+    wireFormat: 'openai',
+    credentialEnv: 'OPENCODE_API_KEY',
+    docs: 'https://opencode.ai/v2/docs/console/models/',
+    modelList: {
+      endpoint: 'https://opencode.ai/inference/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
+  },
+  {
     // Any OpenAI-compatible endpoint (self-hosted, a private gateway, or a vendor
     // not listed above). It has NO default base URL — supply one with
     // `resolveProvider({ preset: 'custom', baseUrl })`. Its credential name is
