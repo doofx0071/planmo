@@ -1,5 +1,63 @@
 # planmo
 
+## 1.15.0
+
+### Minor Changes
+
+- 26535dd: Add privacy-safe `planmo auth status` and explicit `planmo auth remove` for saved AI profiles and their keyring credentials.
+- 26535dd: Add user-level AI setup with non-secret profiles, OS-keyring credentials, and `planmo setup`/`provider list`/`auth`/`model`, plus a read-only, consent-gated `planmo suggest` that scans a repository, excludes and redacts secrets, and validates an evidence-backed advisory report before uploading nothing by default.
+- 26535dd: Add the OpenCode Console, Groq, Cortecs and Chutes provider presets — each OpenAI-compatible with a verified credential env name and a declared model-list endpoint — and label every row of `planmo provider list` as `runtime-supported` while reporting the coding-agent and candidate-catalog counts separately so a candidate is never read as a provider.
+- 26535dd: Add provider-declared model listing and an interactive `planmo model` command for changing the saved default profile model. Validate AI endpoint URLs and model IDs in `@planmo/schema`.
+
+### Patch Changes
+
+- 6c35e7f: Close the gaps found by running the published CLI against a real repository.
+  
+  - `--help` works per command. It was ignored below the top level, so `init --help`
+    ran the init wizard and `adopt --help` scanned the whole repository before
+    prompting. It now prints that command's options and never runs the command.
+  - An option a command does not accept is a usage error (exit `1`) instead of being
+    silently dropped. A typo (`task P00-02 --stauts DONE`) used to discard the flag,
+    fall through to the interactive prompt, and never apply the change.
+  - An interactive command with no terminal fails with exit `1` and a reason.
+    `init`, `adopt`, and `task` with no id used to leave the prompt pending, so Node
+    exited `13` with an internal "unsettled top-level await" warning that named
+    neither the missing terminal nor the way out.
+  - `init --dry-run` reports the whole write set, including the planning tree it
+    compiles in the same run. It listed the three `.planmo/` files and omitted the
+    roughly thirty documents the real run writes.
+  - `status` reports a `planning/tasks.csv` that fails to parse, instead of calling
+    the workspace HEALTHY while `validate` called the same workspace FAILED.
+  - `init` no longer prints "workspace initialized" when every write collided; it
+    says the workspace already exists and returns `2`.
+  - `validate` verifies the sha256 the manifest records for each generated document
+    (`VLD-007`), which nothing read back before, and warns when one was edited after
+    generation. A warning, not an error: `generate` owns those files.
+- 021d8bc: Reliability pass over the CLI and its tests.
+  
+  - `doctor`: the Node version band is injectable, so the suite is green on any Node
+    the project permits (>= 24) instead of only on the CI's LTS line.
+  - `generate`/`diff`/`validate`/`doctor`: a broken workspace now maps to exit `1`
+    instead of masquerading as "no project found" (`3`); only a genuine
+    `ProjectNotFoundError` returns `3`.
+  - `task`: fails fast with usage when a prompt would be needed but stdin is not a
+    terminal, instead of hanging on a prompt that can never be answered.
+  - The CLI is split for maintainability with no behavior change: `index.ts` is now
+    only the router, the help text lives in `usage.ts`, the I/O + prompt layer in
+    `cli-io.ts`, and the handlers in `commands/{workspace,tasks,agent,plan}.ts`.
+- Updated dependencies [26535dd]
+- Updated dependencies [26535dd]
+- Updated dependencies [26535dd]
+  - @planmo/ai@1.4.0
+  - @planmo/schema@1.3.0
+  - @planmo/scanner@1.1.0
+  - @planmo/agent-bridge@1.3.5
+  - @planmo/core@1.0.6
+  - @planmo/generator@1.4.2
+  - @planmo/packs@1.0.4
+  - @planmo/trace@1.2.3
+  - @planmo/workflow@1.1.6
+
 ## 1.14.1
 
 ### Patch Changes
