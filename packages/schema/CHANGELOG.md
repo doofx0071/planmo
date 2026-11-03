@@ -1,5 +1,12 @@
 # @planmo/schema
 
+## 1.3.0
+
+### Minor Changes
+
+- 26535dd: Add user-level AI setup with non-secret profiles, OS-keyring credentials, and `planmo setup`/`provider list`/`auth`/`model`, plus a read-only, consent-gated `planmo suggest` that scans a repository, excludes and redacts secrets, and validates an evidence-backed advisory report before uploading nothing by default.
+- 26535dd: Add provider-declared model listing and an interactive `planmo model` command for changing the saved default profile model. Validate AI endpoint URLs and model IDs in `@planmo/schema`.
+
 ## 1.2.0
 
 ### Minor Changes

@@ -1,5 +1,15 @@
 # @planmo/generator
 
+## 1.4.2
+
+### Patch Changes
+
+- Updated dependencies [26535dd]
+- Updated dependencies [26535dd]
+  - @planmo/schema@1.3.0
+  - @planmo/core@1.0.6
+  - @planmo/packs@1.0.4
+
 ## 1.4.1
 
 ### Patch Changes

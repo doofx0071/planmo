@@ -1,5 +1,18 @@
 # @planmo/scanner
 
+## 1.1.0
+
+### Minor Changes
+
+- 26535dd: Add user-level AI setup with non-secret profiles, OS-keyring credentials, and `planmo setup`/`provider list`/`auth`/`model`, plus a read-only, consent-gated `planmo suggest` that scans a repository, excludes and redacts secrets, and validates an evidence-backed advisory report before uploading nothing by default.
+
+### Patch Changes
+
+- Updated dependencies [26535dd]
+- Updated dependencies [26535dd]
+  - @planmo/schema@1.3.0
+  - @planmo/core@1.0.6
+
 ## 1.0.8
 
 ### Patch Changes
