@@ -7,34 +7,80 @@
  * change. Each row records the official documentation it was read from, and
  * `providers.test.ts` pins the values — a drift shows up as a failing test.
  *
- * A preset carries NO credential value and NO model list. It records the NAME of
- * the environment variable a credential would come from (`credentialEnv`) and the
- * wire protocol (`wireFormat`); the credential itself is read by the caller from
- * an injected `env` or `process.env`, by name, and is never stored here. A
- * gateway like Token Harbor exposes one key across many vendors and addresses
- * models as `provider/model` slugs (e.g. `deepseek/deepseek-v4-flash`), so the
- * model is a request-time argument, not a preset field.
+ * A preset carries NO credential value. It records the NAME of the environment
+ * variable a credential would come from (`credentialEnv`) and the wire protocol
+ * (`wireFormat`); credentials are read by callers from an injected `env` or
+ * `process.env`, by name, and are never stored here. A separate, explicit
+ * `modelList` capability records the provider's verified discovery contract; it
+ * is never derived from the inference `baseUrl`.
  */
 
 /** The two request/response shapes a provider can speak. */
 export type WireFormat = 'openai' | 'anthropic';
 
+export type ModelListAuth =
+  | Readonly<{ type: 'bearer' }>
+  | Readonly<{
+      type: 'header';
+      credentialHeader: 'x-api-key';
+      headers: Readonly<{ 'anthropic-version': '2023-06-01' }>;
+    }>;
+
+export type ModelListResponse =
+  | Readonly<{
+      collection: 'data';
+      idField: 'id';
+      /** Declared response continuation marker; reported but never followed. */
+      continuationLink?: 'links.next';
+    }>
+  | Readonly<{
+      collection: 'models';
+      idField: 'id';
+      outputModalitiesField: 'output_modalities';
+      includesOutputModality: 'text';
+    }>;
+
+export type ModelListPagination =
+  | Readonly<{ type: 'none' }>
+  | Readonly<{ type: 'anthropic-cursor'; limit: number; maxPages: number }>;
+
+/** Verified endpoint contract for listing provider-reported model identifiers. */
+export interface ModelListCapability {
+  /** Exact official list URL; never inferred from `baseUrl`. */
+  readonly endpoint: string;
+  readonly method: 'GET';
+  readonly auth: ModelListAuth;
+  readonly response: ModelListResponse;
+  readonly pagination: ModelListPagination;
+}
+
 export interface ProviderPreset {
   /** Stable id used on the command line and in `resolveProvider({ preset })`. */
-  id: string;
+  readonly id: string;
   /** Human-readable name for the picker. */
-  label: string;
+  readonly label: string;
   /**
    * API root the provider appends its path to (`/chat/completions` for `openai`,
    * `/messages` for `anthropic`). Empty for `custom`, which requires an override.
    */
-  baseUrl: string;
+  readonly baseUrl: string;
   /** Which wire protocol the endpoint speaks. */
-  wireFormat: WireFormat;
+  readonly wireFormat: WireFormat;
   /** NAME of the environment variable holding the credential. Never the value. */
-  credentialEnv: string;
+  readonly credentialEnv: string;
   /** Official documentation this row was verified against. */
-  docs: string;
+  readonly docs: string;
+  /** Explicit list-endpoint contract, or null when manual entry is required. */
+  readonly modelList: ModelListCapability | null;
+}
+
+/** Freeze trusted provider metadata at runtime, including every nested object. */
+function deepFreeze<T>(value: T, seen = new WeakSet<object>()): T {
+  if (typeof value !== 'object' || value === null || seen.has(value)) return value;
+  seen.add(value);
+  for (const nested of Object.values(value)) deepFreeze(nested, seen);
+  Object.freeze(value);
+  return value;
 }
 
 /**
@@ -44,7 +90,7 @@ export interface ProviderPreset {
  * whose credential is present), so specific gateways come first and the generic
  * `custom` row is last.
  */
-export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
+export const PROVIDER_PRESETS: readonly ProviderPreset[] = deepFreeze([
   {
     id: 'tokenharbor',
     label: 'Token Harbor',
@@ -52,6 +98,13 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     wireFormat: 'openai',
     credentialEnv: 'TOKENHARBOR_KEY',
     docs: 'https://tokenharbor.ai/docs',
+    modelList: {
+      endpoint: 'https://tokenharbor.ai/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
   },
   {
     id: 'openai',
@@ -60,6 +113,13 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     wireFormat: 'openai',
     credentialEnv: 'OPENAI_API_KEY',
     docs: 'https://platform.openai.com/docs/api-reference/chat',
+    modelList: {
+      endpoint: 'https://api.openai.com/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
   },
   {
     id: 'anthropic',
@@ -68,6 +128,17 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     wireFormat: 'anthropic',
     credentialEnv: 'ANTHROPIC_API_KEY',
     docs: 'https://docs.anthropic.com/en/api/messages',
+    modelList: {
+      endpoint: 'https://api.anthropic.com/v1/models',
+      method: 'GET',
+      auth: {
+        type: 'header',
+        credentialHeader: 'x-api-key',
+        headers: { 'anthropic-version': '2023-06-01' },
+      },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'anthropic-cursor', limit: 100, maxPages: 5 },
+    },
   },
   {
     id: 'deepseek',
@@ -76,6 +147,13 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     wireFormat: 'openai',
     credentialEnv: 'DEEPSEEK_API_KEY',
     docs: 'https://api-docs.deepseek.com/',
+    modelList: {
+      endpoint: 'https://api.deepseek.com/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
   },
   {
     id: 'moonshot',
@@ -84,6 +162,13 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     wireFormat: 'openai',
     credentialEnv: 'MOONSHOT_API_KEY',
     docs: 'https://platform.moonshot.ai/docs',
+    modelList: {
+      endpoint: 'https://api.moonshot.ai/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
   },
   {
     id: 'xai',
@@ -92,6 +177,18 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     wireFormat: 'openai',
     credentialEnv: 'XAI_API_KEY',
     docs: 'https://docs.x.ai/docs/overview',
+    modelList: {
+      endpoint: 'https://api.x.ai/v1/language-models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: {
+        collection: 'models',
+        idField: 'id',
+        outputModalitiesField: 'output_modalities',
+        includesOutputModality: 'text',
+      },
+      pagination: { type: 'none' },
+    },
   },
   {
     id: 'openrouter',
@@ -100,6 +197,90 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     wireFormat: 'openai',
     credentialEnv: 'OPENROUTER_API_KEY',
     docs: 'https://openrouter.ai/docs',
+    modelList: {
+      endpoint: 'https://openrouter.ai/api/v1/models?limit=500',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id', continuationLink: 'links.next' },
+      pagination: { type: 'none' },
+    },
+  },
+  {
+    // OpenCode Console (pay-as-you-go). It is a multi-protocol gateway: its docs
+    // route each model to `/chat/completions`, `/responses` or `/messages`. This
+    // preset declares the OpenAI Chat Completions route only, so it reaches the
+    // models OpenCode publishes as OpenAI-compatible and not the `/responses` or
+    // Anthropic-Messages ones. The list endpoint was verified live: 200 with
+    // `{"object":"list","data":[{"id":…}]}`, and 401 under an invalid bearer key.
+    id: 'opencode',
+    label: 'OpenCode Console',
+    baseUrl: 'https://opencode.ai/inference/v1',
+    wireFormat: 'openai',
+    credentialEnv: 'OPENCODE_API_KEY',
+    docs: 'https://opencode.ai/v2/docs/console/models/',
+    modelList: {
+      endpoint: 'https://opencode.ai/inference/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
+  },
+  {
+    // Groq. Its docs state the API is "mostly OpenAI compatible" and give
+    // `base_url = https://api.groq.com/openai/v1`; the list route and its
+    // `{object, data[]}` response are documented in the same reference. The
+    // endpoint answers 401 without a key, so it really is bearer-gated.
+    id: 'groq',
+    label: 'Groq',
+    baseUrl: 'https://api.groq.com/openai/v1',
+    wireFormat: 'openai',
+    credentialEnv: 'GROQ_API_KEY',
+    docs: 'https://console.groq.com/docs/openai',
+    modelList: {
+      endpoint: 'https://api.groq.com/openai/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
+  },
+  {
+    // Cortecs. Verified live: `GET https://api.cortecs.ai/v1/models` returns
+    // `{object: 'list', data: [{id, …}]}` with no continuation marker. The list
+    // route is readable without a key, but the declared auth is still bearer so
+    // a configured credential is sent rather than silently dropped.
+    id: 'cortecs',
+    label: 'Cortecs',
+    baseUrl: 'https://api.cortecs.ai/v1',
+    wireFormat: 'openai',
+    credentialEnv: 'CORTECS_API_KEY',
+    docs: 'https://api.cortecs.ai/v1/models',
+    modelList: {
+      endpoint: 'https://api.cortecs.ai/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
+  },
+  {
+    // Chutes. Verified live: `GET https://llm.chutes.ai/v1/models` returns
+    // `{object: 'list', data: [{id, …}]}` with no continuation marker, and
+    // answers 401 under an invalid bearer key, so the route is genuinely gated.
+    id: 'chutes',
+    label: 'Chutes',
+    baseUrl: 'https://llm.chutes.ai/v1',
+    wireFormat: 'openai',
+    credentialEnv: 'CHUTES_API_KEY',
+    docs: 'https://llm.chutes.ai/v1/models',
+    modelList: {
+      endpoint: 'https://llm.chutes.ai/v1/models',
+      method: 'GET',
+      auth: { type: 'bearer' },
+      response: { collection: 'data', idField: 'id' },
+      pagination: { type: 'none' },
+    },
   },
   {
     // Any OpenAI-compatible endpoint (self-hosted, a private gateway, or a vendor
@@ -113,8 +294,9 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     wireFormat: 'openai',
     credentialEnv: 'PLANMO_AI_API_KEY',
     docs: 'https://platform.openai.com/docs/api-reference/chat',
+    modelList: null,
   },
-];
+]);
 
 /** Look up a preset by id; undefined when the id is unknown. */
 export function providerPreset(id: string): ProviderPreset | undefined {

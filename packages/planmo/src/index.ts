@@ -12,8 +12,13 @@ import {
   runDoctorCommand,
 } from './commands/workspace.js';
 import { runNext, runTask, runTrace, runHandoff, runPack } from './commands/tasks.js';
-import { runPlanCommand } from './commands/plan.js';
+import { runPlanCommand, type PlanCommandDependencies } from './commands/plan.js';
 import { runAgent } from './commands/agent.js';
+import { runProviderCommand } from './commands/provider.js';
+import { runSetupCommand, type SetupCommandDependencies } from './commands/setup.js';
+import { runAuthCommand, type AuthCommandDependencies } from './commands/auth.js';
+import { runModelCommand, type ModelCommandDependencies } from './commands/model.js';
+import { runSuggestCommand, type SuggestCommandDependencies } from './commands/suggest.js';
 
 /**
  * PlanMo CLI — the real command surface (ADR-0010).
@@ -56,6 +61,7 @@ const COMMAND_FLAGS: Readonly<Record<string, readonly string[]>> = Object.freeze
   status: ['dir'],
   adopt: ['dir', 'yes', 'dry-run'],
   plan: ['idea', 'dir', 'provider', 'model', 'base-url', 'dry-run', 'force'],
+  suggest: ['dir', 'dry-run', 'allow-upload', 'json', 'output', 'provider', 'model', 'base-url'],
   generate: ['dir', 'dry-run', 'force'],
   diff: ['dir', 'exit-code'],
   validate: ['dir'],
@@ -66,6 +72,10 @@ const COMMAND_FLAGS: Readonly<Record<string, readonly string[]>> = Object.freeze
   handoff: ['dir', 'dry-run', 'force'],
   pack: ['dir', 'source', 'dry-run'],
   agent: ['agent', 'dir', 'global', 'yes', 'force', 'dry-run'],
+  provider: [],
+  setup: ['provider', 'model', 'base-url'],
+  auth: ['yes'],
+  model: [],
 });
 
 /** Every `--flag` (and `--flag=value`) in `argv` that `allowed` does not list. */
@@ -84,6 +94,13 @@ export async function run(
   argv: string[],
   io: CliIO = defaultIO,
   wizard: WizardIO = terminalWizard,
+  dependencies: {
+    plan?: PlanCommandDependencies;
+    setup?: SetupCommandDependencies;
+    auth?: AuthCommandDependencies;
+    model?: ModelCommandDependencies;
+    suggest?: SuggestCommandDependencies;
+  } = {},
 ): Promise<number> {
   const [command] = argv;
 
@@ -112,7 +129,27 @@ export async function run(
     return 0;
   }
 
+  if (
+    command === 'setup' &&
+    argv.slice(1).some((arg) => arg === '--api-key' || arg.startsWith('--api-key='))
+  ) {
+    io.err(
+      `${PRODUCT_SLUG} setup: --api-key is forbidden; use the masked prompt or a provider environment variable.`,
+    );
+    return 1;
+  }
+
   const unknown = unknownFlags(argv.slice(1), allowed);
+  if (command === 'model' && unknown.length > 0) {
+    io.err(`${PRODUCT_SLUG} model: unknown option.`);
+    io.err(`Run '${PRODUCT_SLUG} model --help' for the options it accepts.`);
+    return 1;
+  }
+  if (command === 'auth' && unknown.length > 0) {
+    io.err(`${PRODUCT_SLUG} auth: unknown option.`);
+    io.err(`Run '${PRODUCT_SLUG} auth --help' for the options it accepts.`);
+    return 1;
+  }
   if (unknown.length > 0) {
     io.err(
       `${PRODUCT_SLUG} ${command}: unknown option${unknown.length > 1 ? 's' : ''} ` +
@@ -147,7 +184,9 @@ export async function run(
       case 'next':
         return await runNext(argv.slice(1), io);
       case 'plan':
-        return await runPlanCommand(argv.slice(1), io);
+        return await runPlanCommand(argv.slice(1), io, dependencies.plan);
+      case 'suggest':
+        return await runSuggestCommand(argv.slice(1), io, wizard, dependencies.suggest);
       case 'trace':
         return await runTrace(argv.slice(1), io);
       case 'handoff':
@@ -156,6 +195,14 @@ export async function run(
         return await runPack(argv.slice(1), io);
       case 'agent':
         return await runAgent(argv.slice(1), io, wizard);
+      case 'provider':
+        return runProviderCommand(argv.slice(1), io);
+      case 'setup':
+        return await runSetupCommand(argv.slice(1), io, wizard, dependencies.setup);
+      case 'auth':
+        return await runAuthCommand(argv.slice(1), io, wizard, dependencies.auth);
+      case 'model':
+        return await runModelCommand(argv.slice(1), io, wizard, dependencies.model);
       default:
         // Unreachable: `allowed` above proves `command` is one of the keys.
         io.err(`${PRODUCT_SLUG}: unknown command '${command}'`);

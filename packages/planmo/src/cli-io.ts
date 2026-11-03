@@ -24,10 +24,27 @@ export const defaultIO: CliIO = {
   err: (line) => console.error(line),
 };
 
+/** The result of parsing `argv` (see {@link parseArgs}). */
+export interface ParsedArgs {
+  flags: Map<string, string>;
+  positional: string[];
+  /**
+   * Names of flags that appeared WITHOUT a value: a bare `--flag`, or `--flag`
+   * immediately followed by another `--flag`.
+   *
+   * A bare flag is still stored in `flags` with the sentinel `'true'` for
+   * backwards compatibility, so this set is the ONLY way to tell a valueless
+   * `--output` (a usage error) apart from `--output=value`, and a bare
+   * `--allow-upload` (consent) apart from `--allow-upload=false` (not consent).
+   */
+  valueless: Set<string>;
+}
+
 /** Minimal `--flag value` / `--flag=value` parser (no external dep). */
-export function parseArgs(argv: string[]): { flags: Map<string, string>; positional: string[] } {
+export function parseArgs(argv: string[]): ParsedArgs {
   const flags = new Map<string, string>();
   const positional: string[] = [];
+  const valueless = new Set<string>();
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]!;
     if (arg.startsWith('--')) {
@@ -41,13 +58,14 @@ export function parseArgs(argv: string[]): { flags: Map<string, string>; positio
           i++;
         } else {
           flags.set(arg.slice(2), 'true');
+          valueless.add(arg.slice(2));
         }
       }
     } else {
       positional.push(arg);
     }
   }
-  return { flags, positional };
+  return { flags, positional, valueless };
 }
 
 /** Prompt values must be primitives — that is all a terminal prompt can render. */
@@ -62,6 +80,8 @@ interface WizardChoice<T extends WizardValue> {
 
 export interface WizardIO {
   prompt: (question: string, dflt?: string) => Promise<string>;
+  /** Masked secret input. `undefined` means the user cancelled. */
+  password: (question: string) => Promise<string | undefined>;
   /** Arrow-key single select. `undefined` means the user cancelled. */
   select: <T extends WizardValue>(
     question: string,
@@ -105,6 +125,11 @@ export const terminalWizard: WizardIO = {
     } finally {
       rl.close();
     }
+  },
+  password: async (question: string): Promise<string | undefined> => {
+    requireTerminal('this prompt');
+    const answer = await clack.password({ message: question });
+    return clack.isCancel(answer) ? undefined : answer;
   },
   select: async <T extends WizardValue>(
     question: string,

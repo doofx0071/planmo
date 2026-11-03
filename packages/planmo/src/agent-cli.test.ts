@@ -69,6 +69,9 @@ function scripted(script: Script) {
   let confirms = 0;
   const wizard = {
     prompt: async () => 'x',
+    password: async () => {
+      throw new Error('unexpected secret prompt');
+    },
     select: async () => undefined,
     multiSelect: async <T extends string | boolean | number>(
       question: string,

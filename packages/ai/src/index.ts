@@ -9,6 +9,7 @@
  */
 export * from './contracts.js';
 export * from './providers.js';
+export * from './models.js';
 export * from './structured.js';
 export * from './mock.js';
 export * from './http.js';

@@ -38,6 +38,10 @@ export {
 // The plan document (step 4) — what an AI authors once, deterministically compiled after
 export { PlanTask, PlanPhase, PlanDocument, PLAN_PATH, planIdProblems } from './plan.js';
 
+// User-level non-secret AI profiles
+export { AiEndpointUrlSchema, AiProfileSchema, AiUserConfigSchema } from './ai-user-config.js';
+export type { AiProfile, AiUserConfig } from './ai-user-config.js';
+
 // Versioning + migrations
 export {
   UnsupportedSchemaVersionError,
@@ -242,3 +246,28 @@ export type {
   ContextLevel,
   ContextBundle,
 } from './agent-bridge.js';
+
+// Evidence-backed `planmo suggest` report (Phase 02, T16)
+export {
+  SUGGESTION_KINDS,
+  SUGGESTION_CATEGORIES,
+  SUGGESTION_IMPACTS,
+  SUGGESTION_EFFORTS,
+  SuggestionEvidencePathSchema,
+  SuggestionEvidenceSchema,
+  SuggestionSchema,
+  SuggestionProviderSchema,
+  SuggestionCoverageSchema,
+  SuggestionReportSchema,
+} from './suggestion-report.js';
+export type {
+  SuggestionKind,
+  SuggestionCategory,
+  SuggestionImpact,
+  SuggestionEffort,
+  SuggestionEvidence,
+  Suggestion,
+  SuggestionProvider,
+  SuggestionCoverage,
+  SuggestionReport,
+} from './suggestion-report.js';

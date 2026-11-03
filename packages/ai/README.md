@@ -33,19 +33,26 @@ import { createMockProvider, createHttpProvider } from '@planmo/ai';
 
 The mock is deterministic — identical input yields byte-identical output — and
 always reports `simulated: true`, so a caller can never mistake simulated output
-for a real model's. The default test suite uses only the mock: no network, no
-credentials. The HTTP provider retries transport, rate-limit and 5xx failures with
-bounded backoff, and never retries an auth error.
+for a real model's. Tests use deterministic mocks and fake/injected responses.
+Model-list tests inject `fetch` with synthetic API-key strings; the suite makes no
+live provider requests and uses no real credentials. The HTTP provider retries
+transport, rate-limit and 5xx failures with bounded backoff, and never retries an
+auth error.
 
 ### Providers
 
 `PROVIDER_PRESETS` is a declared table of gateways and vendors (Token Harbor,
 OpenAI, Anthropic, DeepSeek, Moonshot/Kimi, xAI/Grok, OpenRouter, and an
-overridable `custom`). Each row records only the credential **env var name** and
-the wire protocol — never a key and never a model list — so a gateway like Token
-Harbor can serve `provider/model` slugs from a single key. `resolveProvider`
-selects one from an injected `env` (or `process.env`); `describeProviders(env)`
-returns render-ready rows. `createHttpProvider` speaks either wire format:
+overridable `custom`). Each row records the credential **env var name** (never a
+key) and the wire protocol. Presets do not cache model IDs; they may declare a
+model-list contract with the exact endpoint and HTTP method, auth, response
+shape, and pagination. `listProviderModels` makes a request only when called
+and only for a preset with that contract. `custom` has no listing contract, so
+its models must be entered manually. Returned IDs are provider-reported;
+PlanMo compatibility is not guaranteed. Gateways such as Token Harbor can serve
+`provider/model` slugs from a single key. `resolveProvider` selects a provider
+from an injected `env` (or `process.env`); `describeProviders(env)` returns
+render-ready rows. `createHttpProvider` speaks either wire format:
 
 ```ts
 import { resolveProvider, createHttpProvider } from '@planmo/ai';

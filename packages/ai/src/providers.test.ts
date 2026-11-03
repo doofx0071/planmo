@@ -21,6 +21,10 @@ const REQUIRED_IDS = [
   'moonshot',
   'xai',
   'openrouter',
+  'opencode',
+  'groq',
+  'cortecs',
+  'chutes',
   'custom',
 ] as const;
 
@@ -72,6 +76,120 @@ describe('provider presets', () => {
     expect(providerPreset('openai')).toMatchObject({
       baseUrl: 'https://api.openai.com/v1',
       credentialEnv: 'OPENAI_API_KEY',
+    });
+    expect(providerPreset('opencode')).toMatchObject({
+      wireFormat: 'openai',
+      baseUrl: 'https://opencode.ai/inference/v1',
+      credentialEnv: 'OPENCODE_API_KEY',
+    });
+    expect(providerPreset('groq')).toMatchObject({
+      wireFormat: 'openai',
+      baseUrl: 'https://api.groq.com/openai/v1',
+      credentialEnv: 'GROQ_API_KEY',
+    });
+    expect(providerPreset('cortecs')).toMatchObject({
+      wireFormat: 'openai',
+      baseUrl: 'https://api.cortecs.ai/v1',
+      credentialEnv: 'CORTECS_API_KEY',
+    });
+    expect(providerPreset('chutes')).toMatchObject({
+      wireFormat: 'openai',
+      baseUrl: 'https://llm.chutes.ai/v1',
+      credentialEnv: 'CHUTES_API_KEY',
+    });
+  });
+
+  it('declares exact model-list endpoints, auth, response shapes, and pagination', () => {
+    expect(
+      Object.fromEntries(PROVIDER_PRESETS.map((preset) => [preset.id, preset.modelList])),
+    ).toEqual({
+      tokenharbor: {
+        endpoint: 'https://tokenharbor.ai/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      openai: {
+        endpoint: 'https://api.openai.com/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      anthropic: {
+        endpoint: 'https://api.anthropic.com/v1/models',
+        method: 'GET',
+        auth: {
+          type: 'header',
+          credentialHeader: 'x-api-key',
+          headers: { 'anthropic-version': '2023-06-01' },
+        },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'anthropic-cursor', limit: 100, maxPages: 5 },
+      },
+      deepseek: {
+        endpoint: 'https://api.deepseek.com/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      moonshot: {
+        endpoint: 'https://api.moonshot.ai/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      xai: {
+        endpoint: 'https://api.x.ai/v1/language-models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: {
+          collection: 'models',
+          idField: 'id',
+          outputModalitiesField: 'output_modalities',
+          includesOutputModality: 'text',
+        },
+        pagination: { type: 'none' },
+      },
+      openrouter: {
+        endpoint: 'https://openrouter.ai/api/v1/models?limit=500',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id', continuationLink: 'links.next' },
+        pagination: { type: 'none' },
+      },
+      opencode: {
+        endpoint: 'https://opencode.ai/inference/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      groq: {
+        endpoint: 'https://api.groq.com/openai/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      cortecs: {
+        endpoint: 'https://api.cortecs.ai/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      chutes: {
+        endpoint: 'https://llm.chutes.ai/v1/models',
+        method: 'GET',
+        auth: { type: 'bearer' },
+        response: { collection: 'data', idField: 'id' },
+        pagination: { type: 'none' },
+      },
+      custom: null,
     });
   });
 

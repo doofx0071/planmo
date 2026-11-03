@@ -2,7 +2,14 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it, afterEach } from 'vitest';
+import { describe, expect, it, afterEach, beforeEach, vi } from 'vitest';
+import { createMockProvider } from '@planmo/ai';
+import type { HttpProviderConfig } from '@planmo/ai';
+import { PLAN_PATH } from '@planmo/schema';
+import type { PlanCommandDependencies } from './commands/plan.js';
+import type { CredentialStore } from './credential-store.js';
+import type { CliIO, WizardIO } from './cli-io.js';
+import { mockPlanResponse } from './plan-build.js';
 
 /**
  * A wizard double for tests.
@@ -13,6 +20,8 @@ import { describe, expect, it, afterEach } from 'vitest';
  */
 const silentWizard = (prompt: (q: string, dflt?: string) => Promise<string> = async () => 'x') => ({
   prompt,
+  // Secret prompts are cancelled unless a test explicitly exercises them.
+  password: async () => undefined,
   // Selects go through the same scripted answers as free-text prompts, so a test
   // drives both without caring which prompt style a question happens to use. An
   // answer that is not one of the choices falls back to the first choice, which is
@@ -27,12 +36,60 @@ const silentWizard = (prompt: (q: string, dflt?: string) => Promise<string> = as
 });
 
 /** A wizard that fails the test if anything is asked at all. */
-const noPromptWizard = () =>
-  silentWizard(async () => {
+const noPromptWizard = () => ({
+  ...silentWizard(async () => {
     throw new Error('should not prompt');
-  });
+  }),
+  password: async () => {
+    throw new Error('should not prompt');
+  },
+});
 
-import { run, USAGE } from './index.js';
+import { run, USAGE, usageFor } from './index.js';
+
+vi.mock('./keyring-credential-store.js', () => ({
+  KeyringCredentialStore: class {
+    async get() {
+      throw new Error('real keyring access is disabled in plan tests');
+    }
+    async set() {
+      throw new Error('real keyring access is disabled in plan tests');
+    }
+    async remove() {
+      throw new Error('real keyring access is disabled in plan tests');
+    }
+    async has() {
+      throw new Error('real keyring access is disabled in plan tests');
+    }
+  },
+}));
+
+type PlanRouteTestDependencies = PlanCommandDependencies;
+
+type PlanRouteTestCli = (
+  argv: string[],
+  io: CliIO,
+  wizard: WizardIO,
+  dependencies: { plan?: PlanRouteTestDependencies },
+) => Promise<number>;
+
+const runWithPlanDependencies = run as unknown as PlanRouteTestCli;
+
+type AuthRouteTestCli = (
+  argv: string[],
+  io: CliIO,
+  wizard: WizardIO,
+  dependencies: {
+    auth?: {
+      env?: Readonly<Record<string, string | undefined>>;
+      configDir?: string;
+      store?: CredentialStore;
+      interactive?: boolean;
+    };
+  },
+) => Promise<number>;
+
+const runWithAuthDependencies = run as unknown as AuthRouteTestCli;
 
 function capture() {
   const out: string[] = [];
@@ -51,7 +108,13 @@ async function tempRoot(prefix = 'planmo-cli-'): Promise<string> {
   return dir;
 }
 
+beforeEach(() => {
+  // Keep any missing provider-factory route offline, even when credentials exist in the host env.
+  vi.stubGlobal('fetch', async () => new Response(null, { status: 401 }));
+});
+
 afterEach(async () => {
+  vi.unstubAllGlobals();
   const { rm } = await import('node:fs/promises');
   while (tempDirs.length > 0) await rm(tempDirs.pop()!, { recursive: true, force: true });
 });
@@ -285,6 +348,213 @@ describe('USAGE', () => {
   it('documents the generate command', () => {
     expect(USAGE).toContain('generate');
   });
+
+  it('documents setup and its supported configuration flags', () => {
+    expect(USAGE).toContain('planmo setup');
+    expect(usageFor('setup')).toContain('setup options:');
+    expect(usageFor('setup')).toContain('--provider <id>');
+    expect(usageFor('setup')).toContain('--model <id>');
+    expect(usageFor('setup')).toContain('--base-url <url>');
+    expect(usageFor('setup')).toContain(
+      'nonblank provider environment variable takes precedence over any saved keyring entry',
+    );
+    expect(usageFor('setup')).toContain(
+      'keyring credential is used only when the variable is blank',
+    );
+  });
+
+  it('documents saved-profile defaults, environment-key precedence, and no-profile auto-detection', () => {
+    const planUsage = usageFor('plan');
+    expect(planUsage).toContain('saved default profile');
+    expect(planUsage).toContain('Explicit --provider, --model, and --base-url flags override');
+    expect(planUsage).toContain(
+      'environment key takes precedence over the profile keyring credential',
+    );
+    expect(planUsage).toContain(
+      'Without a saved default profile, provider selection is auto-detected from the environment',
+    );
+  });
+
+  it('documents planmo model and its saved-default model-id behavior', () => {
+    expect(USAGE).toContain('planmo model [<model-id>]');
+    expect(usageFor('model')).toContain('model options:');
+    expect(usageFor('model')).toContain('saved default profile');
+    expect(usageFor('model').toLowerCase()).toContain('provider-reported');
+  });
+
+  it('prints model help before command dispatch and without requiring profile state', async () => {
+    const { io, out, err } = capture();
+    const code = await run(['model', '--help'], io, noPromptWizard());
+
+    expect(code).toBe(0);
+    expect(out.join('\\n')).toContain('model options:');
+    expect(err).toEqual([]);
+  });
+
+  it('documents auth removal side effects and confirmation behavior', () => {
+    const authUsage = usageFor('auth');
+    expect(authUsage).toContain('remove <profile-id>');
+    expect(authUsage).toContain('keyring credential only if one is attached');
+    expect(authUsage).toContain('provider environment variables are unchanged');
+    expect(authUsage).toContain('skip interactive confirmation');
+    expect(authUsage).toContain('required when no TTY is available');
+    expect(USAGE).toContain('leave provider environment variables unchanged');
+  });
+
+  it('documents planmo suggest and its consent/output flags', () => {
+    expect(USAGE).toContain('planmo suggest');
+    const suggestUsage = usageFor('suggest');
+    expect(suggestUsage).toContain('suggest options:');
+    expect(suggestUsage).toContain('--dir <path>');
+    expect(suggestUsage).toContain('--dry-run');
+    expect(suggestUsage).toContain('--allow-upload');
+    expect(suggestUsage).toContain('--json');
+    expect(suggestUsage).toContain('--output <path>');
+    expect(suggestUsage).toContain('--provider <id>');
+    expect(suggestUsage).toContain('--model <slug>');
+    expect(suggestUsage).toContain('--base-url <url>');
+    expect(suggestUsage).toContain('refuses to overwrite an existing file');
+  });
+
+  it('prints suggest help before dispatch without a workspace or a provider', async () => {
+    const { io, out, err } = capture();
+    const code = await run(['suggest', '--help'], io, noPromptWizard());
+    expect(code).toBe(0);
+    expect(out.join('\n')).toContain('suggest options:');
+    expect(err).toEqual([]);
+  });
+});
+
+describe('planmo plan — dependency route', () => {
+  it('routes injected config, env, store, and provider factory through run()', async () => {
+    const root = await tempRoot('planmo-plan-route-workspace-');
+    expect(await run(['init', root, '--yes'], capture().io, noPromptWizard())).toBe(0);
+    const configDir = await tempRoot('planmo-plan-route-config-');
+    const idea = 'Build a routed plan';
+    const secret = 'synthetic-route-environment-key';
+    const factoryCalls: HttpProviderConfig[] = [];
+    const storeReads: string[] = [];
+    const store: CredentialStore = {
+      async get(ref) {
+        storeReads.push(ref);
+        return null;
+      },
+      async set() {},
+      async remove() {},
+      async has() {
+        return false;
+      },
+    };
+    const { io, out } = capture();
+
+    const code = await runWithPlanDependencies(
+      ['plan', idea, '--dir', root, '--model', 'gpt-route-model'],
+      io,
+      noPromptWizard(),
+      {
+        plan: {
+          configDir,
+          env: { OPENAI_API_KEY: secret },
+          store,
+          providerFactory: (config) => {
+            factoryCalls.push(config);
+            return createMockProvider({ text: mockPlanResponse(idea) });
+          },
+        },
+      },
+    );
+
+    expect(code).toBe(0);
+    expect(factoryCalls).toEqual([
+      {
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: secret,
+        model: 'gpt-route-model',
+        wireFormat: 'openai',
+      },
+    ]);
+    expect(storeReads).toEqual([]);
+    expect(out.join('\n')).toContain('author: openai / gpt-route-model');
+    expect(await readFile(join(root, PLAN_PATH), 'utf8')).not.toContain(secret);
+  });
+});
+
+describe('planmo setup — CLI route', () => {
+  it('handles per-command help before dispatching a setup wizard', async () => {
+    const { io, out, err } = capture();
+    const code = await run(['setup', '--help'], io, noPromptWizard());
+
+    expect(code).toBe(0);
+    expect(out.join('\\n')).toContain('setup options:');
+    expect(err).toEqual([]);
+  });
+
+  const sensitive = ['SYNTHETIC', 'SECRET'].join('-');
+  it.each([
+    { kind: 'flag-like', args: ['--api-key', `--${sensitive}`], value: `--${sensitive}` },
+    { kind: 'plain', args: ['--api-key', sensitive], value: sensitive },
+    { kind: 'equals', args: [`--api-key=${sensitive}`], value: sensitive },
+  ])('rejects --api-key without echoing a $kind operand', async ({ args, value }) => {
+    const { io, out, err } = capture();
+    const code = await run(['setup', ...args], io, noPromptWizard());
+
+    expect(code).toBe(1);
+    expect(err).toEqual([
+      'planmo setup: --api-key is forbidden; use the masked prompt or a provider environment variable.',
+    ]);
+    expect(err.join('\\n')).not.toContain(value);
+    expect(out).toEqual([]);
+  });
+});
+
+describe('planmo model — unknown option handling', () => {
+  const flagShapedSecret = ['--SYNTHETIC', 'SECRET'].join('-');
+  const plainSecret = ['SYNTHETIC', 'PLAIN'].join('-');
+  const equalsSecret = ['--SYNTHETIC', 'EQUALS'].join('-');
+
+  it.each([
+    {
+      kind: 'an API-key option',
+      args: ['--api-key', flagShapedSecret],
+      undisclosed: ['--api-key', flagShapedSecret],
+    },
+    {
+      kind: 'an option with a plain operand',
+      args: ['--api-key', plainSecret],
+      undisclosed: ['--api-key', plainSecret],
+    },
+    {
+      kind: 'an option with an equals-form operand',
+      args: [`--api-key=${equalsSecret}`],
+      undisclosed: ['--api-key', `--api-key=${equalsSecret}`, equalsSecret],
+    },
+    {
+      kind: 'a generic option with a flag-shaped operand',
+      args: ['--unsupported-option', ['--SYNTHETIC', 'OPERAND'].join('-')],
+      undisclosed: ['--unsupported-option', ['--SYNTHETIC', 'OPERAND'].join('-')],
+    },
+  ])('rejects $kind without echoing input or writing config', async ({ args, undisclosed }) => {
+    let configWrites = 0;
+    const { io, out, err } = capture();
+
+    const code = await run(['model', ...args], io, noPromptWizard(), {
+      model: {
+        writeConfig: async () => {
+          configWrites += 1;
+        },
+      },
+    });
+
+    const output = `${out.join('\n')}\n${err.join('\n')}`;
+    expect(code).toBe(1);
+    expect(err).toEqual([
+      'planmo model: unknown option.',
+      "Run 'planmo model --help' for the options it accepts.",
+    ]);
+    for (const token of undisclosed) expect(output).not.toContain(token);
+    expect(out).toEqual([]);
+    expect(configWrites).toBe(0);
+  });
 });
 
 describe('planmo generate', () => {
@@ -404,5 +674,65 @@ describe('planmo adopt', () => {
     expect(code).toBe(0);
     expect(out.join('\n')).toContain('Dry run: yes');
     expect(await readdir(join(root, '.planmo')).catch(() => [])).toEqual([]);
+  });
+});
+
+describe('planmo auth routing', () => {
+  it('routes auth status with injected user config and credential-store dependencies', async () => {
+    const configDir = await tempRoot();
+    const keyringCalls: string[] = [];
+    const store: CredentialStore = {
+      async get() {
+        throw new Error('status must not retrieve credentials');
+      },
+      async set() {},
+      async remove() {},
+      async has(ref) {
+        keyringCalls.push(ref);
+        return false;
+      },
+    };
+    const { io, out, err } = capture();
+
+    const code = await runWithAuthDependencies(['auth', 'status'], io, noPromptWizard(), {
+      auth: { env: {}, configDir, store, interactive: false },
+    });
+
+    expect(code).toBe(0);
+    expect(out.join('\n')).toContain('No saved AI profiles');
+    expect(err).toEqual([]);
+    expect(keyringCalls).toEqual([]);
+  });
+
+  it('prints auth-specific help without reading config or prompting', async () => {
+    const { io, out, err } = capture();
+
+    const code = await run(['auth', '--help'], io, noPromptWizard());
+
+    expect(code).toBe(0);
+    expect(out.join('\n')).toContain('auth options:');
+    expect(out.join('\n')).toContain('remove <profile-id>');
+    expect(out.join('\n')).toContain('--yes');
+    expect(err).toEqual([]);
+  });
+
+  it('rejects unknown auth options without echoing a flag-shaped operand', async () => {
+    const syntheticFlag = ['--', 'SYNTHETIC-SECRET'].join('');
+    const { io, err } = capture();
+
+    const code = await runWithAuthDependencies(
+      ['auth', 'status', syntheticFlag],
+      io,
+      noPromptWizard(),
+      { auth: { env: {}, configDir: await tempRoot(), interactive: false } },
+    );
+
+    expect(code).toBe(1);
+    expect(err).toEqual([
+      'planmo auth: unknown option.',
+      "Run 'planmo auth --help' for the options it accepts.",
+    ]);
+    expect(err.join('\n')).not.toContain(syntheticFlag);
+    expect(err.join('\n')).not.toContain('SYNTHETIC-SECRET');
   });
 });

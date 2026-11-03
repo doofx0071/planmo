@@ -1,8 +1,9 @@
 # PlanMo CLI — Quick Examples (new user)
 
 The PlanMo CLI is **deterministic and works without an AI key**. It exposes
-`init`, `status`, `adopt`, `plan`, `generate`, `diff`, `validate`, `doctor`,
-`next`, `task`, `trace`, `handoff`, `pack` and `agent` — plus
+`init`, `status`, `adopt`, `plan`, `suggest`, `generate`, `diff`, `validate`,
+`doctor`, `next`, `task`, `trace`, `handoff`, `pack` and `agent`, plus the AI
+setup surface `setup`, `provider list`, `model` and `auth` — and
 `--version`/`--help`. Everything below was verified against the real built
 CLI (see `docs/10-engineering/pilots.md`, 63/63 checks passing).
 
@@ -267,6 +268,63 @@ your coding agent call. `planmo doctor`, `planmo trace` and `planmo handoff` are
 wired too — the engines live in `@planmo/trace` and `@planmo/workflow`, and the
 CLI exposes them. `--help` lists exactly the implemented commands, and
 `scripts/e2e-phase12-pilots.mjs` asserts that.
+
+### AI setup and read-only suggestions
+
+`planmo provider list` prints the eight runtime presets and their API-key
+environment names, and says that OAuth/account-plan sign-in is not supported by
+this release:
+
+```console
+$ planmo provider list
+PlanMo model providers (8 presets)
+- `tokenharbor` — Token Harbor (OpenAI-compatible; API key via TOKENHARBOR_KEY)
+- `openai` — OpenAI (OpenAI-compatible; API key via OPENAI_API_KEY)
+- `anthropic` — Anthropic (Anthropic Messages; API key via ANTHROPIC_API_KEY)
+- `deepseek` — DeepSeek (OpenAI-compatible; API key via DEEPSEEK_API_KEY)
+- `moonshot` — Moonshot (Kimi) (OpenAI-compatible; API key via MOONSHOT_API_KEY)
+- `xai` — xAI (Grok) (OpenAI-compatible; API key via XAI_API_KEY)
+- `openrouter` — OpenRouter (OpenAI-compatible; API key via OPENROUTER_API_KEY)
+- `custom` — Custom endpoint (OpenAI-compatible; API key via PLANMO_AI_API_KEY; base URL required)
+OAuth/account-plan sign-in is not supported by this release.
+```
+
+`planmo setup` stores a non-secret profile in the user-level config and the
+credential in the OS keyring, or reads the provider-named environment variable;
+a nonblank environment key takes precedence over a saved keyring item. With no
+terminal it refuses to prompt and exits `1`:
+
+```console
+$ planmo setup
+Run planmo setup interactively or configure OPENAI_API_KEY.
+```
+
+`planmo suggest` is **advisory and read-only** — it recommends, it does not fix,
+and a result is a suggestion, not a verified defect. It scans locally, never
+reads an excluded secret-bearing path (`.env`, `.npmrc`, credential and
+private-key files), redacts detected secrets, and uploads redacted context only
+after you consent. `--dry-run` previews the upload and never calls the provider:
+
+```console
+$ planmo suggest --dir C:\repo\app --dry-run
+planmo suggest — dry run (nothing is uploaded; no provider is called).
+  project root: C:\repo\app
+  inventoried files: 34
+  submitted files: 32
+  batches: 2
+  estimated input tokens: 10725
+  excluded files: 2
+  skipped (binary 0, oversize 0, unreadable 0, budget 0)
+  truncated: no
+  [dry-run] 0 provider calls; confirm interactively or pass --allow-upload to run.
+```
+
+Coverage may be partial: scanner caps, binary or oversize files, and the token
+budget can omit content, and truncation is reported rather than hidden. An
+interactive run asks before the first provider request; a non-TTY run needs
+`--allow-upload`. The report goes to stdout by default, `--json` emits JSON, and
+`--output <path>` writes it and refuses to overwrite an existing file. A failed
+run writes nothing; outside a workspace the command exits `3`.
 
 ## 8. Environment notes
 
